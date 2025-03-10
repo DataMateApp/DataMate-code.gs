@@ -18,7 +18,6 @@ So why are DataMateApps free? Because the idea matters more than the programming
 <p>Delete any default code in Code.gs.
 <p>Step 1: Paste Code.gs
 <p>Click Save.
-.
 <p>Step 2: Deploy the Add-on
 
 <p>Click Run>onIntsall
