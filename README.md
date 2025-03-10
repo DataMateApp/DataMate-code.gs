@@ -21,7 +21,7 @@ DataMate isn’t a replacement for **full-scale databases like SQL** or enterpri
 
 It bridges the gap between **manual spreadsheets** and **complex (often expensive) systems** that may be overkill for smaller operations.  
 
-### Why is DataMateApps Free?  
+### Why are DataMateApps Free?  
 Because **the idea matters more than the programming.**  
 
 Technology has made development more accessible, and for me, this is both a **passion project** and a way to **keep my mind sharp**. More importantly, I see DataMate as a **legacy—one that grows and evolves with every user.**  
