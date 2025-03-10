@@ -9,3 +9,23 @@ After retiring, I revisited the concept, and a lightbulb went off. Why not make 
 To clarify, DataMate isn’t a replacement for full-scale databases like SQL or enterprise-level solutions. It’s designed for small businesses and teams that already rely on spreadsheets but need a smarter, more structured way to manage their data. It bridges the gap between manual spreadsheets and more complex (often expensive) systems that may be overkill for smaller operations.
 
 So why are DataMateApps free? Because the idea matters more than the programming. Technology has made development more accessible, and for me, this is both a passion project and a way to keep my mind sharp. More importantly, I see DataMate as a legacy—one that grows and evolves with every user.</P>
+<p>Installation & Deployment
+
+
+Open Google Apps Script
+Go to Google Drive and create a new spreadsheet.
+Click>Extensions>Apps Script
+Delete any default code in Code.gs.
+Step 1: Paste Code.gs
+Click Save.
+.
+Step 2: Deploy the Add-on
+
+Click Run>onIntsall
+Click Authorize the script.
+
+License
+This project is licensed under the MIT License. See LICENSE.txt for details.
+
+Credits
+Developed by Dan Northway.</p>
