@@ -64,8 +64,7 @@ Have feature requests? [Open an issue on GitHub](https://github.com/your-repo/is
 
 DataMate is free, but if you find it useful, consider supporting development:  
 
-☕ [**Buy Me a Coffee**](https://www.buymeacoffee.com/yourusername)  
-💰 [**Donate via PayPal**](https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID)  
+☕ [**Support DataMateApps**]([https://www.buymeacoffee.com/yourusername](https://datamateapp.github.io/Donate%205%20per%20mo.html))  
 
 Every donation helps keep this project alive and evolving!  
 
