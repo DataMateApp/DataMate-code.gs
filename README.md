@@ -12,20 +12,20 @@ So why are DataMateApps free? Because the idea matters more than the programming
 <p>Installation & Deployment
 
 
-Open Google Apps Script
-Go to Google Drive and create a new spreadsheet.
-Click>Extensions>Apps Script
-Delete any default code in Code.gs.
-Step 1: Paste Code.gs
-Click Save.
+<p>Open Google Apps Script
+<p>Go to Google Drive and create a new spreadsheet.
+<p>Click>Extensions>Apps Script
+<p>Delete any default code in Code.gs.
+<p>Step 1: Paste Code.gs
+<p>Click Save.
 .
-Step 2: Deploy the Add-on
+<p>Step 2: Deploy the Add-on
 
-Click Run>onIntsall
-Click Authorize the script.
+<p>Click Run>onIntsall
+<p>Click Authorize the script.
 
-License
-This project is licensed under the MIT License. See LICENSE.txt for details.
+<p>License
+<p>This project is licensed under the MIT License. See LICENSE.txt for details.
 
-Credits
-Developed by Dan Northway.</p>
+<p>Credits
+<p>Developed by Dan Northway.</p>
