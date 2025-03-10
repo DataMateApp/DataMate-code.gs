@@ -32,37 +32,15 @@ The following behaviors are **strictly prohibited** within the **DataMate App** 
 - Advocating or encouraging any of the above behaviors.
 - Intentional disruption of community discussions or events.
 
-## 5. Weapons Policy
-Weapons, including but not limited to firearms, explosives, and large knives, are **prohibited** at **DataMate App** events, in community spaces, and in any other relevant areas. Anyone found in possession of a weapon will be asked to leave immediately and may only return without the weapon. All participants must comply with local and state laws regarding weapons.
-
-## 6. Consequences of Unacceptable Behavior
+## 5. Consequences of Unacceptable Behavior
 Unacceptable behavior by any member of the **DataMate App** community, including sponsors and leadership, will not be tolerated. Actions may include:
 - Immediate removal from community spaces.
 - Temporary suspension or permanent expulsion without prior warning.
 - Escalation to legal authorities if necessary.
 
-## 7. Reporting Guidelines
-If you experience or witness unacceptable behavior, or have any concerns, please report it to the community moderators at **[CONTACT INFO HERE]**.
-
-[LINK TO REPORTING GUIDELINES]
-
-Community moderators are available to assist individuals in engaging with local authorities or to provide safety measures as needed. For in-person events, community leaders can offer escort services upon request.
-
-## 8. Addressing Grievances
-If you believe you have been falsely or unfairly accused of violating this Code of Conduct, you may contact **[GOVERNING BODY]** with a detailed explanation of your grievance. Disputes will be handled per our existing policies.
-
-[LINK TO POLICY]
-
-## 9. Scope
+## 6. Scope
 This Code of Conduct applies to all **DataMate App** community members, including contributors, maintainers, sponsors, and participants in online or in-person spaces. It also applies to private conversations related to community affairs when misconduct could impact the community’s safety and well-being.
 
-## 10. Contact Information
-[YOUR CONTACT INFO HERE – Include a direct point of contact for reporting issues.]
-
-## 11. License and Attribution
-This Code of Conduct is distributed under a **Creative Commons Attribution-ShareAlike** license. Portions of the text are derived from the **Django Code of Conduct** and the **Geek Feminism Anti-Harassment Policy**.
-
-- **Revision 2.2**: Posted 6 March 2017
-- **Revision 2.1**: Posted 4 February 2015
-- **Revision 2.0**: Adopted by the Stumptown Syndicate board on 10 January 2013, posted 17 March 2013
+## 7. Contact Information
+[datamateapp@gmail.com]
 
