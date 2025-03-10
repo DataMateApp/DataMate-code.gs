@@ -56,7 +56,7 @@ Technology has made development more accessible, and for me, this is both a **pa
 - **Custom form integrations** – Support for Google Forms & other input sources  
 - **Advanced filtering** – Smarter search & filter tools  
 
-Have feature requests? [Email me!](datamateapp@gmail.com)  
+Have feature requests? [Email me!](mailto:datamateapp@gmail.com)  
 
 ---
 
