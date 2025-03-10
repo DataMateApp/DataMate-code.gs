@@ -64,7 +64,7 @@ Have feature requests? [Open an issue on GitHub](https://github.com/your-repo/is
 
 DataMate is free, but if you find it useful, consider supporting development:  
 
-☕ [**Support DataMateApps**]((https://datamateapp.github.io/Donate%205%20per%20mo.html))  
+☕ [**Support DataMateApps**](https://datamateapp.github.io/Donate%205%20per%20mo.html)  
 
 Every donation helps keep this project alive and evolving!  
 
