@@ -39,7 +39,8 @@ Technology has made development more accessible, and for me, this is both a **pa
 
 ### Step 2: Deploy the Add-on  
 1. Click **Run > onInstall**.  
-2. Authorize the script when prompted.  
+2. Authorize the script when prompted.
+3. Open the DataMate UI and select **New Dataset** 
 
 ---
 
