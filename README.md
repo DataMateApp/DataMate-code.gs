@@ -44,8 +44,6 @@ Technology has made development more accessible, and for me, this is both a **pa
 
 ---
 
-##Feature Roadmap  
-
 ### Completed Features  
 - Spreadsheet-based database system  
 - Automatic data logging & organization  
