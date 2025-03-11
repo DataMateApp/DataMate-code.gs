@@ -57,6 +57,7 @@ Technology has made development more accessible, and for me, this is both a **pa
 - **Collaboration is welcome!** – Need collaborators to develope these features. 
 
 Have feature requests? [Email me!](mailto:datamateapp@gmail.com)  
+Also try our web apps and templates.  [Web Apps and Templates](https://script.google.com/macros/s/AKfycbxKwP8r_5SQTPGFAme4DlALF267dj8DwCUAd_A8EihGKhc60p-9Bh5VC0NXkdw0nagb/exec)
 
 ---
 
