@@ -28,7 +28,7 @@ Technology has made development more accessible, and for me, this is both a **pa
 
 ---
 
-## 🚀 Installation & Deployment  
+##Installation & Deployment  
 
 ### Step 1: Open Google Apps Script  
 1. Open **Google Drive** and create a **new spreadsheet**.  
@@ -44,14 +44,14 @@ Technology has made development more accessible, and for me, this is both a **pa
 
 ---
 
-## 🔮 Feature Roadmap  
+##Feature Roadmap  
 
-### ✅ Completed Features  
+### Completed Features  
 - Spreadsheet-based database system  
 - Automatic data logging & organization  
 - Simple UI for data entry  
 
-### 🚧 Upcoming Features  
+### Upcoming Features  
 - **Multi-user collaboration** – Allow multiple users to access & modify data securely  
 - **Automated backups** – Save snapshots of your data for easy recovery  
 - **Custom form integrations** – Support for Google Forms & other input sources  
@@ -66,7 +66,7 @@ Have feature requests? [Email me!](mailto:datamateapp@gmail.com)
 
 DataMate is free, but if you find it useful, consider supporting development:  
 
-☕ [**Support DataMateApps**](https://datamateapp.github.io/Donate%205%20per%20mo.html)  
+[**Support DataMateApps**](https://datamateapp.github.io/Donate%205%20per%20mo.html)  
 
 Every donation helps keep this project alive and evolving!  
 
