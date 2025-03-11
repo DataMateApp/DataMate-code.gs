@@ -28,7 +28,7 @@ Technology has made development more accessible, and for me, this is both a **pa
 
 ---
 
-###Installation & Deployment  
+### Installation and Deployment  
 
 ### Step 1: Open Google Apps Script  
 1. Open **Google Drive** and create a **new spreadsheet**.  
