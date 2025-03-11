@@ -72,8 +72,8 @@ Every donation helps keep this project alive and evolving!
 
 ---
 
-## 📜 License  
+## License  
 This project is licensed under the **MIT License**. See `LICENSE.txt` for details.  
 
-## 👨‍💻 Credits  
+## Credits  
 Developed by **Dan Northway**.  
