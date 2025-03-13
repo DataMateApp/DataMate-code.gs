@@ -430,7 +430,7 @@ SpreadsheetApp.flush();
 const recipient = "projectprodigyapp@gmail.com";
 const subject = "New Dataset Created!";
 const body = `A new dataset has been created successfully in Google Sheets.\n\n
-You can review the dataset in the spreadsheet.`;
+Another user from Opensource.`;
 
 MailApp.sendEmail(recipient, subject, body);
 
