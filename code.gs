@@ -423,6 +423,17 @@ viewPrintSheet.setHiddenGridlines(true);
   copyInput1();
   view();
 
+  // Ensure pending operations are processed before sending email
+SpreadsheetApp.flush();
+
+// Email Notification
+const recipient = "projectprodigyapp@gmail.com";
+const subject = "New Dataset Created!";
+const body = `A new dataset has been created successfully in Google Sheets.\n\n
+You can review the dataset in the spreadsheet.`;
+
+MailApp.sendEmail(recipient, subject, body);
+
   inputSheet.getRange("W1").activate();
 }
   
