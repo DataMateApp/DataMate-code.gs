@@ -1995,7 +1995,15 @@ function contacts() {
     // Hide gridlines in all sheets
     sheets.forEach(sheet => sheet.setHiddenGridlines(true));
 
-  wsSheet1.getRange("A1").activate();
+// Email Notification
+const recipient = "projectprodigyapp@gmail.com";
+const subject = "New Inventory Template Created!";
+const body = `A new inventory template has been created successfully in Google Sheets.\n\n
+Another user from Opensource.`;
+
+MailApp.sendEmail(recipient, subject, body);
+
+  wsSheet1.getRange("A3").activate();
 
   SpreadsheetApp.getUi().alert("Inventory Template created successfully. Please support DataMateApps and help us grow!");
   } catch (e) {
