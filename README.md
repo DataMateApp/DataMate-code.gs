@@ -54,7 +54,7 @@ Technology has made development more accessible, and for me, this is both a **pa
 - **Automated backups** – Save snapshots of your data for easy recovery  
 - **Custom form integrations** – Support for Google Forms & other input sources  
 - **Advanced filtering** – Smarter search & filter tools
-- **Collaboration is welcome!** – Need collaborators to develope these features. 
+- **Collaboration is welcome!** – Need collaborators to develop these features. 
 
 Have feature requests? [Email me!](mailto:datamateapp@gmail.com)  
 Visit the website? [Website](https://datamateapp.github.io/)
