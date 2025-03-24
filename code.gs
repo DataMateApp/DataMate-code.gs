@@ -19,6 +19,8 @@ function onOpen() {
     .addSeparator()
     .addItem("Update Inventory", "updateInventory")
     .addSeparator()
+    .addItem("Purchase Order Template", "setupPO")
+    .addSeparator()
     .addSubMenu(
       ui.createMenu("AddressBlock").addItem("Add Contact Sheets", "contacts")
     )
@@ -1122,6 +1124,245 @@ newContact.getRange("B1").activate();
   
 }
 
+function setupPO() {
+  contacts();
+  createPurchaseOrderTemplate();
+  newfile();
+  cleanup();
+  
+}
+
+function cleanup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const logSheet = ss.getSheetByName("Log");
+
+  const mappings = [
+    ["A1", "=A6"], ["A2", "=C6"], ["B1", "=E6"], ["B2", "=H6"],
+    ["C1", "=A8"], ["C2", "=B8"], ["D1", "=A20"], ["D2", "=B20"],
+    ["E1", "=F47"], ["E2", "=G47"], ["F1", "=H37"], ["F2", "=J37"],
+    ["G1", "=A23"], ["G2", "=B23"], ["H1", "=F39"], ["H2", "=G39"],
+    ["I1", "Log 9"], ["J1", "Log 10"], ["K1", "Log 11"], ["L1", "Log 12"],
+    ["M1", "=A44"], ["N1", "=A47"], ["O1", "Update 3"]
+  ];
+
+  mappings.forEach(([cell, value]) => {
+    inputSheet.getRange(cell).setValue(value);
+  });
+
+  logSheet.getRange("A2").setValue("Purchase Order Log");
+}
+
+
+function createPurchaseOrderTemplate() {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Sheet1") || ss.insertSheet("Sheet1");
+    sheet.clear(); // Clear previous content
+
+    // Set column widths to match the layout
+    sheet.setColumnWidth(1, 130); // A
+    sheet.setColumnWidth(6, 130); // F
+
+
+    var contactsSheet = ss.getSheetByName("contacts");
+    var contactsListRange = contactsSheet.getRange("AR:AR");
+
+    // Apply dropdown validation for "To:" and "Ship To:"
+    var validation = SpreadsheetApp.newDataValidation().requireValueInRange(contactsListRange).build();
+    sheet.getRange("B6:D6").merge().setFontWeight("bold").setDataValidation(validation); // "To:" dropdown
+    sheet.getRange("B6").setValue("Company");
+    sheet.getRange("G6:I6").merge().setFontWeight("bold").setDataValidation(validation); // "Ship To:" dropdown
+    sheet.getRange("G6").setValue("Company");
+    sheet.getRange("G15:I15").merge().setFontWeight("bold").setDataValidation(validation); // "Invoice To:" dropdown
+    sheet.getRange("G15").setValue("Company");
+
+    // Set headers and structure
+    sheet.getRange("A1:J1").merge()
+        .setValue("Your Company Name")
+        .setFontWeight("bold")
+        .setFontSize(20)
+        .setHorizontalAlignment("center");
+    sheet.getRange("A2:E2").merge()
+        .setValue("Address")
+        .setFontWeight("bold")
+        .setFontSize(12)
+        .setHorizontalAlignment("center");
+    sheet.getRange("F2:J2").merge()
+        .setValue("City, State Zip")
+        .setFontWeight("bold")
+        .setFontSize(12)
+        .setHorizontalAlignment("center");
+
+    sheet.getRange("A1:J46").setBorder(true, true, true, true, false, false);
+    sheet.getRange("A3:J3").merge().setBackground('#cccccc').setBorder(true, true, true, true, false, false);
+    sheet.getRange("F4:J17").setBorder(true, true, true, true, false, false);
+
+
+    sheet.getRange("A4:B4").merge().setFontWeight("bold")
+        .setValue("PURCHASE ORDER NUMBER:");
+    sheet.getRange("F4:G4").merge().setFontWeight("bold").setValue("JOB/PHASE NUMBER:");
+
+    sheet.getRange("A6").setValue("To:");
+    sheet.getRange("B6").setFontWeight("bold"); // Company name (dropdown)
+
+    sheet.getRange("F6").setValue("Ship To:");
+    sheet.getRange("H6").setFontWeight("bold"); // Ship To company (dropdown)
+
+    // Company Details
+    sheet.getRange("B7:D7").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!AZ:AZ, MATCH(B6, contacts!AR:AR, 0)), \"Not Found\")");
+    sheet.getRange("B8:D8").merge().setFontWeight("bold").setFormula(
+  '=IFERROR(INDEX(contacts!BD:BD, MATCH(B6, contacts!AR:AR, 0)), "") & ", " & ' + 
+  'IFERROR(INDEX(contacts!BE:BE, MATCH(B6, contacts!AR:AR, 0)), "") & " " & ' +
+  'IFERROR(INDEX(contacts!BF:BF, MATCH(B6, contacts!AR:AR, 0)), "Not Found")'
+);
+
+    sheet.getRange("A9").setValue("Attn:");
+    sheet.getRange("B9:D9").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!A:A, MATCH(B6, contacts!AR:AR, 0)), \"Not Found\")");
+
+    sheet.getRange("G7:I7").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!AZ:AZ, MATCH(G6, contacts!AR:AR, 0)), \"Not Found\")");
+    sheet.getRange("G8:I8").merge().setFontWeight("bold").setFormula(
+  '=IFERROR(INDEX(contacts!BD:BD, MATCH(G6, contacts!AR:AR, 0)), "") & ", " & ' + 
+  'IFERROR(INDEX(contacts!BE:BE, MATCH(G6, contacts!AR:AR, 0)), "") & " " & ' +
+  'IFERROR(INDEX(contacts!BF:BF, MATCH(G6, contacts!AR:AR, 0)), "Not Found")'
+);
+
+    sheet.getRange("F10").setValue("Delivery-Site Phone:");
+    sheet.getRange("G10:I10").merge().setFontWeight("bold").setValue("555-5555");
+
+    sheet.getRange("F11").setValue("Site Contact:");
+    sheet.getRange("G11:I11").merge().setFontWeight("bold").setValue("Joe Blow");
+
+    sheet.getRange("A12").setValue("Phone:");
+    sheet.getRange("B12:D12").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!AN:AN, MATCH(B6, contacts!AR:AR, 0)), \"Not Found\")");
+    sheet.getRange("A13").setValue("Fax:");
+    sheet.getRange("B13:D13").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!AP:AP, MATCH(B6, contacts!AR:AR, 0)), \"Not Found\")");
+    sheet.getRange("A14").setValue("Email:");
+    sheet.getRange("B14:D14").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!P:P, MATCH(B6, contacts!AR:AR, 0)), \"Not Found\")");
+
+    sheet.getRange("A15").setValue("Ship VIA:");
+    sheet.getRange("B15").setValue("Best Route");
+
+    sheet.getRange("F15").setValue("Send Invoices To:");
+    sheet.getRange("G16:I16").merge().setFontWeight("bold").setFormula("=IFERROR(INDEX(contacts!AZ:AZ, MATCH(G15, contacts!AR:AR, 0)), \"Not Found\")");
+    sheet.getRange("G17:I17").merge().setFontWeight("bold").setFormula(
+  '=IFERROR(INDEX(contacts!BD:BD, MATCH(G15, contacts!AR:AR, 0)), "") & ", " & ' + 
+  'IFERROR(INDEX(contacts!BE:BE, MATCH(G15, contacts!AR:AR, 0)), "") & " " & ' +
+  'IFERROR(INDEX(contacts!BF:BF, MATCH(G15, contacts!AR:AR, 0)), "Not Found")'
+);
+
+    sheet.getRange("A18").setValue("Delivery Required By:");
+    sheet.getRange("B18").setValue("=TODAY()");
+    sheet.getRange("E18").setValue("F.O.B.:");
+    sheet.getRange("F18:G18").merge().setBorder(true, true, true, true, false, false).setValue("Delivery Site");
+    sheet.getRange("H18:I18").merge().setBorder(true, true, true, true, false, false).setValue("SALES TAX EXEMPT:");
+    sheet.getRange("J18").setBorder(true, true, true, true, false, false).setValue("YES");
+    sheet.getRange("A19:J19").merge().setBackground('#cccccc').setBorder(true, true, true, true, false, false);
+
+    // Description of Materials Section
+    sheet.getRange("A20:G20").merge().setBorder(true, true, true, true, false, false).setValue("DESCRIPTION OF MATERIALS").setFontWeight("bold");
+    sheet.getRange("H20").setBorder(true, true, true, true, false, false).setValue("Unit Price").setFontWeight("bold");
+    sheet.getRange("I20").setBorder(true, true, true, true, false, false).setValue("Quantity").setFontWeight("bold");
+    sheet.getRange("J20").setBorder(true, true, true, true, false, false).setValue("Amount").setFontWeight("bold");
+
+    sheet.getRange("A21").setBorder(true, true, true, true, false, false).setValue("PROJECT:");
+    sheet.getRange("B21:G21").merge().setBorder(true, true, true, true, false, false).setValue("Project Name").setFontStyle("italic");
+
+    sheet.getRange("A22:G22").merge().setBorder(true, true, true, true, false, false).setValue("Fabricate and furnish the following materials per the plans and specifications prepared by");
+    sheet.getRange("A23:G23").merge().setBorder(true, true, true, true, false, false).setValue("A/E Name").setFontWeight("bold");
+    sheet.getRange("A24:G24").merge().setBorder(true, true, true, true, false, false).setValue("dated --/--/---- and all applicable addenda and correspondence").setFontStyle("italic");
+    sheet.getRange("A25:G25").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A26:G26").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A27:G27").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A28:G28").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A29:G29").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A30:G30").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+    sheet.getRange("A31:G31").merge().setBorder(true, true, true, true, false, false).setFontWeight("bold");
+
+    // Move "Unit Price, Quantity, Amount" section below
+    sheet.getRange("H25").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I25").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J25").setFormula("=H25*I25");
+
+    sheet.getRange("H26").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I26").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J26").setFormula("=H26*I26");
+
+    sheet.getRange("H27").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I27").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J27").setFormula("=H27*I27");
+
+    sheet.getRange("H28").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I28").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J28").setFormula("=H28*I28");
+
+    sheet.getRange("H29").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I29").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J29").setFormula("=H29*I29");
+
+    sheet.getRange("H30").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I30").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J30").setFormula("=H30*I30");
+
+    sheet.getRange("H31").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I31").setBorder(true, true, true, true, false, false)
+    sheet.getRange("J31").setFormula("=H31*I31");
+    sheet.getRange("J21:J34").setBorder(true, true, true, true, false, false)
+    sheet.getRange("H32:H34").setBorder(true, true, true, true, false, false)
+    sheet.getRange("I32:I34").setBorder(true, true, true, true, false, false)
+
+    sheet.getRange("G32").setValue("Subtotal").setFontWeight("bold");
+    sheet.getRange("J32").setFormula("=SUM(J25:J31)").setFontWeight("bold");
+
+    sheet.getRange("A33").setValue("EXCLUSIONS:");
+    sheet.getRange("B34").setValue("none");
+    sheet.getRange("B34:F35").merge()
+		
+    sheet.getRange("h35").setValue("GRAND TOTAL:").setFontWeight("bold");
+    sheet.getRange("J35").setFormula("=SUM(J32)").setFontWeight("bold");
+
+    sheet.getRange("A36:J36").merge().setBorder(true, true, true, true, false, false).setValue("Purchase Order Number must appear on all invoices, shipments, and correspondence");
+    sheet.getRange("F37").setValue("Attachment Link:");
+    sheet.getRange("A37:E37").merge().setValue("See attached sheet for additional terms and conditions of this offer")
+    sheet.getRange("G37:J37").merge()
+
+    sheet.getRange("A38:E38").merge().setValue("Payment Terms: Reference contract between the owner and");
+    sheet.getRange("F38:J38").merge().setValue("Your Company Name");
+
+    sheet.getRange("A39:J39").merge().setBorder(true, true, true, true, false, false)
+
+    sheet.getRange("A40:J40").merge().setValue("Vendor is to supply a minimum of 24 hours advance notice of shipment of material");
+
+    sheet.getRange("A42:B42").merge().setValue("Acknowledged By:");
+    sheet.getRange("F42").setValue("Originated By:");
+
+    sheet.getRange("C42:E42").merge()
+    sheet.getRange("G42:J42").merge()
+  
+    sheet.getRange("A43").setValue("Vendor:");
+    sheet.getRange("B43").setValue("Company");
+    sheet.getRange("B43:E43").merge()
+
+    sheet.getRange("A45").setValue("Date Signed:");
+    sheet.getRange("F45").setValue("Date of Order");
+
+    sheet.getRange("A46:J46").merge().setBorder(true, true, true, true, false, false).setValue("IMPORTANT: THIS OFFER DOES NOT BECOME AN ORDER UNTIL ALL COPIES ARE SIGNED AND BOTH COPIES ARE RETURNED TO THIS OFFICE.");
+
+    // Insert two rows at the top
+  sheet.insertRowsBefore(1, 2);
+
+
+  // Email Notification
+const recipient = "projectprodigyapp@gmail.com";
+const subject = "Purchase Order Template Created!";
+const body = `A new Purchase Order Template has been created successfully in Google Sheets.\n\n
+Another user from Opensource.`;
+
+MailApp.sendEmail(recipient, subject, body);
+
+
+    Logger.log("Purchase Order Template Created Successfully");
+}
+
 function setup() {
   newfileit();
   contactsit();
@@ -2031,10 +2272,3 @@ function updateInventory() {
     }
   }
 }
-
-
-
-
-
-
-
