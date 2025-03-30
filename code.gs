@@ -1156,6 +1156,7 @@ function cleanupTS() {
   });
 
   logSheet.getRange("A2").setValue("Time/Cost Log");
+  logSheet.getRange("C7").setValue("TOTALS");
   logSheet.getRange("D7").setFormula("=SUM(D9:D)");
   logSheet.getRange("E7").setFormula("=SUM(E9:E)");
   logSheet.getRange("F7").setFormula("=SUM(F9:F)");
