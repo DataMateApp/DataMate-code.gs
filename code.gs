@@ -4,7 +4,7 @@ function onInstall() {
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createMenu("DataMate")
-    .addItem("Save Record", "save")
+    ..addItem("Save Record", "save")
     .addSeparator()
     .addItem("Reset Input", "copyInput1")
     .addSeparator()
@@ -20,6 +20,10 @@ function onOpen() {
     .addItem("Update Inventory", "updateInventory")
     .addSeparator()
     .addItem("Purchase Order Template", "setupPO")
+    .addSeparator()
+    .addItem("Weekly Timesheets Template", "setupTS")
+    .addSeparator()
+    .addItem("Update Cost Code Totals", "copyToCodeTotals")
     .addSeparator()
     .addSubMenu(
       ui.createMenu("AddressBlock").addItem("Add Contact Sheets", "contacts")
@@ -1122,6 +1126,292 @@ newContact.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: tru
 
 newContact.getRange("B1").activate();
   
+}
+
+
+
+function setupTS() {
+  createTimeSheet();
+  newfile();
+  cleanupTS();
+  
+}
+
+function cleanupTS() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const logSheet = ss.getSheetByName("Log");
+
+  const mappings = [
+    ["A1", "=J5"], ["A2", "=J6"], ["B1", "=B3"], ["B2", "=B4"],
+    ["C1", "=A5"], ["C2", "=A6"], ["D1", "=A41"], ["D2", "=P43"],
+    ["E1", "=P41"], ["E2", "=P42"], ["F1", "=Q41"], ["F2", "=Q42"],
+    ["G1", "=A45"], ["G2", "=B45"], ["H1", "=E45"], ["H2", "=F45"],
+    ["I1", "=I45"],["I2", "=J45"], ["J1", "=M45"], ["J2", "=O45"], ["K1", "Log 11"], ["L1", "Log 12"],
+    ["M1", "Update 1"], ["N1", "Update 2"], ["O1", "Update 3"]
+  ];
+
+  mappings.forEach(([cell, value]) => {
+    inputSheet.getRange(cell).setValue(value);
+  });
+
+  logSheet.getRange("A2").setValue("Time/Cost Log");
+  logSheet.getRange("D7").setFormula("=SUM(D9:D)");
+  logSheet.getRange("E7").setFormula("=SUM(E9:E)");
+  logSheet.getRange("F7").setFormula("=SUM(F9:F)");
+  logSheet.getRange("G7").setFormula("=SUM(G9:G)");
+  logSheet.getRange("H7").setFormula("=SUM(H9:H)");
+  logSheet.getRange("I7").setFormula("=SUM(I9:I)");
+  logSheet.getRange("J7").setFormula("=SUM(J9:J)");
+}
+
+function copyToCodeTotals() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var inputSheet = ss.getSheetByName("Input");
+  var totalsSheet = ss.getSheetByName("Code Totals");
+
+  if (!inputSheet || !totalsSheet) {
+    Logger.log("One or both sheets are missing.");
+    return;
+  }
+
+  // Get data from the Input sheet
+  var costCodes = inputSheet.getRange("A9:A40").getValues(); // Cost codes (double rows)
+  var otHours = inputSheet.getRange("P9:P40").getValues();   // OT hours
+  var dtHours = inputSheet.getRange("Q9:Q40").getValues();   // DT hours
+  var regHoursP = inputSheet.getRange("P10:P40").getValues(); // Regular hours from P
+  var regHoursQ = inputSheet.getRange("Q10:Q40").getValues(); // Regular hours from Q
+
+  // Get existing data from Code Totals
+  var totalsData = totalsSheet.getRange("A2:D" + totalsSheet.getLastRow()).getValues();
+  var totalsMap = {}; // Store existing codes and their row index
+
+  // Map existing cost codes to their row index
+  totalsData.forEach((row, index) => {
+    if (row[0]) totalsMap[row[0]] = index + 2; // Row index (considering header row)
+  });
+
+  for (var i = 0; i < costCodes.length; i += 2) { // Process in pairs (double rows)
+    var code = costCodes[i][0]; // Cost code in A9, A11, etc.
+    if (!code) continue; // Skip empty rows
+
+    var ot = otHours[i][0] || 0;
+    var dt = dtHours[i][0] || 0;
+    var reg = (regHoursP[i][0] || 0) + (regHoursQ[i][0] || 0); // Sum regular hours correctly
+
+    if (code in totalsMap) {
+      // Get the existing row index
+      var rowIndex = totalsMap[code];
+
+      // Fetch current values from "Code Totals" before updating
+      var currentReg = totalsSheet.getRange(rowIndex, 2).getValue() || 0;
+      var currentOT = totalsSheet.getRange(rowIndex, 3).getValue() || 0;
+      var currentDT = totalsSheet.getRange(rowIndex, 4).getValue() || 0;
+
+      // Update the values by adding to the existing ones
+      totalsSheet.getRange(rowIndex, 2).setValue(currentReg + reg); // Regular Hours
+      totalsSheet.getRange(rowIndex, 3).setValue(currentOT + ot);   // OT Hours
+      totalsSheet.getRange(rowIndex, 4).setValue(currentDT + dt);   // DT Hours
+    } else {
+      // Append new row if cost code doesn't exist
+      var nextRow = totalsSheet.getLastRow() + 1;
+      totalsSheet.getRange(nextRow, 1, 1, 4).setValues([[code, reg, ot, dt]]);
+    }
+  }
+}
+
+
+
+function createTimeSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let listsSheet = ss.getSheetByName("Lists");
+  
+  // Check if Lists sheet exists, create it if it doesn't
+  if (!listsSheet) {
+    // Create a new Lists sheet
+    listsSheet = ss.insertSheet("Lists");
+
+    // Define headers
+    const headers = ["Name", "Emp. No", "Rate", "", "Crafts", "Cost Codes"];
+    listsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+    // Define sample data
+    const data = ["Moe", 3000, "$43.68", "", "Carpenter", "13100   Project Superintendent"];
+    listsSheet.getRange(2, 1, 1, data.length).setValues([data]);
+
+    listsSheet.getRange("H1")
+      .setFormula('=HYPERLINK("https://datamateapp.github.io/About%20Timesheet.html", "About Timesheet")');
+
+    // Auto-size columns for better readability
+    listsSheet.autoResizeColumns(1, headers.length);
+  }
+
+  // Check if Code Totals sheet exists, create it if it doesn't
+  let codeSheet = ss.getSheetByName("Code Totals");
+  if (!codeSheet) {
+    // Create a new Code Totals sheet
+    codeSheet = ss.insertSheet("Code Totals");
+
+    // Define headers
+    const headers = ["Cost Code", "Regular Hours", "OT Hours", "DT Hours"];
+    codeSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+    // Auto-size columns for better readability
+    codeSheet.autoResizeColumns(1, headers.length);
+  }
+
+
+
+  
+  const existingSheet = ss.getSheetByName("Sheet1");
+  if (existingSheet) ss.deleteSheet(existingSheet);
+
+  const sheet = ss.insertSheet("Sheet1");
+  sheet.getRange("A3:Q48").clear();
+
+  // Set column widths
+  const columnWidths = [300, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30];
+  columnWidths.forEach((width, i) => sheet.setColumnWidth(i + 1, width));
+
+  // Merge and set headers
+  sheet.getRange("A3").setFontWeight("bold").setValue("EMPLOYEE NO.");
+  sheet.getRange("A4").setHorizontalAlignment("center");
+
+
+
+  sheet.getRange("B3:G3").merge().setFontWeight("bold").setValue("EMPLOYEE NAME");
+  sheet.getRange("B4:G4").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("B6:G6").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("H3:I3").merge().setFontWeight("bold").setValue("Note:");
+  sheet.getRange("J3:Q3").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("J4:M4").merge().setFontWeight("bold").setValue("PREPAID CHECK #");
+  sheet.getRange("O4:Q4").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("J5:M5").merge().setFontWeight("bold").setValue("BEGINNING DATE");
+  sheet.getRange("J6:M6").merge().setValue("=TODAY()").setBorder(true, true, true, true, true, true);
+
+  sheet.getRange("A5").setFontWeight("bold").setValue("RATE");
+  sheet.getRange("A6").setHorizontalAlignment("center");
+  sheet.getRange("B6:G6").merge();
+  sheet.getRange("B5:G5").merge().setFontWeight("bold").setValue("CRAFT");
+  sheet.getRange("A7").setValue("COST CODE");
+
+  // Generate dates and days
+  for (let i = 0; i < 7; i++) {
+    let col = 2 + (i * 2); // Start from column B (2) and increment by 2
+    let dateCell = sheet.getRange(7, col);
+    dateCell.setFormula(`=IF(J6="", "", J6+${i})`);
+    dateCell.offset(1, 0).setFormula(`=TEXT(${dateCell.getA1Notation()}, "ddd")`);
+  }
+
+  sheet.getRange("P7").setFontWeight("bold").setValue("TOTAL");
+
+  // Merge formatting for table header
+  const mergeRanges = [
+    "A7:A8", "B7:C7", "D7:E7", "F7:G7", "H7:I7", "J7:K7", "L7:M7", "N7:O7",
+    "B8:C8", "D8:E8", "F8:G8", "H8:I8", "J8:K8", "L8:M8", "N8:O8", "P7:Q8"
+  ];
+  mergeRanges.forEach(range => sheet.getRange(range).merge());
+
+  // Set formulas for totals
+  sheet.getRange("P9").setFormula('=SUM(B9+D9+F9+H9+J9+L9+N9)');
+  sheet.getRange("Q9").setFormula('=SUM(C9+E9+G9+I9+K9+M9+O9)');
+  sheet.getRange("P10:Q10").setFormula('=SUM(B10+D10+F10+H10+J10+L10+N10)');
+
+
+// Get last row with data in column F
+let lastRow = listsSheet.getLastRow();
+let costCodeRange = listsSheet.getRange("F1:F2000" + lastRow);
+
+// Create data validation rule (Dropdown from range)
+const costCodeValidation = SpreadsheetApp.newDataValidation()
+  .requireValueInRange(costCodeRange, true) // `true` ensures it's a dynamic range
+  .setAllowInvalid(false)
+  .build();
+
+// Apply to target range
+sheet.getRange("A9:A10").merge().setDataValidation(costCodeValidation);
+
+
+
+  const cellMerges = ["B10:C10", "D10:E10", "F10:G10", "H10:I10", "J10:K10", "L10:M10", "N10:O10", "P10:Q10"];
+  cellMerges.forEach(range => sheet.getRange(range).merge());
+
+  // Copy and paste rows 9 & 10 to target row pairs
+  const targetRows = [11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
+
+  targetRows.forEach(row => {
+    let sourceRange = sheet.getRange("A9:Q10");
+    let destinationRange = sheet.getRange(row, 1, 2, 17); // Two-row range at target row
+    sourceRange.copyTo(destinationRange);
+  });
+
+  // Apply borders to table
+  sheet.getRange("A7:Q41").setBorder(true, true, true, true, true, true);
+
+  sheet.getRange("A41:A43").merge().setValue("TOTAL HOURS").setHorizontalAlignment("center").setFontWeight("bold").setBorder(true, true, true, true, true, true);
+  sheet.getRange("P41").setFontWeight("bold").setValue("OT")
+  sheet.getRange("Q41").setFontWeight("bold").setValue("DT")
+  sheet.getRange("B42:C43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("D42:E43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("F42:G43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("H42:I43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("J42:K43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("L42:M43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("N42:O43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("P43:Q43").merge().setBorder(true, true, true, true, true, true);
+  sheet.getRange("P42").setBorder(true, true, true, true, true, true).setFormula('=SUM(P9+P11+P13+P15+P17+P19+P21+P23+P25+P27+P29+P31+P33+P35+P37+P39)');
+  sheet.getRange("Q42").setBorder(true, true, true, true, true, true).setFormula('=SUM(Q9+Q11+Q13+Q15+Q17+Q19+Q21+Q23+Q25+Q27+Q29+Q31+Q33+Q35+Q37+Q39)');
+  sheet.getRange("P43:Q43").setFormula('=SUM(P10+P12+P14+P16+P18+P20+P22+P24+P26+P28+P30+P32+P34+P36+P38+P40)');
+  
+    // Get last row with data in column A
+let nameRange = listsSheet.getRange("A1:A2000" + lastRow); // Correctly references the range
+
+// Create data validation rule (Dropdown from range)
+const nameValidation = SpreadsheetApp.newDataValidation()
+  .requireValueInRange(nameRange, true) // `true` ensures it's a dynamic range
+  .setAllowInvalid(false)
+  .build();
+
+// Apply validation to B4:G4
+sheet.getRange("B4:G4").setDataValidation(nameValidation);
+
+
+
+   
+  // Get last row with data in column E
+let craftRange = listsSheet.getRange("E1:E2000" + lastRow); // Correctly references the range
+
+// Create data validation rule (Dropdown from range)
+const craftValidation = SpreadsheetApp.newDataValidation()
+  .requireValueInRange(craftRange, true) // `true` ensures it's a dynamic range
+  .setAllowInvalid(false)
+  .build();
+
+// Apply validation to B6:G6
+sheet.getRange("B6:G6").setDataValidation(craftValidation);
+
+
+  sheet.getRange("A4").setFormula('=VLOOKUP(B4, Lists!A:B, 2, FALSE)');
+  sheet.getRange("A6").setFormula('=VLOOKUP(B4, Lists!A:C, 3, FALSE)');
+
+  
+  sheet.getRange("A45").setHorizontalAlignment("right").setFontWeight("bold").setValue("Regular")
+  sheet.getRange("B45:D45").merge().setHorizontalAlignment("center").setFormula('=SUM(P43*A6)')
+  sheet.getRange("E45").setFontWeight("bold").setValue("OT")
+  sheet.getRange("F45:H45").merge().setHorizontalAlignment("center").setFormula('=SUM(P42*A6*1.5)')
+  sheet.getRange("I45").setFontWeight("bold").setValue("DT")
+  sheet.getRange("J45:L45").merge().setHorizontalAlignment("center").setFormula('=SUM(Q42*A6*2)')
+  sheet.getRange("M45:N45").merge().setFontWeight("bold").setValue("GROSS")
+  sheet.getRange("O45:Q45").merge().setHorizontalAlignment("center").setFormula('=SUM(B45+F45+J45)')
+
+   // Email Notification
+const recipient = "projectprodigyapp@gmail.com";
+const subject = "Timesheet Template Created!";
+const body = `A new Timesheet Template has been created successfully in Google Sheets.\n\n
+Another user from Opensource.`;
+
+MailApp.sendEmail(recipient, subject, body);
+
 }
 
 function setupPO() {
