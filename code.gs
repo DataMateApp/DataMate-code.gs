@@ -4,7 +4,7 @@ function onInstall() {
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createMenu("DataMate")
-    ..addItem("Save Record", "save")
+    .addItem("Save Record", "save")
     .addSeparator()
     .addItem("Reset Input", "copyInput1")
     .addSeparator()
