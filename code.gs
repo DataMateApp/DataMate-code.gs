@@ -2,36 +2,34 @@ function onInstall() {
   onOpen();
 }
 function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  var menu = ui.createMenu("DataMate")
-    .addItem("Save Record", "save")
-    .addItem("Reset Input", "copyInput1")
-    .addItem("Reset View_Print", "view")
-    .addItem("New Dataset", "newfile")
+  const ui = SpreadsheetApp.getUi();
+  const menu = ui.createMenu("DataMate")
+    .addItem("Save Record", "save") // Saves input data to storage
+    .addItem("Reset Input", "copyInput1") // Resets input sheet to template
+    .addItem("Reset View/Print", "view") // Refreshes view sheet
+    .addItem("New Dataset", "newfile") // Creates a new dataset structure
     .addSeparator()
-    .addItem("➡ Start with a Template ⬅", "doNothing")
+    .addItem("➡ Start with a Template ⬅", "doNothing") // Placeholder for template selection
     .addSubMenu(ui.createMenu("Templates")
-      .addItem("Inventory", "setup")
+      .addItem("Inventory", "setup") // Sets up inventory template
       .addItem("Update Inventory", "updateInventory")
       .addItem("Weekly Timesheets", "setupTS")
       .addItem("Update Cost Codes", "copyToCodeTotals")
       .addItem("Purchase Order", "setupPO"))
     .addSeparator()
     .addSubMenu(ui.createMenu("FormBuilder")
-      .addItem("Open FormBuilder", "showFormBuilder")
-      .addItem("Preview Form", "previewForm")
-      .addItem("Show Tutorial", "showTutorial"))
+      .addItem("Open FormBuilder", "showFormBuilder") // Opens form builder sidebar
+      .addItem("Preview Form", "previewForm") // Previews the custom form
+      .addItem("Show Tutorial", "showTutorial")) // Displays HTML tutorial
     .addSeparator()
     .addSubMenu(ui.createMenu("AddressBlock")
-      .addItem("Add Contact Sheets", "contacts")
+      .addItem("Add Contact Sheets", "contacts") // Sets up contact management
       .addItem("Import Gmail™ Contacts", "showUploadDialog")
-      .addItem("New Contact", "NewContact")
+      .addItem("New Contact", "newcontact") // Adds a new contact
       .addItem("Edit Name", "EditAddressSheet")
       .addItem("Edit Company", "EditAddressSheet1"));
-  
   menu.addToUi();
 }
-
 function doNothing() {
   SpreadsheetApp.getUi().alert("Please select a template option below.");
 }
