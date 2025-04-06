@@ -2534,7 +2534,7 @@ function showTutorial() {
   var html = HtmlService.createHtmlOutputFromFile('tutorial')
     .setWidth(900)
     .setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder Tutorial');
+  SpreadsheetApp.getUi().showModalDialog(html, 'DataMate Tutorial');
 }
 
 function showFormBuilder() {
