@@ -18,6 +18,7 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("AddressBlock")
       .addItem("Add Contact Sheets", "contacts")
+      .addItem('Import Gmail™ Contacts', 'showUploadDialog')
       .addItem("New Contact", "NewContact")
       .addItem("Edit Name", "EditAddressSheet")
       .addItem("Edit Company", "EditAddressSheet1"))
@@ -1124,6 +1125,79 @@ newContact.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: tru
 
 newContact.getRange("B1").activate();
   
+}
+
+function showUploadDialog() {
+  const html = HtmlService.createHtmlOutputFromFile('UploadCSV')
+    .setWidth(400)
+    .setHeight(300);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Upload CSV File');
+}
+
+function processCSV(csvContent) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let importSheet = ss.getSheetByName("Import");
+
+  if (!importSheet) {
+    importSheet = ss.insertSheet("Import");
+  }
+
+  importSheet.clear();
+
+  const csvData = Utilities.parseCsv(csvContent);
+  if (!csvData || csvData.length === 0) {
+    throw new Error('The uploaded file is empty or invalid.');
+  }
+
+  // Paste the CSV data into the Import sheet
+  importSheet.getRange(1, 1, csvData.length, csvData[0].length).setValues(csvData);
+
+  // Define the mapping logic
+  const contactsSheet = ss.getSheetByName("contacts");
+  if (!contactsSheet) {
+    throw new Error("The 'contacts' sheet does not exist.");
+  }
+
+  // Copy specific ranges based on the VBA mapping logic
+  const mappings = [
+    { source: "A1:A2000", target: "B1:B2000" },
+    { source: "B1:B2000", target: "C1:C2000" },
+    { source: "C1:C2000", target: "D1:D2000" },
+    { source: "N1:N2000", target: "T1:T2000" },
+    { source: "J1:J2000", target: "P1:P2000" },
+    { source: "AM1:AM2000", target: "E1:E2000" },
+    { source: "AH1:AH2000", target: "AN1:AN2000" },
+    { source: "P1:P2000", target: "V1:V2000" },
+    { source: "AJ1:AJ2000", target: "AP1:AP2000" },
+    { source: "AL1:AL2000", target: "AR1:AR2000" },
+    { source: "AP1:AP2000", target: "AZ1:AZ2000" },
+    { source: "AT1:AT2000", target: "BD1:BD2000" },
+    { source: "AU1:AU2000", target: "BE1:BE2000" },
+    { source: "AV1:AV2000", target: "BF1:BF2000" },
+    { source: "T1:T2000", target: "Z1:Z2000" },
+    { source: "X1:X2000", target: "AD1:AD2000" },
+    { source: "Y1:Y2000", target: "AE1:AE2000" },
+    { source: "Z1:Z2000", target: "AF1:AF2000" },
+    { source: "BA1:BA2000", target: "BK1:BK2000" },
+    { source: "BE1:BE2000", target: "BO1:BO2000" },
+    { source: "BF1:BF2000", target: "BP1:BP2000" },
+    { source: "BG1:BG2000", target: "BQ1:BQ2000" }
+  ];
+
+  // Apply the mappings
+  mappings.forEach(({ source, target }) => {
+    const sourceRange = importSheet.getRange(source);
+    const targetRange = contactsSheet.getRange(target);
+    targetRange.setValues(sourceRange.getValues());
+  });
+
+  // Copy formulas from column A in Import sheet to A2:A2000 in Contacts sheet
+  contactsSheet.getRange('A2:A2000').activate();
+  contactsSheet.getRange('A1').copyTo(contactsSheet.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+
+
+  // Notify user of success
+  SpreadsheetApp.getUi().alert("CSV data has been successfully imported and mapped into the 'contacts' sheet.");
 }
 
 
