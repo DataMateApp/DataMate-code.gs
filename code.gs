@@ -2593,13 +2593,14 @@ function showFormBuilder() {
             <option value="VideoLink">Video Link</option>
             <option value="StaticText">Static Text</option>
             <option value="Table">Table</option>
+            <option value="DynamicTable">Dynamic Table</option> <!-- New field type -->
             <option value="Container">Container</option>
             <option value="Header">Header</option>
             <option value="Footer">Footer</option>
           </select>
         </div>
         <div class="field">
-          <label>Options (e.g., "Option1,Option2" or "=Sheet1!A:A")</label>
+          <label>Options (e.g., "Option1,Option2" or "=Sheet1!A:A" or "=Inventory!A:A,PriceColumn:C")</label>
           <input type="text" id="options">
         </div>
         <button onclick="saveField()">Add Field</button>
@@ -2690,7 +2691,6 @@ function doGet(e) {
       var parts = dropdownOptions.split(",");
       options = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
     } else if (fieldType.toUpperCase() === "IMAGE" || fieldType.toUpperCase() === "VIDEO") {
-      // Simplified image/video handling from working version
       if (dropdownOptions && dropdownOptions.includes("drive.google.com/file/d/")) {
         var fileIdMatch = dropdownOptions.match(/\/d\/([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
@@ -2712,6 +2712,25 @@ function doGet(e) {
       } catch (e) {
         Logger.log('Error fetching table range "' + dropdownOptions + '": ' + e.message);
         options = [["Error: Invalid range " + dropdownOptions]];
+      }
+    } else if (fieldType.toUpperCase() === "DYNAMICTABLE" && dropdownOptions) {
+      // Parse "=Sheet!Range,PriceColumn:Column" format
+      var parts = dropdownOptions.split(",");
+      if (parts.length >= 1 && parts[0].startsWith("=")) {
+        var rangeStr = parts[0].substring(1);
+        try {
+          var range = ss.getRange(rangeStr);
+          options = range.getValues().flat().filter(String);
+        } catch (e) {
+          Logger.log('Error fetching dynamic table range "' + rangeStr + '": ' + e.message);
+          options = ["Error: Invalid range " + rangeStr];
+        }
+      }
+      if (parts.length === 2 && parts[1].startsWith("PriceColumn:")) {
+        var priceCol = parts[1].split(":")[1];
+        options.push({ priceColumn: priceCol });
+      } else {
+        options.push({ priceColumn: null });
       }
     }
     return [fieldName, fieldType, options];
@@ -2849,7 +2868,7 @@ function doGet(e) {
             font-size: 16px;
             color: #444;
           }
-          .table-display {
+          .table-display, .dynamic-table {
             width: 100%;
             margin: 0 0 20px 150px;
             border-collapse: collapse;
@@ -2858,19 +2877,25 @@ function doGet(e) {
             border-radius: 4px;
             overflow: auto;
           }
-          .table-display th, .table-display td {
+          .table-display th, .table-display td, .dynamic-table th, .dynamic-table td {
             padding: 10px;
             border: 1px solid #ddd;
             text-align: left;
             font-size: 14px;
           }
-          .table-display th {
+          .table-display th, .dynamic-table th {
             background: #f1f1f1;
             font-weight: bold;
             color: #333;
           }
-          .table-display td {
+          .table-display td, .dynamic-table td {
             color: #555;
+          }
+          .dynamic-table select, .dynamic-table input {
+            width: 100%;
+          }
+          .dynamic-table-buttons {
+            margin: 10px 0 0 150px;
           }
           .range-output {
             margin-left: 10px;
@@ -2902,10 +2927,8 @@ function doGet(e) {
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            position: relative;
             transition: background 0.3s;
-            display: block;
-            margin: 20px auto 0;
+            margin: 10px 0;
           }
           button:hover:not(:disabled) {
             background: #45a049;
@@ -2943,6 +2966,10 @@ function doGet(e) {
             font-size: 12px;
             margin-left: 165px;
             margin-top: 5px;
+          }
+          .totals {
+            margin: 20px 0 0 150px;
+            font-weight: bold;
           }
         </style>
       </head>
@@ -2982,6 +3009,35 @@ function doGet(e) {
                         </tr>
                       <? } ?>
                     </table>
+                  <? } else if (processedFieldsData[i][1].toUpperCase() === "DYNAMICTABLE" && processedFieldsData[i][2].length > 0) { ?>
+                    <label><?= processedFieldsData[i][0] ?>:</label>
+                    <table class="dynamic-table" id="dynamicTable-<?= processedFieldsData[i][0] ?>">
+                      <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                      </tr>
+                      <tr class="dynamic-row">
+                        <td><select name="description" onchange="updatePrice(this, '<?= processedFieldsData[i][0] ?>')">
+                          <option value="">Select an item</option>
+                          <? var options = processedFieldsData[i][2].slice(0, -1); ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select></td>
+                        <td><input type="number" name="quantity" min="0" oninput="updateTotals('<?= processedFieldsData[i][0] ?>')"></td>
+                        <td><input type="number" name="unitPrice" readonly></td>
+                      </tr>
+                    </table>
+                    <div class="dynamic-table-buttons">
+                      <button type="button" onclick="addRow('<?= processedFieldsData[i][0] ?>')">Add Item</button>
+                      <button type="button" onclick="removeRow('<?= processedFieldsData[i][0] ?>')">Remove Item</button>
+                    </div>
+                    <div class="totals" id="totals-<?= processedFieldsData[i][0] ?>">
+                      <p>Subtotal: <span id="subtotal-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
+                      <p>Tax: <span id="tax-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
+                      <p>Total: <span id="total-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
+                    </div>
                   <? } else { ?>
                     <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
                     <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
@@ -3111,6 +3167,16 @@ function doGet(e) {
               let value;
               const errorSpan = document.getElementById(name + '-error');
 
+              if (input.closest('.dynamic-table')) {
+                const tableId = input.closest('.dynamic-table').id.split('-')[1];
+                if (!dataToSend[tableId]) dataToSend[tableId] = [];
+                const row = input.closest('.dynamic-row');
+                const idx = Array.from(row.parentNode.children).indexOf(row) - 1;
+                if (!dataToSend[tableId][idx]) dataToSend[tableId][idx] = {};
+                dataToSend[tableId][idx][name] = input.value;
+                return;
+              }
+
               if (input.type === 'file' && input.files.length > 0) {
                 const file = input.files[0];
                 if (file.size > 6 * 1024 * 1024) {
@@ -3211,6 +3277,7 @@ function doGet(e) {
                   console.log('Submission successful:', response);
                   form.reset();
                   resetSignatures();
+                  resetDynamicTables();
                   showMessage();
                   submitButton.disabled = false;
                   submitButton.textContent = 'Submit';
@@ -3266,6 +3333,62 @@ function doGet(e) {
             } else {
               document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
             }
+          }
+
+          function updatePrice(select, tableId) {
+            const row = select.closest('.dynamic-row');
+            const description = select.value;
+            google.script.run.withSuccessHandler(price => {
+              row.querySelector('input[name="unitPrice"]').value = price;
+              updateTotals(tableId);
+            }).getUnitPrice(description, processedFieldsData.find(f => f[0] === tableId)[2].slice(-1)[0].priceColumn);
+          }
+
+          function addRow(tableId) {
+            const table = document.getElementById('dynamicTable-' + tableId);
+            const newRow = table.rows[1].cloneNode(true);
+            newRow.querySelector('select').value = "";
+            newRow.querySelector('input[name="quantity"]').value = "";
+            newRow.querySelector('input[name="unitPrice"]').value = "";
+            table.appendChild(newRow);
+          }
+
+          function removeRow(tableId) {
+            const table = document.getElementById('dynamicTable-' + tableId);
+            if (table.rows.length > 2) {
+              table.deleteRow(-1);
+              updateTotals(tableId);
+            }
+          }
+
+          function updateTotals(tableId) {
+            let subtotal = 0;
+            document.querySelectorAll('#dynamicTable-' + tableId + ' .dynamic-row').forEach(row => {
+              const qty = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+              const price = parseFloat(row.querySelector('input[name="unitPrice"]').value) || 0;
+              subtotal += qty * price;
+            });
+            document.getElementById('subtotal-' + tableId).textContent = '$' + subtotal.toFixed(2);
+            google.script.run.withSuccessHandler(taxRate => {
+              const tax = subtotal * taxRate;
+              const total = subtotal + tax;
+              document.getElementById('tax-' + tableId).textContent = '$' + tax.toFixed(2);
+              document.getElementById('total-' + tableId).textContent = '$' + total.toFixed(2);
+            }).getTaxRate();
+          }
+
+          function resetDynamicTables() {
+            processedFieldsData.forEach(field => {
+              if (field[1].toUpperCase() === "DYNAMICTABLE") {
+                const table = document.getElementById('dynamicTable-' + field[0]);
+                while (table.rows.length > 2) table.deleteRow(-1);
+                const row = table.rows[1];
+                row.querySelector('select').value = "";
+                row.querySelector('input[name="quantity"]').value = "";
+                row.querySelector('input[name="unitPrice"]').value = "";
+                updateTotals(field[0]);
+              }
+            });
           }
 
           processedFieldsData.forEach(field => {
@@ -3347,6 +3470,8 @@ function processForm(formData, submissionType, targetSheetName) {
         if (fieldValue !== undefined && targetCell) {
           if (typeof fieldValue === 'object' && fieldValue.data) {
             fieldValue = uploadFile(fieldValue);
+          } else if (Array.isArray(fieldValue)) {
+            fieldValue = JSON.stringify(fieldValue); // Serialize dynamic table data
           }
           ranges.push(targetSheet.getRange(targetCell));
           values.push([fieldValue]);
@@ -3370,12 +3495,26 @@ function processForm(formData, submissionType, targetSheetName) {
         if (fieldValue !== undefined) {
           if (typeof fieldValue === 'object' && fieldValue.data) {
             fieldValue = uploadFile(fieldValue);
+          } else if (Array.isArray(fieldValue)) {
+            fieldValue = JSON.stringify(fieldValue); // Serialize dynamic table data
           }
           var colIndex = columns.indexOf(columns[i]);
           rowData[colIndex] = fieldValue;
         }
       }
       targetSheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+
+      // Post-submission processing for DynamicTable (if Order Form specific functions exist)
+      fieldsData.forEach(row => {
+        if (row[0] === "Order Items" && row[3].toUpperCase() === "DYNAMICTABLE") {
+          if (typeof newContactit === 'function') newContactit();
+          if (typeof save === 'function') save();
+          if (typeof updateInventory === 'function') updateInventory();
+          if (typeof copyInput1 === 'function') copyInput1();
+          targetSheet.getRange("B11").setFormula("=Log!A10+1");
+          SpreadsheetApp.flush();
+        }
+      });
     } else {
       throw new Error("Invalid submission type: " + submissionType);
     }
@@ -3404,6 +3543,21 @@ function uploadFile(fileData) {
   var file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return file.getUrl();
+}
+
+function getUnitPrice(description, priceColumn) {
+  if (!priceColumn) return 0;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Inventory");
+  var data = sheet.getRange("A1:" + priceColumn + sheet.getLastRow()).getValues();
+  var item = data.find(row => row[0] === description);
+  return item ? item[priceColumn.charCodeAt(0) - 65] : 0;
+}
+
+function getTaxRate() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Sheet1");
+  return sheet.getRange("C33").getValue() || 0;
 }
 
 function getOrCreateSheet(ss, name) {
@@ -3496,35 +3650,44 @@ function createFormSetupSheet() {
       .setBorder(true, true, true, true, false, false);
 
     var formFields = [
-      ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
-      ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
-      ["Name", "Responses", "C", "Text", ""],
-      ["Customer", "Responses", "D", "Dropdown", "=Sheet1!A:A"],
-      ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
-      ["Event Date", "Responses", "F", "Date", ""],
-      ["Event Time", "Responses", "G", "Time", ""],
-      ["Quantity", "Responses", "H", "Number", ""],
-      ["Urgent", "Responses", "I", "Checkbox", ""],
-      ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
-      ["Comments", "Responses", "K", "Textarea", ""],
-      ["Email", "Responses", "L", "Email", ""],
-      ["Satisfaction", "Responses", "M", "StarRating", ""],
-      ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
-      ["Attachment", "Responses", "O", "FileUpload", ""],
-      ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
-      ["Total", "Responses", "Q", "Calculated", "=Quantity*2"],
-      ["Signature", "Responses", "R", "Signature", ""],
-      ["Location", "Responses", "S", "Geolocation", ""],
-      ["Progress", "Responses", "T", "ProgressBar", "75"],
-      ["Verification", "Responses", "U", "Captcha", ""],
-      ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
-      ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
-      ["Image URL", "Responses", "X", "ImageLink", ""],
-      ["Video URL", "Responses", "Y", "VideoLink", ""],
-      ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
-      ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"],
-      ["Form Footer", "Responses", "AB", "Footer", "Thank you for your submission!"]
-    ];
+    ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
+    ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
+    ["Name", "Responses", "C", "Text", ""],
+    ["Customer", "Responses", "D", "Dropdown", "=Sheet1!A:A"],
+    ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
+    ["Event Date", "Responses", "F", "Date", ""],
+    ["Event Time", "Responses", "G", "Time", ""],
+    ["Quantity", "Responses", "H", "Number", ""],
+    ["Urgent", "Responses", "I", "Checkbox", ""],
+    ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
+    ["Comments", "Responses", "K", "Textarea", ""],
+    ["Email", "Responses", "L", "Email", ""],
+    ["Satisfaction", "Responses", "M", "StarRating", ""],
+    ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
+    ["Attachment", "Responses", "O", "FileUpload", ""],
+    ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
+    ["Total", "Responses", "Q", "Calculated", "=Quantity*2"],
+    ["Signature", "Responses", "R", "Signature", ""],
+    ["Location", "Responses", "S", "Geolocation", ""],
+    ["Progress", "Responses", "T", "ProgressBar", "75"],
+    ["Verification", "Responses", "U", "Captcha", ""],
+    ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
+    ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
+    ["Image URL", "Responses", "X", "ImageLink", ""],
+    ["Video URL", "Responses", "Y", "VideoLink", ""],
+    ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
+    ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"],
+    // New Fields Added Below
+    ["Section 2: Order Details", "Responses", "AB", "Container", "background: #f0f0f0; padding: 15px;"],
+    ["Order Items", "Responses", "AC", "DynamicTable", "=Inventory!A:A,PriceColumn:C"],
+    ["Shipping Method", "Responses", "AD", "Dropdown", "Standard,Express,Overnight"],
+    ["Discount Code", "Responses", "AE", "Text", ""],
+    ["Order Total", "Responses", "AF", "Calculated", "=Order Items.total"], // Assumes DynamicTable outputs a total
+    ["Payment Method", "Responses", "AG", "Radio", "Credit Card,PayPal,Bank Transfer"],
+    ["Agree to Terms", "Responses", "AH", "Checkbox", ""],
+    ["Terms Notice", "Responses", "AI", "Conditional", "Agree to Terms=No"],
+    ["Form Footer", "Responses", "AJ", "Footer", "Thank you for your submission!"]
+];
     formSetupSheet.getRange("A9:E36").setValues(formFields);
     formSetupSheet.getRange("A9:E36")
       .setBackground("#ffffff")
