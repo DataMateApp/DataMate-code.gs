@@ -11,13 +11,13 @@ function onOpen() {
     .addItem("Reset View_Print", "view")
     .addItem("New Dataset", "newfile")
     .addSeparator()
-    .addItem("➡ Or Start with a template ⬅", "doNothing")
+    .addItem("➡ Start with a Template ⬅", "doNothing")
     .addSubMenu(ui.createMenu("Templates")
       .addItem("Inventory", "setup")
       .addItem("Update Inventory", "updateInventory")
       .addItem("Weekly Timesheets", "setupTS")
       .addItem("Update Cost Codes", "copyToCodeTotals")
-      .addItem("Purchase Order", "setupPO"));
+      .addItem("Purchase Order", "setupPO"))
     .addSeparator()
     .addSubMenu(ui.createMenu("FormBuilder")
       .addItem("Open Form Builder", "showFormBuilder")
@@ -26,14 +26,13 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("AddressBlock")
       .addItem("Add Contact Sheets", "contacts")
-      .addItem('Import Gmail™ Contacts', 'showUploadDialog')
+      .addItem("Import Gmail™ Contacts", "showUploadDialog")
       .addItem("New Contact", "NewContact")
       .addItem("Edit Name", "EditAddressSheet")
-      .addItem("Edit Company", "EditAddressSheet1"))
-        
+      .addItem("Edit Company", "EditAddressSheet1"));
+  
   menu.addToUi();
 }
-
 
 
 function edit() {
