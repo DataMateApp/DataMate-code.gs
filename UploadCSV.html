@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Upload - DataMateApps</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    label {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #35424a;
+    }
+
+    /* Custom file input styling */
+    .file-upload-wrapper {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .file-upload-button {
+      background-color: #e8491d;
+      color: white;
+      border: none;
+      padding: 5px 10px; /* Smaller padding for a smaller button */
+      font-size: 14px; /* Smaller font size */
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .file-upload-button:hover {
+      background-color: #e8491d;
+      opacity: 0.8;
+    }
+
+    /* Hide the default file input */
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Style for displaying the file name */
+    #fileLabel {
+      font-size: 14px;
+      color: #35424a;
+      margin-left: 10px;
+      max-width: 60%; /* Adjust based on your design needs */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    input[type="button"] {
+      width: 100%;
+      background-color: #e8491d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="button"]:hover {
+      background-color: #e8491d;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 95%;
+        padding: 15px;
+      }
+
+      .file-upload-button, input[type="button"] {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Upload CSV File</h1>
+    <form id="uploadForm">
+      <div class="file-upload-wrapper">
+        <label for="file" class="file-upload-button">Choose File</label>
+        <input type="file" id="file" accept=".csv" onchange="document.getElementById('fileLabel').innerText = this.files[0].name || 'No file chosen';">
+        <span id="fileLabel">No file chosen</span>
+      </div>
+      <input type="button" value="Upload" onclick="uploadFile()">
+    </form>
+  </div>
+  <script>
+    function uploadFile() {
+      const fileInput = document.getElementById('file');
+      if (fileInput.files.length === 0) {
+        alert('Please select a file.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const csvContent = event.target.result;
+        google.script.run.withSuccessHandler(() => {
+          alert('File uploaded successfully!');
+        }).withFailureHandler((error) => {
+          alert('Error: ' + error.message);
+        }).processCSV(csvContent);
+      };
+      reader.readAsText(fileInput.files[0]);
+    }
+  </script>
+</body>
+</html>
