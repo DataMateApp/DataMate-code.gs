@@ -1,8 +1,6 @@
-
 function onInstall() {
   onOpen();
 }
-
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createMenu("DataMate")
@@ -11,7 +9,7 @@ function onOpen() {
     .addItem("Reset View_Print", "view")
     .addItem("New Dataset", "newfile")
     .addSeparator()
-    .addItem("➡ Start with a Template ⬅", "doNothing")
+    .addItem("➡ Or Start with a Template ⬅", "doNothing")
     .addSubMenu(ui.createMenu("Templates")
       .addItem("Inventory", "setup")
       .addItem("Update Inventory", "updateInventory")
@@ -20,19 +18,22 @@ function onOpen() {
       .addItem("Purchase Order", "setupPO"))
     .addSeparator()
     .addSubMenu(ui.createMenu("FormBuilder")
-      .addItem("Open Form Builder", "showFormBuilder")
-      .addItem("Preview Form", "previewForm")
-      .addItem("Show Tutorial", "showTutorial"))
+      .addItem("Open FormBuilder", "showFormBuilder")
+      .addItem("View Form", "previewForm"))
     .addSeparator()
     .addSubMenu(ui.createMenu("AddressBlock")
       .addItem("Add Contact Sheets", "contacts")
-      .addItem("Import Gmail™ Contacts", "showUploadDialog")
       .addItem("New Contact", "NewContact")
       .addItem("Edit Name", "EditAddressSheet")
       .addItem("Edit Company", "EditAddressSheet1"));
   
   menu.addToUi();
 }
+
+function doNothing() {
+  SpreadsheetApp.getUi().alert("Please select a template option below.");
+}
+
 
 
 function edit() {
@@ -433,17 +434,6 @@ viewPrintSheet.setHiddenGridlines(true);
 
   copyInput1();
   view();
-
-  // Ensure pending operations are processed before sending email
-SpreadsheetApp.flush();
-
-// Email Notification
-const recipient = "projectprodigyapp@gmail.com";
-const subject = "New Dataset Created!";
-const body = `A new dataset has been created successfully in Google Sheets.\n\n
-Another user from Opensource.`;
-
-MailApp.sendEmail(recipient, subject, body);
 
   inputSheet.getRange("W1").activate();
 }
@@ -1126,78 +1116,6 @@ newContact.getRange("B1").activate();
   
 }
 
-function showUploadDialog() {
-  const html = HtmlService.createHtmlOutputFromFile('UploadCSV')
-    .setWidth(400)
-    .setHeight(300);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Upload CSV File');
-}
-
-function processCSV(csvContent) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let importSheet = ss.getSheetByName("Import");
-
-  if (!importSheet) {
-    importSheet = ss.insertSheet("Import");
-  }
-
-  importSheet.clear();
-
-  const csvData = Utilities.parseCsv(csvContent);
-  if (!csvData || csvData.length === 0) {
-    throw new Error('The uploaded file is empty or invalid.');
-  }
-
-  // Paste the CSV data into the Import sheet
-  importSheet.getRange(1, 1, csvData.length, csvData[0].length).setValues(csvData);
-
-  // Define the mapping logic
-  const contactsSheet = ss.getSheetByName("contacts");
-  if (!contactsSheet) {
-    throw new Error("The 'contacts' sheet does not exist.");
-  }
-
-  // Copy specific ranges based on the VBA mapping logic
-  const mappings = [
-    { source: "A1:A2000", target: "B1:B2000" },
-    { source: "B1:B2000", target: "C1:C2000" },
-    { source: "C1:C2000", target: "D1:D2000" },
-    { source: "N1:N2000", target: "T1:T2000" },
-    { source: "J1:J2000", target: "P1:P2000" },
-    { source: "AM1:AM2000", target: "E1:E2000" },
-    { source: "AH1:AH2000", target: "AN1:AN2000" },
-    { source: "P1:P2000", target: "V1:V2000" },
-    { source: "AJ1:AJ2000", target: "AP1:AP2000" },
-    { source: "AL1:AL2000", target: "AR1:AR2000" },
-    { source: "AP1:AP2000", target: "AZ1:AZ2000" },
-    { source: "AT1:AT2000", target: "BD1:BD2000" },
-    { source: "AU1:AU2000", target: "BE1:BE2000" },
-    { source: "AV1:AV2000", target: "BF1:BF2000" },
-    { source: "T1:T2000", target: "Z1:Z2000" },
-    { source: "X1:X2000", target: "AD1:AD2000" },
-    { source: "Y1:Y2000", target: "AE1:AE2000" },
-    { source: "Z1:Z2000", target: "AF1:AF2000" },
-    { source: "BA1:BA2000", target: "BK1:BK2000" },
-    { source: "BE1:BE2000", target: "BO1:BO2000" },
-    { source: "BF1:BF2000", target: "BP1:BP2000" },
-    { source: "BG1:BG2000", target: "BQ1:BQ2000" }
-  ];
-
-  // Apply the mappings
-  mappings.forEach(({ source, target }) => {
-    const sourceRange = importSheet.getRange(source);
-    const targetRange = contactsSheet.getRange(target);
-    targetRange.setValues(sourceRange.getValues());
-  });
-
-  // Copy formulas from column A in Import sheet to A2:A2000 in Contacts sheet
-  contactsSheet.getRange('A2:A2000').activate();
-  contactsSheet.getRange('A1').copyTo(contactsSheet.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
-
-
-  // Notify user of success
-  SpreadsheetApp.getUi().alert("CSV data has been successfully imported and mapped into the 'contacts' sheet.");
-}
 
 
 
@@ -1476,25 +1394,19 @@ sheet.getRange("B6:G6").setDataValidation(craftValidation);
   sheet.getRange("M45:N45").merge().setFontWeight("bold").setValue("GROSS")
   sheet.getRange("O45:Q45").merge().setHorizontalAlignment("center").setFormula('=SUM(B45+F45+J45)')
 
-   // Email Notification
-const recipient = "projectprodigyapp@gmail.com";
-const subject = "Timesheet Template Created!";
-const body = `A new Timesheet Template has been created successfully in Google Sheets.\n\n
-Another user from Opensource.`;
-
-MailApp.sendEmail(recipient, subject, body);
 
 }
+
 
 function setupPO() {
   contacts();
   createPurchaseOrderTemplate();
   newfile();
-  cleanup();
+  cleanupPO();
   
 }
 
-function cleanup() {
+function cleanupPO() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const inputSheet = ss.getSheetByName("Input");
   const logSheet = ss.getSheetByName("Log");
@@ -1712,16 +1624,6 @@ function createPurchaseOrderTemplate() {
     // Insert two rows at the top
   sheet.insertRowsBefore(1, 2);
 
-
-  // Email Notification
-const recipient = "projectprodigyapp@gmail.com";
-const subject = "Purchase Order Template Created!";
-const body = `A new Purchase Order Template has been created successfully in Google Sheets.\n\n
-Another user from Opensource.`;
-
-MailApp.sendEmail(recipient, subject, body);
-
-
     Logger.log("Purchase Order Template Created Successfully");
 }
 
@@ -1807,7 +1709,7 @@ function createInvoiceTemplate() {
   sheet.getRange('D30').setFormula('=SUM(D19:D28)');
   
   sheet.getRange('B31').setValue('Tax:').setFontWeight('bold');
-  sheet.getRange('C31').setValue('.07');
+  sheet.getRange('C31').setValue('10');
   sheet.getRange('D31').setFormula('=D30*C31');
   
   sheet.getRange('C32').setValue('Total:').setFontWeight('bold');
@@ -2013,6 +1915,7 @@ function createPackingSlipTemplate() {
       '=VLOOKUP(A11, contacts!A:CJ, 67, FALSE) & ", " & ' +
       'VLOOKUP(A11, contacts!A:CJ, 68, FALSE) & "   " & ' +
       'VLOOKUP(A11, contacts!A:CJ, 69, FALSE)'
+
     );
     sheet.getRange('A15:B15').merge().setFormula("=HYPERLINK(VLOOKUP(A11, contacts!A:CJ, 16, FALSE))");
     sheet.getRange('A16:B16').merge().setFormula("=VLOOKUP(A13, contacts!A:CJ, 20, FALSE)");
@@ -2085,14 +1988,6 @@ try {
   } else {
     SpreadsheetApp.getUi().alert("Sheet1 not found.");
   }
-
-  // Email Notification
-const recipient = "projectprodigyapp@gmail.com";
-const subject = "Inventory Template Created!";
-const body = `A new Inventory Template has been created successfully in Google Sheets.\n\n
-Another user from Opensource.`;
-
-MailApp.sendEmail(recipient, subject, body);
 
   SpreadsheetApp.getUi().alert("Inventory Template created successfully. Please support DataMateApps and help us grow!");
 
@@ -2634,6 +2529,7 @@ function updateInventory() {
     }
   }
 }
+
 function showTutorial() {
   var html = HtmlService.createHtmlOutputFromFile('tutorial')
     .setWidth(900)
@@ -2762,7 +2658,6 @@ function doGet(e) {
     var fieldType = row[3] || "Text";
     var cell = setupSheet.getRange("E" + (index + 9));
     var dropdownOptions = cell.getFormula() || row[4];
-    // Ensure dropdownOptions is a string, default to empty string if null/undefined
     dropdownOptions = dropdownOptions != null ? String(dropdownOptions) : "";
     var options = [];
 
@@ -2795,12 +2690,13 @@ function doGet(e) {
       var parts = dropdownOptions.split(",");
       options = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
     } else if (fieldType.toUpperCase() === "IMAGE" || fieldType.toUpperCase() === "VIDEO") {
-      if (dropdownOptions.includes("drive.google.com/file/d/")) {
+      // Simplified image/video handling from working version
+      if (dropdownOptions && dropdownOptions.includes("drive.google.com/file/d/")) {
         var fileIdMatch = dropdownOptions.match(/\/d\/([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
           dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
         }
-      } else if (dropdownOptions.includes("drive.google.com/uc?id=")) {
+      } else if (dropdownOptions && dropdownOptions.includes("drive.google.com/uc?id=")) {
         var fileIdMatch = dropdownOptions.match(/id=([a-zA-Z0-9_-]+)/);
         if (fileIdMatch && fileIdMatch[1]) {
           dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
@@ -2937,7 +2833,7 @@ function doGet(e) {
           .star-rating input[type="radio"]:checked ~ label {
             color: #f5b301;
           }
-          img, video {
+          img, video, iframe {
             max-width: 250px;
             max-height: 250px;
             margin-top: 10px;
@@ -3160,15 +3056,20 @@ function doGet(e) {
                       <span id="captcha-question">What is 3 + 5?</span>
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
                       <div id="<?= processedFieldsData[i][0] ?>-container">
-                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-                        <span style="display: none; color: #d32f2f;">No Image</span>
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" 
+                          onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+                        <span style="display: none; color: #d32f2f;">Image failed to load</span>
                       </div>
                       <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
-                      <video controls id="<?= processedFieldsData[i][0] ?>">
-                        <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
-                        Your browser does not support the video tag.
-                      </video>
+                      <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
+                        <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= processedFieldsData[i][2][0].split('/').pop().split('?')[0] ?>" frameborder="0" allowfullscreen></iframe>
+                      <? } else { ?>
+                        <video controls id="<?= processedFieldsData[i][0] ?>">
+                          <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      <? } ?>
                       <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
                       <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
@@ -3422,6 +3323,7 @@ function doGet(e) {
 
   return template.evaluate().setTitle(formName + " Form");
 }
+
 function processForm(formData, submissionType, targetSheetName) {
   Logger.log('Starting processForm with submission type: ' + submissionType + ' and target sheet: ' + targetSheetName);
   Logger.log('Received form data: ' + JSON.stringify(formData));
@@ -3478,7 +3380,6 @@ function processForm(formData, submissionType, targetSheetName) {
       throw new Error("Invalid submission type: " + submissionType);
     }
 
-    // Check DataMate Record option and run functions if Yes
     var dataMateRecord = setupSheet.getRange("B6").getValue();
     if (dataMateRecord === "Yes") {
       save();
@@ -3518,24 +3419,42 @@ function getOrCreateSheet(ss, name) {
 function createFormSetupSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var formSetupSheet = ss.getSheetByName("FormSetup");
-  
+  var sheet1Sheet = ss.getSheetByName("Sheet1");
+
+  if (!sheet1Sheet) {
+    sheet1Sheet = ss.insertSheet("Sheet1");
+    sheet1Sheet.getRange("A1:A2").setValues([["Moe"], ["Larry"]]);
+    SpreadsheetApp.flush();
+  } else {
+    sheet1Sheet.getRange("A1:A2").setValues([["Moe"], ["Larry"]]);
+  }
+  SpreadsheetApp.flush();
+
   if (!formSetupSheet) {
     formSetupSheet = ss.insertSheet("FormSetup");
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
     formSetupSheet.getRange("A1:E1").merge();
-    formSetupSheet.getRange("A1").setValue("Form Setup Dashboard")
-      .setFontSize(16).setFontWeight("bold").setFontColor("#ffffff")
-      .setBackground("#4CAF50").setHorizontalAlignment("center");
+    formSetupSheet.getRange("A1")
+      .setValue("Form Setup Dashboard")
+      .setFontSize(16)
+      .setFontWeight("bold")
+      .setFontColor("#ffffff")
+      .setBackground("#4CAF50")
+      .setHorizontalAlignment("center");
 
     formSetupSheet.getRange("A2:E2").merge();
-    formSetupSheet.getRange("A2").setValue("Configure your form below. Add fields via sidebar or edit A9:E directly.")
-      .setFontSize(12).setFontColor("#666666").setBackground("#e0e0e0")
-      .setHorizontalAlignment("center").setWrap(true);
+    formSetupSheet.getRange("A2")
+      .setValue("Configure your form below. Add fields via sidebar or edit A9:E directly.")
+      .setFontSize(12)
+      .setFontColor("#666666")
+      .setBackground("#e0e0e0")
+      .setHorizontalAlignment("center")
+      .setWrap(true);
 
     formSetupSheet.getRange("A3").setValue("Form Name:")
       .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
-    formSetupSheet.getRange("B3").setValue("Enhanced Form")
+    formSetupSheet.getRange("B3").setValue("Enhanced")
       .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
 
     formSetupSheet.getRange("A4").setValue("Target Sheet:")
@@ -3553,7 +3472,6 @@ function createFormSetupSheet() {
       .build();
     formSetupSheet.getRange("B5").setDataValidation(rule);
 
-    // Add DataMate Record option
     formSetupSheet.getRange("A6").setValue("DataMate Record:")
       .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
     formSetupSheet.getRange("B6").setValue("No")
@@ -3571,41 +3489,45 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("C8").setValue("Target Cells");
     formSetupSheet.getRange("D8").setValue("Field Type");
     formSetupSheet.getRange("E8").setValue("Dropdown Options");
-    formSetupSheet.getRange("A8:E8").setFontWeight("bold").setFontColor("#ffffff")
-      .setBackground("#4CAF50").setBorder(true, true, true, true, false, false);
+    formSetupSheet.getRange("A8:E8")
+      .setFontWeight("bold")
+      .setFontColor("#ffffff")
+      .setBackground("#4CAF50")
+      .setBorder(true, true, true, true, false, false);
 
     var formFields = [
-  ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form!"],
-  ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
-  ["Name", "Responses", "C", "Text", ""], // Simple text input
-  ["Customer", "Responses", "D", "Dropdown", "=contacts!A:A"], // Dropdown from sheet range
-  ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"], // Multiple selection
-  ["Event Date", "Responses", "F", "Date", ""], // Date picker
-  ["Event Time", "Responses", "G", "Time", ""], // Time picker
-  ["Quantity", "Responses", "H", "Number", ""], // Numeric input
-  ["Urgent", "Responses", "I", "Checkbox", ""], // True/False checkbox
-  ["Priority", "Responses", "J", "Radio", "Low,Medium,High"], // Radio buttons
-  ["Comments", "Responses", "K", "Textarea", ""], // Multi-line text
-  ["Email", "Responses", "L", "Email", ""], // Email-validated input
-  ["Satisfaction", "Responses", "M", "StarRating", ""], // 5-star rating
-  ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"], // Slider from 0-10, step 1
-  ["Attachment", "Responses", "O", "FileUpload", ""], // File upload to Drive
-  ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"], // Shows if Urgent is checked
-  ["Total", "Responses", "Q", "Calculated", "=Quantity*2"], // Calculated field
-  ["Signature", "Responses", "R", "Signature", ""], // Digital signature canvas
-  ["Location", "Responses", "S", "Geolocation", ""], // Captures coordinates
-  ["Progress", "Responses", "T", "ProgressBar", "75"], // Static progress bar at 75%
-  ["Verification", "Responses", "U", "Captcha", ""], // Simple math captcha (3+5)
-  ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=FILE_ID"], // Display image
-  ["Product Video", "Responses", "W", "Video", "https://drive.google.com/uc?id=VIDEO_ID"], // Display video
-  ["Image URL", "Responses", "X", "ImageLink", ""], // Input for image URL
-  ["Video URL", "Responses", "Y", "VideoLink", ""], // Input for video URL
-  ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."], // Static text display
-  ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"], // Table from range
-  ["Form Footer", "Responses", "AB", "Footer", "Thank you for your submission!"]
-];
+      ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
+      ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
+      ["Name", "Responses", "C", "Text", ""],
+      ["Customer", "Responses", "D", "Dropdown", "=Sheet1!A:A"],
+      ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
+      ["Event Date", "Responses", "F", "Date", ""],
+      ["Event Time", "Responses", "G", "Time", ""],
+      ["Quantity", "Responses", "H", "Number", ""],
+      ["Urgent", "Responses", "I", "Checkbox", ""],
+      ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
+      ["Comments", "Responses", "K", "Textarea", ""],
+      ["Email", "Responses", "L", "Email", ""],
+      ["Satisfaction", "Responses", "M", "StarRating", ""],
+      ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
+      ["Attachment", "Responses", "O", "FileUpload", ""],
+      ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
+      ["Total", "Responses", "Q", "Calculated", "=Quantity*2"],
+      ["Signature", "Responses", "R", "Signature", ""],
+      ["Location", "Responses", "S", "Geolocation", ""],
+      ["Progress", "Responses", "T", "ProgressBar", "75"],
+      ["Verification", "Responses", "U", "Captcha", ""],
+      ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
+      ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
+      ["Image URL", "Responses", "X", "ImageLink", ""],
+      ["Video URL", "Responses", "Y", "VideoLink", ""],
+      ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
+      ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"],
+      ["Form Footer", "Responses", "AB", "Footer", "Thank you for your submission!"]
+    ];
     formSetupSheet.getRange("A9:E36").setValues(formFields);
-    formSetupSheet.getRange("A9:E36").setBackground("#ffffff")
+    formSetupSheet.getRange("A9:E36")
+      .setBackground("#ffffff")
       .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
 
     formSetupSheet.setFrozenRows(8);
@@ -3615,14 +3537,10 @@ function createFormSetupSheet() {
     formSetupSheet.setColumnWidth(4, 100);
     formSetupSheet.setColumnWidth(5, 200);
   }
-  return formSetupSheet;
 
-// Email Notification
-const recipient = "projectprodigyapp@gmail.com";
-const subject = "FormSetup Template Created!";
-const body = `A new FormSetup Template has been created successfully in Google Sheets.\n\n
+  const recipient = "projectprodigyapp@gmail.com";
+  const subject = "FormSetup Template Created!";
+  const body = `A new FormSetup Template has been created successfully in Google Sheets.\n\n
 Another user from Opensource.`;
-
-MailApp.sendEmail(recipient, subject, body);
+  MailApp.sendEmail(recipient, subject, body);
 }
-
