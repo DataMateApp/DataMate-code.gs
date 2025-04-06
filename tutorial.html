@@ -43,7 +43,7 @@
                             <ul>
                                 <li><strong>Automated Data Entry</strong>: Organize data into structured sheets.</li>
                                 <li><strong>Record Management</strong>: Save, view, update, and print records easily.</li>
-                                <li><strong>Customizable Forms</strong>: Build advanced forms with over 20 field types.</li>
+                                <li><strong>Customizable Forms</strong>: Build advanced forms with over 25 field types, including dynamic tables for interactive data entry.</li>
                                 <li><strong>Contact Integration</strong>: Import and manage contacts from Gmail or CSV files.</li>
                                 <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
                             </ul>
@@ -138,7 +138,7 @@
                                 <li><strong>B</strong>: Target Sheet</li>
                                 <li><strong>C</strong>: Target Cell/Column</li>
                                 <li><strong>D</strong>: Field Type</li>
-                                <li><strong>E</strong>: Options (e.g., dropdowns, formulas)</li>
+                                <li><strong>E</strong>: Options (e.g., dropdowns, formulas, or table configurations)</li>
                             </ul>
                         </div>
                         <div class="step">
@@ -266,23 +266,33 @@
                             </div>
                             <div class="field-type">
                                 <h4>Table</h4>
-                                <p>Displays a table from a sheet range.</p>
+                                <p>Displays a static table from a sheet range.</p>
                                 <ul><li><strong>E</strong>: Range (e.g., "Sheet2!A1:C5").</li><li>Example: <code>["Sales Data", "Responses", "Y", "Table", "Sheet2!A1:C5"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>DynamicTable</h4>
+                                <p>An interactive table with dropdowns, price lookups, quantity inputs, and real-time totals (subtotal, tax, total).</p>
+                                <ul>
+                                    <li><strong>E</strong>: "=SheetName!Column:Column,PriceColumn:Column" (e.g., "=Inventory!A:A,PriceColumn:C").</li>
+                                    <li><strong>Behavior</strong>: Users add/remove rows; data serializes to a single cell as JSON.</li>
+                                    <li><strong>Tax Rate</strong>: Set in <code>Sheet1!C33</code> (e.g., 0.08 for 8%).</li>
+                                    <li>Example: <code>["Order Items", "Responses", "Z", "DynamicTable", "=Inventory!A:A,PriceColumn:C"]</code></li>
+                                </ul>
                             </div>
                             <div class="field-type">
                                 <h4>Container</h4>
                                 <p>Groups fields with custom styling.</p>
-                                <ul><li><strong>E</strong>: Inline CSS or blank.</li><li>Example: <code>["Section 1", "Responses", "Z", "Container", "background: #f0f0f0;"]</code></li></ul>
+                                <ul><li><strong>E</strong>: Inline CSS or blank.</li><li>Example: <code>["Section 1", "Responses", "AA", "Container", "background: #f0f0f0;"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Header</h4>
                                 <p>A styled header section.</p>
-                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Header", "Responses", "AA", "Header", "Welcome"]</code></li></ul>
+                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Header", "Responses", "AB", "Header", "Welcome"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Footer</h4>
                                 <p>A styled footer section.</p>
-                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Footer", "Responses", "AB", "Footer", "© 2025"]</code></li></ul>
+                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Footer", "Responses", "AC", "Footer", "© 2025"]</code></li></ul>
                             </div>
                         </div>
                         <div class="step">
@@ -291,7 +301,7 @@
                         </div>
                         <div class="step">
                             <h3>Collect Data</h3>
-                            <p>Share the URL. Data saves to the target sheet based on submission type.</p>
+                            <p>Share the URL. Data saves to the target sheet based on submission type. Dynamic table data is serialized as JSON in a single cell for <code>TableRow</code> submissions.</p>
                         </div>
                     </div>
                 </div>
@@ -407,6 +417,33 @@
                                 <tr><td>Footer</td><td>Responses</td><td>BE</td><td>Footer</td><td>Thank you for applying!</td></tr>
                             </table>
                             <p class="note">Note: Adjust column E as needed (e.g., customize dropdowns, add more history/reference sections).</p>
+                        </div>
+                        <div class="step">
+                            <h3>Dynamic Order Form Template</h3>
+                            <p>Paste this into <code>FormSetup!A9:E</code> (set <code>B3</code>: "Dynamic Order Form", <code>B4</code>: "Input", <code>B5</code>: "TableRow"):</p>
+                            <table>
+                                <tr><th>Form Fields (A)</th><th>Target Sheet (B)</th><th>Target Cells (C)</th><th>Field Type (D)</th><th>Dropdown Options (E)</th></tr>
+                                <tr><td>Order Form Header</td><td>Input</td><td>A</td><td>Header</td><td>Welcome to the Dynamic Order Form</td></tr>
+                                <tr><td>Section 1: Customer Information</td><td>Input</td><td>B</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>First Name</td><td>NewContact</td><td>B1</td><td>Text</td><td></td></tr>
+                                <tr><td>Last Name</td><td>NewContact</td><td>B3</td><td>Text</td><td></td></tr>
+                                <tr><td>Company</td><td>NewContact</td><td>B4</td><td>Text</td><td></td></tr>
+                                <tr><td>E-mail Address</td><td>NewContact</td><td>B9</td><td>Email</td><td></td></tr>
+                                <tr><td>Section 2: Address Information</td><td>Input</td><td>C</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Home Street</td><td>NewContact</td><td>B12</td><td>Text</td><td></td></tr>
+                                <tr><td>Home City</td><td>NewContact</td><td>B13</td><td>Text</td><td></td></tr>
+                                <tr><td>Home State</td><td>NewContact</td><td>B14</td><td>Text</td><td></td></tr>
+                                <tr><td>Home Zip</td><td>NewContact</td><td>B15</td><td>Text</td><td></td></tr>
+                                <tr><td>Home Country</td><td>NewContact</td><td>B16</td><td>Text</td><td></td></tr>
+                                <tr><td>Section 3: Order Details</td><td>Input</td><td>D</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Order Items</td><td>Input</td><td>E</td><td>DynamicTable</td><td>=Inventory!A:A,PriceColumn:C</td></tr>
+                                <tr><td>Order Date</td><td>Input</td><td>F</td><td>Date</td><td></td></tr>
+                                <tr><td>Delivery Instructions</td><td>Input</td><td>G</td><td>Textarea</td><td></td></tr>
+                                <tr><td>Section 4: Verification</td><td>Input</td><td>H</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Verification</td><td>Input</td><td>I</td><td>Captcha</td><td></td></tr>
+                                <tr><td>Order Footer</td><td>Input</td><td>J</td><td>Footer</td><td>Thank you for your order!</td></tr>
+                            </table>
+                            <p class="note">Note: Ensure an <code>Inventory</code> sheet exists with items in column A and prices in column C. Set a tax rate in <code>Sheet1!C33</code> (e.g., 0.08 for 8%). This template integrates with DataMate functions like <code>newContactit</code>, <code>save</code>, <code>updateInventory</code>, and <code>copyInput1</code> if available.</p>
                         </div>
                     </div>
                 </div>
