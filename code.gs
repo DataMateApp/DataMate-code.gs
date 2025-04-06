@@ -2,41 +2,35 @@
 function onInstall() {
   onOpen();
 }
+
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createMenu("DataMate")
     .addItem("Save Record", "save")
-    .addSeparator()
     .addItem("Reset Input", "copyInput1")
-    .addSeparator()
     .addItem("Reset View_Print", "view")
-    .addSeparator()
     .addItem("New Dataset", "newfile")
     .addSeparator()
-    .addSubMenu(
-      ui.createMenu("FormBuilder").addItem("Show Tutorial", "showTutorial")
-    )
-    .addItem('Open Form Builder', 'showFormBuilder')
-    .addItem('Preview Form', 'previewForm')
-    .addSeparator() // Extra separator to space out the label
-    .addItem("➡ Or start with a template ⬅", "doNothing") // Dummy function
+    .addSubMenu(ui.createMenu("Form Tools")
+      .addItem("Open Form Builder", "showFormBuilder")
+      .addItem("Preview Form", "previewForm")
+      .addItem("Show Tutorial", "showTutorial"))
     .addSeparator()
-    .addItem("Inventory Template", "setup")
+    .addSubMenu(ui.createMenu("Templates")
+      .addItem("Inventory", "setup")
+      .addItem("Purchase Order", "setupPO")
+      .addItem("Weekly Timesheets", "setupTS"))
+    .addItem("➡ Start with a template ⬅", "doNothing")
     .addSeparator()
-    .addItem("Update Inventory", "updateInventory")
+    .addSubMenu(ui.createMenu("Inventory Tools")
+      .addItem("Update Inventory", "updateInventory")
+      .addItem("Update Cost Codes", "copyToCodeTotals"))
     .addSeparator()
-    .addItem("Purchase Order Template", "setupPO")
-    .addSeparator()
-    .addItem("Weekly Timesheets Template", "setupTS")
-    .addSeparator()
-    .addItem("Update Cost Code Totals", "copyToCodeTotals")
-    .addSeparator()
-    .addSubMenu(
-      ui.createMenu("AddressBlock").addItem("Add Contact Sheets", "contacts")
-    )
-    .addItem("New Contact", "NewContact")
-    .addItem("AddressBlock Name", "EditAddressSheet")
-    .addItem("AddressBlock Company", "EditAddressSheet1");
+    .addSubMenu(ui.createMenu("AddressBook")
+      .addItem("Add Contact Sheets", "contacts")
+      .addItem("New Contact", "NewContact")
+      .addItem("Edit Name", "EditAddressSheet")
+      .addItem("Edit Company", "EditAddressSheet1"));
     
   menu.addToUi();
 }
