@@ -1,3 +1,4 @@
+
 function onInstall() {
   onOpen();
 }
@@ -12,6 +13,11 @@ function onOpen() {
     .addSeparator()
     .addItem("New Dataset", "newfile")
     .addSeparator()
+    .addSubMenu(
+      ui.createMenu("FormBuilder").addItem("Show Tutorial", "showTutorial")
+    )
+    .addItem('Open Form Builder', 'showFormBuilder')
+    .addItem('Preview Form', 'previewForm')
     .addSeparator() // Extra separator to space out the label
     .addItem("➡ Or start with a template ⬅", "doNothing") // Dummy function
     .addSeparator()
@@ -2562,4 +2568,1295 @@ function updateInventory() {
       }
     }
   }
+}
+function showTutorial() {
+  var html = HtmlService.createHtmlOutputFromFile('tutorial')
+    .setWidth(900)
+    .setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder Tutorial');
+}
+
+function showFormBuilder() {
+  var html = HtmlService.createHtmlOutput(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 10px; }
+          .field { margin-bottom: 15px; }
+          label { display: block; margin-bottom: 5px; }
+          input, select { width: 100%; padding: 5px; }
+          button { margin-top: 10px; padding: 8px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+          button:hover { background: #45a049; }
+        </style>
+      </head>
+      <body>
+        <h3>Add Field</h3>
+        <div class="field">
+          <label>Field Name</label>
+          <input type="text" id="fieldName">
+        </div>
+        <div class="field">
+          <label>Target Sheet</label>
+          <input type="text" id="targetSheet" value="Responses">
+        </div>
+        <div class="field">
+          <label>Target Cell/Column</label>
+          <input type="text" id="targetCell" value="A">
+        </div>
+        <div class="field">
+          <label>Field Type</label>
+          <select id="fieldType">
+            <option value="Text">Text</option>
+            <option value="Dropdown">Dropdown</option>
+            <option value="MultiSelect">Multi-Select</option>
+            <option value="Date">Date</option>
+            <option value="Time">Time</option>
+            <option value="Number">Number</option>
+            <option value="Checkbox">Checkbox</option>
+            <option value="Radio">Radio</option>
+            <option value="Textarea">Textarea</option>
+            <option value="Email">Email</option>
+            <option value="StarRating">Star Rating</option>
+            <option value="RangeSlider">Range Slider</option>
+            <option value="FileUpload">File Upload</option>
+            <option value="Conditional">Conditional</option>
+            <option value="Calculated">Calculated</option>
+            <option value="Signature">Signature</option>
+            <option value="Geolocation">Geolocation</option>
+            <option value="ProgressBar">Progress Bar</option>
+            <option value="Captcha">Captcha</option>
+            <option value="Image">Image</option>
+            <option value="Video">Video</option>
+            <option value="ImageLink">Image Link</option>
+            <option value="VideoLink">Video Link</option>
+            <option value="StaticText">Static Text</option>
+            <option value="Table">Table</option>
+            <option value="Container">Container</option>
+            <option value="Header">Header</option>
+            <option value="Footer">Footer</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Options (e.g., "Option1,Option2" or "=Sheet1!A:A")</label>
+          <input type="text" id="options">
+        </div>
+        <button onclick="saveField()">Add Field</button>
+        <script>
+          function saveField() {
+            const field = {
+              name: document.getElementById('fieldName').value,
+              sheet: document.getElementById('targetSheet').value,
+              cell: document.getElementById('targetCell').value,
+              type: document.getElementById('fieldType').value,
+              options: document.getElementById('options').value
+            };
+            google.script.run
+              .withSuccessHandler(() => google.script.host.close())
+              .addFieldToSetup(field);
+          }
+        </script>
+      </body>
+    </html>
+  `).setWidth(300).setHeight(400);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function addFieldToSetup(field) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup") || createFormSetupSheet();
+  var lastRow = setupSheet.getLastRow();
+  var row = lastRow >= 8 ? lastRow + 1 : 9;
+  setupSheet.getRange(row, 1, 1, 5).setValues([[field.name, field.sheet, field.cell, field.type, field.options]]);
+}
+
+function previewForm() {
+  var html = doGet().getContent();
+  SpreadsheetApp.getUi().showModalDialog(
+    HtmlService.createHtmlOutput(html).setWidth(800).setHeight(600),
+    'Form Preview'
+  );
+}
+
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var formName = setupSheet.getRange("B3").getValue() || "My Custom";
+  var targetSheetName = setupSheet.getRange("B4").getValue() || "Responses";
+  var submissionType = setupSheet.getRange("B5").getValue() || "SingleCell";
+  var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  var processedFieldsData = fieldsData.map((row, index) => {
+    var fieldName = row[0];
+    var fieldType = row[3] || "Text";
+    var cell = setupSheet.getRange("E" + (index + 9));
+    var dropdownOptions = cell.getFormula() || row[4];
+    // Ensure dropdownOptions is a string, default to empty string if null/undefined
+    dropdownOptions = dropdownOptions != null ? String(dropdownOptions) : "";
+    var options = [];
+
+    if (fieldType.toUpperCase() === "DROPDOWN" || fieldType.toUpperCase() === "RADIO" || fieldType.toUpperCase() === "MULTISELECT") {
+      var validation = cell.getDataValidation();
+      if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+        options = validation.getCriteriaValues()[0];
+      } else if (dropdownOptions.startsWith("=")) {
+        var formula = dropdownOptions.substring(1);
+        if (formula.match(/^[A-Za-z0-9]+![A-Za-z]+:[A-Za-z]+$/)) {
+          try {
+            var range = ss.getRange(formula);
+            options = range.getValues().flat().filter(String);
+          } catch (e) {
+            Logger.log('Error fetching range from formula "' + formula + '": ' + e.message);
+            options = ["Error: Invalid range " + formula];
+          }
+        } else {
+          options = ["Error: Invalid formula format " + dropdownOptions];
+        }
+      } else if (dropdownOptions.match(/^[A-Za-z0-9]+![A-Za-z]+[0-9]+:[A-Za-z]+[0-9]+$/)) {
+        var range = ss.getRange(dropdownOptions);
+        options = range.getValues().flat().filter(String);
+      } else if (dropdownOptions) {
+        options = dropdownOptions.split(",");
+      }
+    } else if (fieldType.toUpperCase() === "FILEUPLOAD" || fieldType.toUpperCase() === "CONDITIONAL" || fieldType.toUpperCase() === "CALCULATED") {
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "RANGESLIDER" && dropdownOptions) {
+      var parts = dropdownOptions.split(",");
+      options = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
+    } else if (fieldType.toUpperCase() === "IMAGE" || fieldType.toUpperCase() === "VIDEO") {
+      if (dropdownOptions.includes("drive.google.com/file/d/")) {
+        var fileIdMatch = dropdownOptions.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+        }
+      } else if (dropdownOptions.includes("drive.google.com/uc?id=")) {
+        var fileIdMatch = dropdownOptions.match(/id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+        }
+      }
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "STATICTEXT" || fieldType.toUpperCase() === "PROGRESSBAR" || fieldType.toUpperCase() === "CONTAINER" || fieldType.toUpperCase() === "HEADER" || fieldType.toUpperCase() === "FOOTER") {
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "TABLE" && dropdownOptions) {
+      try {
+        var range = ss.getRange(dropdownOptions);
+        options = range.getValues();
+      } catch (e) {
+        Logger.log('Error fetching table range "' + dropdownOptions + '": ' + e.message);
+        options = [["Error: Invalid range " + dropdownOptions]];
+      }
+    }
+    return [fieldName, fieldType, options];
+  });
+
+  var template = HtmlService.createTemplate(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <base target="_top">
+        <style>
+          body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .custom-container {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .header {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 24px;
+          }
+          .footer {
+            background: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+          h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+          }
+          .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          label {
+            width: 150px;
+            font-weight: 500;
+            margin-right: 15px;
+            color: #555;
+          }
+          input[type="text"], input[type="date"], input[type="number"], 
+          input[type="email"], input[type="color"], input[type="time"], 
+          input[type="range"], select, textarea, input[type="file"] {
+            width: 250px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+          }
+          input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus,
+          input[type="email"]:focus, input[type="color"]:focus, input[type="time"]:focus,
+          input[type="range"]:focus, select:focus, textarea:focus, input[type="file"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+          }
+          textarea {
+            resize: vertical;
+            min-height: 100px;
+          }
+          input[type="checkbox"] {
+            margin-left: 150px;
+          }
+          .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .radio-group label {
+            width: auto;
+            margin: 0 0 0 5px;
+            display: inline;
+          }
+          .star-rating {
+            display: inline-flex;
+            font-size: 28px;
+            direction: rtl;
+          }
+          .star-rating input[type="radio"] {
+            display: none;
+          }
+          .star-rating label {
+            color: #ddd;
+            cursor: pointer;
+            margin: 0 3px;
+            width: auto;
+            transition: color 0.2s;
+          }
+          .star-rating label:hover,
+          .star-rating label:hover ~ label,
+          .star-rating input[type="radio"]:checked ~ label {
+            color: #f5b301;
+          }
+          img, video {
+            max-width: 250px;
+            max-height: 250px;
+            margin-top: 10px;
+            border-radius: 4px;
+          }
+          .static-text {
+            width: 100%;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            margin: 0 0 20px 150px;
+            font-size: 16px;
+            color: #444;
+          }
+          .table-display {
+            width: 100%;
+            margin: 0 0 20px 150px;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: auto;
+          }
+          .table-display th, .table-display td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+          }
+          .table-display th {
+            background: #f1f1f1;
+            font-weight: bold;
+            color: #333;
+          }
+          .table-display td {
+            color: #555;
+          }
+          .range-output {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #666;
+          }
+          .conditional-field {
+            display: none;
+          }
+          .calculated-field {
+            background: #f9f9f9;
+            pointer-events: none;
+          }
+          canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 250px;
+            height: 100px;
+          }
+          progress {
+            width: 250px;
+            height: 20px;
+          }
+          button {
+            padding: 12px 25px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            position: relative;
+            transition: background 0.3s;
+            display: block;
+            margin: 20px auto 0;
+          }
+          button:hover:not(:disabled) {
+            background: #45a049;
+          }
+          button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+          }
+          .spinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+          #message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            display: none;
+          }
+          .error {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-left: 165px;
+            margin-top: 5px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1><?= formName ?> Form</h1>
+          <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
+            <? var inContainer = false; ?>
+            <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
+              <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
+                <div class="header"><?= processedFieldsData[i][2][0] ?></div>
+              <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
+                <? if (inContainer) { ?></div><? inContainer = false; } ?>
+                <div class="footer"><?= processedFieldsData[i][2][0] ?></div>
+              <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
+                <? if (inContainer) { ?></div><? } ?>
+                <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
+                <? inContainer = true; ?>
+              <? } else { ?>
+                <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
+                  <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
+                    <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
+                  <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
+                    <label><?= processedFieldsData[i][0] ?>:</label>
+                    <table class="table-display">
+                      <? var tableData = processedFieldsData[i][2]; ?>
+                      <? for (var row = 0; row < tableData.length; row++) { ?>
+                        <tr>
+                          <? var isHeader = row === 0; ?>
+                          <? for (var col = 0; col < tableData[row].length; col++) { ?>
+                            <? if (isHeader) { ?>
+                              <th><?= tableData[row][col] || '' ?></th>
+                            <? } else { ?>
+                              <td><?= tableData[row][col] || '' ?></td>
+                            <? } ?>
+                          <? } ?>
+                        </tr>
+                      <? } ?>
+                    </table>
+                  <? } else { ?>
+                    <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
+                    <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
+                      <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <? var options = processedFieldsData[i][2]; ?>
+                        <? for (var j = 0; j < options.length; j++) { ?>
+                          <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                        <? } ?>
+                      </select>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
+                      <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple>
+                        <? var options = processedFieldsData[i][2]; ?>
+                        <? for (var j = 0; j < options.length; j++) { ?>
+                          <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                        <? } ?>
+                      </select>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
+                      <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
+                      <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
+                      <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
+                      <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
+                      <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
+                        <? var options = processedFieldsData[i][2]; ?>
+                        <? for (var j = 0; j < options.length; j++) { ?>
+                          <div>
+                            <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>">
+                            <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
+                          </div>
+                        <? } ?>
+                      </div>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
+                      <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></textarea>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
+                      <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
+                      <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
+                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5">
+                        <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
+                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
+                        <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
+                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-3" name="<?= processedFieldsData[i][0] ?>" value="3">
+                        <label for="<?= processedFieldsData[i][0] ?>-3">★</label>
+                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-2" name="<?= processedFieldsData[i][0] ?>" value="2">
+                        <label for="<?= processedFieldsData[i][0] ?>-2">★</label>
+                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-1" name="<?= processedFieldsData[i][0] ?>" value="1">
+                        <label for="<?= processedFieldsData[i][0] ?>-1">★</label>
+                      </div>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
+                      <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
+                        min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>">
+                      <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
+                      <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
+                      <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
+                      <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly>
+                      <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
+                      <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)">
+                      <span id="captcha-question">What is 3 + 5?</span>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
+                      <div id="<?= processedFieldsData[i][0] ?>-container">
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+                        <span style="display: none; color: #d32f2f;">No Image</span>
+                      </div>
+                      <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
+                      <video controls id="<?= processedFieldsData[i][0] ?>">
+                        <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                      <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
+                    <? } else { ?>
+                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                    <? } ?>
+                    <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                  <? } ?>
+                </div>
+              <? } ?>
+            <? } ?>
+            <? if (inContainer) { ?></div><? } ?>
+            <button type="submit" id="submitButton">Submit <span class="spinner" id="spinner"></span></button>
+          </form>
+          <div id="message">Data submitted successfully!</div>
+        </div>
+        <script>
+          const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
+          const submissionType = '<?!= submissionType ?>';
+          const targetSheetName = '<?!= targetSheetName ?>';
+          let signatureCanvases = {};
+
+          function handleSubmit(event) {
+            event.preventDefault();
+            console.log('Form submission started');
+
+            const form = document.getElementById('myForm');
+            const submitButton = document.getElementById('submitButton');
+            const spinner = document.getElementById('spinner');
+            const dataToSend = {};
+            let isValid = true;
+            let pendingFiles = 0;
+
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+              const name = input.name;
+              if (!name || input.type === 'button') return;
+
+              let value;
+              const errorSpan = document.getElementById(name + '-error');
+
+              if (input.type === 'file' && input.files.length > 0) {
+                const file = input.files[0];
+                if (file.size > 6 * 1024 * 1024) {
+                  errorSpan.textContent = 'File too large (max 6 MB)';
+                  isValid = false;
+                } else {
+                  pendingFiles++;
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    dataToSend[name] = {
+                      name: file.name,
+                      data: e.target.result.split(',')[1],
+                      type: file.type || 'application/octet-stream'
+                    };
+                    pendingFiles--;
+                    if (pendingFiles === 0 && isValid) submitForm();
+                  };
+                  reader.readAsDataURL(file);
+                }
+              } else if (input.type === 'checkbox') {
+                value = input.checked;
+                dataToSend[name] = value;
+              } else if (input.type === 'radio') {
+                if (input.checked) dataToSend[name] = input.value;
+                return;
+              } else if (input.tagName === 'SELECT' && input.multiple) {
+                value = Array.from(input.selectedOptions).map(option => option.value).join(',');
+                dataToSend[name] = value;
+              } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
+                value = signatureCanvases[name].toDataURL().split(',')[1];
+                dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
+              } else {
+                value = input.value;
+                dataToSend[name] = value;
+              }
+
+              if (input.type === 'number' && value && isNaN(value)) {
+                errorSpan.textContent = 'Please enter a valid number';
+                isValid = false;
+              } else if (input.type === 'date' && value) {
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                  errorSpan.textContent = 'Please enter a valid date';
+                  isValid = false;
+                } else {
+                  errorSpan.textContent = '';
+                }
+              } else if (input.type === 'email' && value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  errorSpan.textContent = 'Please enter a valid email';
+                  isValid = false;
+                } else {
+                  errorSpan.textContent = '';
+                }
+              } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
+                errorSpan.textContent = 'Incorrect answer. Please enter 8.';
+                isValid = false;
+              } else {
+                errorSpan.textContent = '';
+              }
+            });
+
+            processedFieldsData.forEach(field => {
+              if (field[1].toUpperCase() === "STARRATING") {
+                const starRatingErrorSpan = document.getElementById(field[0] + '-error');
+                const checkedRating = document.querySelector('input[name="' + field[0] + '"]:checked');
+                if (!checkedRating && document.getElementById(field[0])) {
+                  starRatingErrorSpan.textContent = 'Please select a rating';
+                  isValid = false;
+                } else if (checkedRating) {
+                  starRatingErrorSpan.textContent = '';
+                  dataToSend[field[0]] = checkedRating.value;
+                }
+              } else if (field[1].toUpperCase() === "CALCULATED" && field[2][0]) {
+                const calcField = document.getElementById(field[0]);
+                const formula = field[2][0].split('=')[1];
+                const parts = formula.match(/(\w+|\d+|[*+/-])/g);
+                let result = 0;
+                if (parts) {
+                  result = evaluateFormula(parts, dataToSend);
+                  calcField.value = result;
+                  dataToSend[field[0]] = result;
+                }
+              }
+            });
+
+            if (pendingFiles === 0 && isValid) submitForm();
+
+            function submitForm() {
+              console.log('Form is valid, submitting:', dataToSend);
+              submitButton.disabled = true;
+              submitButton.textContent = 'Submitting...';
+              spinner.style.display = 'inline-block';
+
+              google.script.run
+                .withSuccessHandler(function(response) {
+                  console.log('Submission successful:', response);
+                  form.reset();
+                  resetSignatures();
+                  showMessage();
+                  submitButton.disabled = false;
+                  submitButton.textContent = 'Submit';
+                  spinner.style.display = 'none';
+                })
+                .withFailureHandler(function(error) {
+                  console.error('Submission failed:', error);
+                  alert('Error submitting form: ' + error.message);
+                  submitButton.disabled = false;
+                  submitButton.textContent = 'Submit';
+                  spinner.style.display = 'none';
+                })
+                .processForm(dataToSend, submissionType, targetSheetName);
+            }
+          }
+
+          function evaluateFormula(parts, data) {
+            let result = 0;
+            let operator = '+';
+            parts.forEach(part => {
+              if (['+', '-', '*', '/'].includes(part)) {
+                operator = part;
+              } else {
+                const num = isNaN(part) ? (data[part] || 0) : Number(part);
+                if (operator === '+') result += num;
+                else if (operator === '-') result -= num;
+                else if (operator === '*') result *= num;
+                else if (operator === '/' && num !== 0) result /= num;
+              }
+            });
+            return result;
+          }
+
+          function showMessage() {
+            const message = document.getElementById('message');
+            message.style.display = 'block';
+            setTimeout(() => {
+              message.style.display = 'none';
+            }, 3000);
+          }
+
+          function getLocation(fieldId) {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                function(position) {
+                  const coords = position.coords.latitude + ',' + position.coords.longitude;
+                  document.getElementById(fieldId).value = coords;
+                },
+                function(error) {
+                  document.getElementById(fieldId + '-error').textContent = 'Unable to get location';
+                }
+              );
+            } else {
+              document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
+            }
+          }
+
+          processedFieldsData.forEach(field => {
+            if (field[1].toUpperCase() === "RANGESLIDER") {
+              const slider = document.getElementById(field[0]);
+              const output = document.getElementById(field[0] + '-output');
+              slider.oninput = () => output.textContent = slider.value;
+            } else if (field[1].toUpperCase() === "SIGNATURE") {
+              const canvas = document.getElementById(field[0]);
+              const ctx = canvas.getContext('2d');
+              let drawing = false;
+              signatureCanvases[field[0]] = canvas;
+
+              canvas.onmousedown = (e) => {
+                drawing = true;
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+              };
+              canvas.onmousemove = (e) => {
+                if (drawing) {
+                  ctx.lineTo(e.offsetX, e.offsetY);
+                  ctx.stroke();
+                }
+              };
+              canvas.onmouseup = () => drawing = false;
+              canvas.onmouseleave = () => drawing = false;
+            } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
+              const [triggerField, triggerValue] = field[2][0].split('=');
+              const triggerInput = document.getElementById(triggerField);
+              const conditionalGroup = document.getElementById('group-' + field[0]);
+              if (triggerInput) {
+                triggerInput.onchange = () => {
+                  const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
+                  conditionalGroup.style.display = show ? 'flex' : 'none';
+                };
+              }
+            }
+          });
+
+          function resetSignatures() {
+            Object.values(signatureCanvases).forEach(canvas => {
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+          }
+        </script>
+      </body>
+    </html>
+  `);
+
+  template.formName = formName;
+  template.processedFieldsData = processedFieldsData;
+  template.submissionType = submissionType;
+  template.targetSheetName = targetSheetName;
+
+  return template.evaluate().setTitle(formName + " Form");
+}
+function processForm(formData, submissionType, targetSheetName) {
+  Logger.log('Starting processForm with submission type: ' + submissionType + ' and target sheet: ' + targetSheetName);
+  Logger.log('Received form data: ' + JSON.stringify(formData));
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var setupSheet = ss.getSheetByName("FormSetup");
+    if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+    var targetSheet = getOrCreateSheet(ss, targetSheetName);
+    var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
+    var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+    var processedData = formData;
+
+    if (submissionType.toUpperCase() === "SINGLECELL") {
+      var ranges = [];
+      var values = [];
+      for (var i = 0; i < fieldsData.length; i++) {
+        var fieldName = fieldsData[i][0];
+        var targetCell = fieldsData[i][2];
+        var fieldValue = processedData[fieldName];
+        if (fieldValue !== undefined && targetCell) {
+          if (typeof fieldValue === 'object' && fieldValue.data) {
+            fieldValue = uploadFile(fieldValue);
+          }
+          ranges.push(targetSheet.getRange(targetCell));
+          values.push([fieldValue]);
+        }
+      }
+      ranges.forEach((range, idx) => range.setValues([values[idx]]));
+    } else if (submissionType.toUpperCase() === "TABLEROW") {
+      var lastRow = targetSheet.getLastRow();
+      if (lastRow >= 40000) {
+        targetSheet = getOrCreateSheet(ss, targetSheetName + "_" + (Math.floor(lastRow / 40000) + 1));
+        lastRow = targetSheet.getLastRow();
+      }
+      var nextRow = lastRow + 1;
+      if (nextRow === 1) nextRow = 2;
+      var rowData = new Array(fieldsData.length).fill('');
+      var columns = fieldsData.map(row => row[2].match(/[A-Z]+/i)?.[0] || row[2]);
+
+      for (var i = 0; i < fieldsData.length; i++) {
+        var fieldName = fieldsData[i][0];
+        var fieldValue = processedData[fieldName];
+        if (fieldValue !== undefined) {
+          if (typeof fieldValue === 'object' && fieldValue.data) {
+            fieldValue = uploadFile(fieldValue);
+          }
+          var colIndex = columns.indexOf(columns[i]);
+          rowData[colIndex] = fieldValue;
+        }
+      }
+      targetSheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      throw new Error("Invalid submission type: " + submissionType);
+    }
+
+    // Check DataMate Record option and run functions if Yes
+    var dataMateRecord = setupSheet.getRange("B6").getValue();
+    if (dataMateRecord === "Yes") {
+      save();
+      copyInput1();
+    }
+
+    Logger.log('processForm completed successfully');
+    return "Success";
+  } catch (error) {
+    Logger.log('Error in processForm: ' + error.toString());
+    throw error;
+  }
+}
+
+function uploadFile(fileData) {
+  var folder = DriveApp.getRootFolder();
+  var blob = Utilities.newBlob(
+    Utilities.base64Decode(fileData.data),
+    fileData.type,
+    fileData.name
+  );
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getUrl();
+}
+
+function getOrCreateSheet(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    var headers = ['Form Description','Customer','Interests','Event Date','Event Time','Quantity','Urgent','Priority','Comments','Email','Rating','Satisfaction','Attachment','Reason','Total','Signature','Location','Progress','Verification','Product Image','Product Video','Upload Image URL','Upload Video URL','Product Name','Sales Data'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  return sheet;
+}
+
+function createFormSetupSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var formSetupSheet = ss.getSheetByName("FormSetup");
+  
+  if (!formSetupSheet) {
+    formSetupSheet = ss.insertSheet("FormSetup");
+    formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
+
+    formSetupSheet.getRange("A1:E1").merge();
+    formSetupSheet.getRange("A1").setValue("Form Setup Dashboard")
+      .setFontSize(16).setFontWeight("bold").setFontColor("#ffffff")
+      .setBackground("#4CAF50").setHorizontalAlignment("center");
+
+    formSetupSheet.getRange("A2:E2").merge();
+    formSetupSheet.getRange("A2").setValue("Configure your form below. Add fields via sidebar or edit A9:E directly.")
+      .setFontSize(12).setFontColor("#666666").setBackground("#e0e0e0")
+      .setHorizontalAlignment("center").setWrap(true);
+
+    formSetupSheet.getRange("A3").setValue("Form Name:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B3").setValue("Enhanced Form")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+
+    formSetupSheet.getRange("A4").setValue("Target Sheet:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B4").setValue("Responses")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+
+    formSetupSheet.getRange("A5").setValue("Submission Type:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B5").setValue("TableRow")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+    var rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(["SingleCell", "TableRow"], true)
+      .setAllowInvalid(false)
+      .build();
+    formSetupSheet.getRange("B5").setDataValidation(rule);
+
+    // Add DataMate Record option
+    formSetupSheet.getRange("A6").setValue("DataMate Record:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B6").setValue("No")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+    var yesNoRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(["Yes", "No"], true)
+      .setAllowInvalid(false)
+      .build();
+    formSetupSheet.getRange("B6").setDataValidation(yesNoRule);
+
+    formSetupSheet.getRange("A7:F7").setBackground("#f0f0f0");
+
+    formSetupSheet.getRange("A8").setValue("Form Fields");
+    formSetupSheet.getRange("B8").setValue("Target Sheet");
+    formSetupSheet.getRange("C8").setValue("Target Cells");
+    formSetupSheet.getRange("D8").setValue("Field Type");
+    formSetupSheet.getRange("E8").setValue("Dropdown Options");
+    formSetupSheet.getRange("A8:E8").setFontWeight("bold").setFontColor("#ffffff")
+      .setBackground("#4CAF50").setBorder(true, true, true, true, false, false);
+
+    var formFields = [
+  ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form!"],
+  ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
+  ["Name", "Responses", "C", "Text", ""], // Simple text input
+  ["Customer", "Responses", "D", "Dropdown", "=contacts!A:A"], // Dropdown from sheet range
+  ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"], // Multiple selection
+  ["Event Date", "Responses", "F", "Date", ""], // Date picker
+  ["Event Time", "Responses", "G", "Time", ""], // Time picker
+  ["Quantity", "Responses", "H", "Number", ""], // Numeric input
+  ["Urgent", "Responses", "I", "Checkbox", ""], // True/False checkbox
+  ["Priority", "Responses", "J", "Radio", "Low,Medium,High"], // Radio buttons
+  ["Comments", "Responses", "K", "Textarea", ""], // Multi-line text
+  ["Email", "Responses", "L", "Email", ""], // Email-validated input
+  ["Satisfaction", "Responses", "M", "StarRating", ""], // 5-star rating
+  ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"], // Slider from 0-10, step 1
+  ["Attachment", "Responses", "O", "FileUpload", ""], // File upload to Drive
+  ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"], // Shows if Urgent is checked
+  ["Total", "Responses", "Q", "Calculated", "=Quantity*2"], // Calculated field
+  ["Signature", "Responses", "R", "Signature", ""], // Digital signature canvas
+  ["Location", "Responses", "S", "Geolocation", ""], // Captures coordinates
+  ["Progress", "Responses", "T", "ProgressBar", "75"], // Static progress bar at 75%
+  ["Verification", "Responses", "U", "Captcha", ""], // Simple math captcha (3+5)
+  ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=FILE_ID"], // Display image
+  ["Product Video", "Responses", "W", "Video", "https://drive.google.com/uc?id=VIDEO_ID"], // Display video
+  ["Image URL", "Responses", "X", "ImageLink", ""], // Input for image URL
+  ["Video URL", "Responses", "Y", "VideoLink", ""], // Input for video URL
+  ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."], // Static text display
+  ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"], // Table from range
+  ["Form Footer", "Responses", "AB", "Footer", "Thank you for your submission!"]
+];
+    formSetupSheet.getRange("A9:E36").setValues(formFields);
+    formSetupSheet.getRange("A9:E36").setBackground("#ffffff")
+      .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+
+    formSetupSheet.setFrozenRows(8);
+    formSetupSheet.setColumnWidth(1, 150);
+    formSetupSheet.setColumnWidth(2, 100);
+    formSetupSheet.setColumnWidth(3, 100);
+    formSetupSheet.setColumnWidth(4, 100);
+    formSetupSheet.setColumnWidth(5, 200);
+  }
+  return formSetupSheet;
+}
+
+function copyInput1() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sourceSheet = ss.getSheetByName("Sheet1");
+  var targetSheet = ss.getSheetByName("Input");
+  
+  // Define the range to copy
+  var copyRange = sourceSheet.getRange("A3:Q48");
+  var targetRange = targetSheet.getRange("A3:Q48");
+  
+  // Copy everything from source to target
+  copyRange.copyTo(targetRange); // This will copy values, formats, and formulas
+  
+  // Copy column widths
+  var sourceColWidths = [];
+  var lastColumnSource = sourceSheet.getLastColumn();
+  var lastColumnTarget = targetSheet.getLastColumn();
+  
+  // Ensure we only consider columns up to the last column in both sheets
+  var columnsToCopy = Math.min(lastColumnSource, lastColumnTarget, 17); // A to Q = 17 columns
+  
+  for (var i = 1; i <= columnsToCopy; i++) {
+    sourceColWidths.push(sourceSheet.getColumnWidth(i));
+  }
+  
+  // Set column widths in target sheet, but only for existing columns
+  for (var j = 1; j <= columnsToCopy; j++) {
+    targetSheet.setColumnWidth(j, sourceColWidths[j - 1]);
+  }
+  
+  // Select cell C4 in the target sheet
+  targetSheet.activate();
+  targetSheet.getRange("C4").activate();
+  
+  // Show a message box to notify the user
+  SpreadsheetApp.getUi().alert("Sheet copied from 'Sheet1' to 'Input' successfully.");
+}
+
+function save() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const dataSheet = ss.getSheetByName("Data");
+  const viewPrintSheet = ss.getSheetByName("View_Print");
+  const updateSheet = ss.getSheetByName("Update");
+  const logSheet = ss.getSheetByName("Log");
+
+  dataSheet.insertRowAfter(1);
+
+  inputSheet
+    .getRange("A1:Q1")
+    .copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A2:Q2")
+    .copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A3:Q3")
+    .copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A4:Q4")
+    .copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A5:Q5")
+    .copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A6:Q6")
+    .copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A7:Q7")
+    .copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A8:Q8")
+    .copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A9:Q9")
+    .copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A10:Q10")
+    .copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A11:Q11")
+    .copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A12:Q12")
+    .copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A13:Q13")
+    .copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A14:Q14")
+    .copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A15:Q15")
+    .copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A16:Q16")
+    .copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A17:Q17")
+    .copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A18:Q18")
+    .copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A19:Q19")
+    .copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A20:Q20")
+    .copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A21:Q21")
+    .copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A22:Q22")
+    .copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A23:Q23")
+    .copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A24:Q24")
+    .copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A25:Q25")
+    .copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A26:Q26")
+    .copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A27:Q27")
+    .copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A28:Q28")
+    .copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A29:Q29")
+    .copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A30:Q30")
+    .copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A31:Q31")
+    .copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A32:Q32")
+    .copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A33:Q33")
+    .copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A34:Q34")
+    .copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A35:Q35")
+    .copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A36:Q36")
+    .copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A37:Q37")
+    .copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A38:Q38")
+    .copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A39:Q39")
+    .copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A40:Q40")
+    .copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A41:Q41")
+    .copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A42:Q42")
+    .copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A43:Q43")
+    .copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A44:Q44")
+    .copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A45:Q45")
+    .copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A46:Q46")
+    .copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A47:Q47")
+    .copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A48:Q48")
+    .copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
+
+  dataSheet
+    .getRange("A2")
+    .setFormula(
+      '=Data!S2&"- "&T2&"- "&U2&"- "&V2&"- "&W2&"- "&X2&"- "&Y2&"- "&Z2&"- "&AA2&"- "&AB2&"- "&AC2&"- "&AD2'
+    );
+  dataSheet
+    .getRange("A1")
+    .setFormula(
+      '=Data!S1&"- "&T1&"- "&U1&"- "&V1&"- "&W1&"- "&X1&"- "&Y1&"- "&Z1&"- "&AA1&"- "&AB1&"- "&AC1&"- "&AD1'
+    );
+
+  dataSheet
+    .getRange("AE2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
+  dataSheet
+    .getRange("AF2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
+  dataSheet
+    .getRange("AG2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
+
+  const images = inputSheet.getImages();
+  images.forEach(image => {
+    const sourceRange = image.getAnchorCell();
+    // Check if the image's anchor cell is within A3:Q48
+    if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
+      const blob = image.getBlob();
+      const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
+      const targetColumn = sourceRange.getColumn();
+      
+      // Insert image into Data sheet at the corresponding position
+      dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
+    }
+  });
+
+  updateSheet.insertRowAfter(1);
+  updateSheet.getRange("A2").setFormula("=Data!A2");
+  updateSheet.getRange("E2").setFormula("=Data!S2");
+  updateSheet.getRange("F2").setFormula("=Data!T2");
+  updateSheet.getRange("G2").setFormula("=Data!U2");
+  updateSheet.getRange("H2").setFormula("=Data!V2");
+  updateSheet.getRange("I2").setFormula("=Data!W2");
+  updateSheet.getRange("J2").setFormula("=Data!X2");
+  updateSheet.getRange("K2").setFormula("=Data!Y2");
+  updateSheet.getRange("L2").setFormula("=Data!Z2");
+  updateSheet.getRange("M2").setFormula("=Data!AA2");
+  updateSheet.getRange("N2").setFormula("=Data!AB2");
+  updateSheet.getRange("O2").setFormula("=Data!AC2");
+  updateSheet.getRange("P2").setFormula("=Data!AD2");
+
+  var rangeWithFilter = logSheet.getRange("A10:O10");
+  var filterCriteria = rangeWithFilter.getFilter().getRange().getA1Notation();
+
+  logSheet.insertRowBefore(10);
+
+  rangeWithFilter.getFilter().remove();
+
+  var fullRange = logSheet.getRange("A9:O9" + logSheet.getLastRow());
+  fullRange.createFilter();
+
+  logSheet.getRange("A10").setFormula("=Data!S2");
+  logSheet.getRange("B10").setFormula("=Data!T2");
+  logSheet.getRange("C10").setFormula("=Data!U2");
+  logSheet.getRange("D10").setFormula("=Data!V2");
+  logSheet.getRange("E10").setFormula("=Data!W2");
+  logSheet.getRange("F10").setFormula("=Data!X2");
+  logSheet.getRange("G10").setFormula("=Data!Y2");
+  logSheet.getRange("H10").setFormula("=Data!Z2");
+  logSheet.getRange("I10").setFormula("=Data!AA2");
+  logSheet.getRange("J10").setFormula("=Data!AB2");
+  logSheet.getRange("K10").setFormula("=Data!AC2");
+  logSheet.getRange("L10").setFormula("=Data!AD2");
+  logSheet.getRange("M10").setFormula("=Data!AE2");
+  logSheet.getRange("N10").setFormula("=Data!AF2");
+  logSheet.getRange("O10").setFormula("=Data!AG2");
+
+  logSheet.getRange("A9").setFormula("=Input!A1");
+  logSheet.getRange("B9").setFormula("=Input!B1");
+  logSheet.getRange("C9").setFormula("=Input!C1");
+  logSheet.getRange("D9").setFormula("=Input!D1");
+  logSheet.getRange("E9").setFormula("=Input!E1");
+  logSheet.getRange("F9").setFormula("=Input!F1");
+  logSheet.getRange("G9").setFormula("=Input!G1");
+  logSheet.getRange("H9").setFormula("=Input!H1");
+  logSheet.getRange("I9").setFormula("=Input!I1");
+  logSheet.getRange("J9").setFormula("=Input!J1");
+  logSheet.getRange("K9").setFormula("=Input!K1");
+  logSheet.getRange("L9").setFormula("=Input!L1");
+  logSheet.getRange("M9").setFormula("=Input!M1");
+  logSheet.getRange("N9").setFormula("=Input!N1");
+  logSheet.getRange("O9").setFormula("=Input!O1");
+
+  viewPrintSheet.getRange("B2").activate();
+  // Clear any existing content or hyperlink in cells B1:L1
+  viewPrintSheet.getRange("B1:L1").clearContent();
+
+  // Merge cells B1:L1
+  viewPrintSheet.getRange("B1:L1").merge();
+
+  // Add the hyperlink with the display text
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://script.google.com/macros/s/AKfycbxKwP8r_5SQTPGFAme4DlALF267dj8DwCUAd_A8EihGKhc60p-9Bh5VC0NXkdw0nagb/exec", "Web Apps and Templates. All Web Apps and Templates are free of charge.")');
+
+  // Set the font style and color for the hyperlink
+  const cell = viewPrintSheet.getRange("B1");
+  cell.setFontWeight("bold");
+  cell.setFontSize(12);
+  cell.setFontColor("#0066CC"); // Set font color to a noticeable blue
+
+  // Set fill to No Fill for merged cells B1:L1
+  cell.setBackground(null); // Removes any background color
+
+  // Center-align the text in the merged cells
+  cell.setHorizontalAlignment("center");
+  cell.setVerticalAlignment("middle");
 }
