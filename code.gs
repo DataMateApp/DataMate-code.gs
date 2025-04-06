@@ -11,6 +11,14 @@ function onOpen() {
     .addItem("Reset View_Print", "view")
     .addItem("New Dataset", "newfile")
     .addSeparator()
+    .addItem("➡ Or Start with a template ⬅", "doNothing")
+    .addSubMenu(ui.createMenu("Templates")
+      .addItem("Inventory", "setup")
+      .addItem("Update Inventory", "updateInventory")
+      .addItem("Weekly Timesheets", "setupTS")
+      .addItem("Update Cost Codes", "copyToCodeTotals")
+      .addItem("Purchase Order", "setupPO"));
+    .addSeparator()
     .addSubMenu(ui.createMenu("FormBuilder")
       .addItem("Open Form Builder", "showFormBuilder")
       .addItem("Preview Form", "previewForm")
@@ -22,15 +30,7 @@ function onOpen() {
       .addItem("New Contact", "NewContact")
       .addItem("Edit Name", "EditAddressSheet")
       .addItem("Edit Company", "EditAddressSheet1"))
-    .addSeparator()  
-    .addItem("➡ Start with a template ⬅", "doNothing")
-    .addSubMenu(ui.createMenu("Templates")
-      .addItem("Inventory", "setup")
-      .addItem("Update Inventory", "updateInventory")
-      .addItem("Weekly Timesheets", "setupTS")
-      .addItem("Update Cost Codes", "copyToCodeTotals")
-      .addItem("Purchase Order", "setupPO"));
-    
+        
   menu.addToUi();
 }
 
