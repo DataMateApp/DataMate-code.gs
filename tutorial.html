@@ -1,522 +1,446 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Form Builder Tutorial</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataMate Tutorial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 900px;
-            line-height: 1.6;
-        }
-
-        h1 {
-            color: #4CAF50;
-            text-align: center;
-        }
-
-        h2 {
-            color: #333;
-            margin-top: 20px;
-        }
-
-        h3 {
-            color: #4CAF50;
-            margin-top: 15px;
-        }
-
-        p, li {
-            color: #666;
-        }
-
-        ul {
-            margin-left: 20px;
-        }
-
-        .step {
-            background: #f9f9f9;
-            padding: 15px;
-            border-left: 4px solid #4CAF50;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        .field-type {
-            margin-left: 10px;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        code {
-            background: #f1f1f1;
-            padding: 2px 5px;
-            border-radius: 3px;
-            color: #d32f2f;
-        }
-        pre {
-            background: #f5f5f5;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background: #4CAF50;
-            color: white;
-        }
-
-        p {
-            margin: 10px 0;
-        }
-
-        .note {
-            color: #666;
-            font-style: italic;
-        }
-
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #35424a; text-align: center; }
+        h2 { color: #4CAF50; }
+        .accordion-button { background-color: #ffffff; color: #35424a; }
+        .accordion-button:not(.collapsed) { background-color: #e8491d; color: white; }
+        .step, .tip, .capabilities { background: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin-bottom: 15px; border-radius: 4px; }
+        code { background: #f1f1f1; padding: 2px 5px; border-radius: 3px; color: #d32f2f; }
+        pre { background: #f5f5f5; padding: 15px; border: 1px solid #ddd; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #4CAF50; color: white; }
+        .note { color: #666; font-style: italic; }
+        footer { text-align: center; padding: 20px 0; color: #000000; background-color: #f4f4f4; }
+        .field-type { margin-left: 10px; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h1>Tutorial: How to Use the Enhanced Form Builder App</h1>
-    <p>This app creates a customizable form with advanced fields. Use the sidebar ("Form Builder > Open Form Builder") or edit the <code>A9:E</code> range directly in the <code>FormSetup</code> sheet.</p>
+    <div class="container">
+        <h1>DataMate Tutorial</h1>
+        <p>Welcome to DataMate! This comprehensive guide covers how to use DataMate for data management, form building, and contact management within Google Sheets. Current date: April 06, 2025.</p>
 
-    <div class="step">
-        <h2>Step 1: Configure Settings</h2>
-        <p>Set the following in the <code>FormSetup</code> sheet:</p>
-        <ul>
-            <li><strong>B3</strong>: Form Name (e.g., "Customer Survey") - Defines the title of your form.</li>
-            <li><strong>B4</strong>: Target Sheet (e.g., "Responses") - The sheet where form data will be stored.</li>
-            <li><strong>B5</strong>: Submission Type ("SingleCell" or "TableRow") - <code>SingleCell</code> writes data to specific cells; <code>TableRow</code> adds each submission as a new row.</li>
-        </ul>
+        <div class="accordion" id="tutorialAccordion">
+            <!-- Section 1: Overview -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#overview">
+                        1. Overview
+                    </button>
+                </h2>
+                <div id="overview" class="accordion-collapse collapse show" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <p><strong>DataMate</strong> is a Google Sheets add-on designed to simplify data management, form creation, and contact organization. Key capabilities include:</p>
+                        <div class="capabilities">
+                            <ul>
+                                <li><strong>Automated Data Entry</strong>: Organize data into structured sheets.</li>
+                                <li><strong>Record Management</strong>: Save, view, update, and print records easily.</li>
+                                <li><strong>Customizable Forms</strong>: Build advanced forms with over 20 field types.</li>
+                                <li><strong>Contact Integration</strong>: Import and manage contacts from Gmail or CSV files.</li>
+                                <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
+                            </ul>
+                        </div>
+                        <p><a href="https://www.youtube.com/embed/_cduOVxVafc" target="_blank">Watch the DataMate Overview Video</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Getting Started -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gettingStarted">
+                        2. Getting Started
+                    </button>
+                </h2>
+                <div id="gettingStarted" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Installation</h3>
+                            <p>Install DataMate from the Google Workspace Marketplace. Open a Google Sheet, and look for the "DataMate" menu.</p>
+                        </div>
+                        <div class="step">
+                            <h3>Initialize Your Spreadsheet</h3>
+                            <ul>
+                                <li><strong>New Spreadsheet</strong>: Open a new Google Sheet, enter data in <code>A3:Q48</code> on <code>Sheet1</code>, and select "DataMate > New Dataset" to set up specialized sheets (<code>Input</code>, <code>Data</code>, <code>View_Print</code>, <code>Update</code>, <code>Log</code>).</li>
+                                <li><strong>Existing Spreadsheet</strong>: Ensure <code>Sheet1</code> has data in <code>A3:Q48</code>, then run "New Dataset."</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Data Management -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataManagement">
+                        3. Data Management
+                    </button>
+                </h2>
+                <div id="dataManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Adding Data</h3>
+                            <p>Enter data in <code>Input</code> sheet cells <code>A3:Q48</code>. Merge cells containing text for proper formatting.</p>
+                        </div>
+                        <div class="step">
+                            <h3>Setting Up Logs</h3>
+                            <p>In the <code>Input</code> sheet:</p>
+                            <ul>
+                                <li>For each log (e.g., <code>Log 1</code>): Type <code>=</code>, select the label cell (e.g., "Invoice Number"), and press Enter.</li>
+                                <li>Below each log label, type <code>=</code>, select the data cell, and press Enter. Up to 12 logs are supported.</li>
+                            </ul>
+                        </div>
+                        <div class="step">
+                            <h3>Managing Records</h3>
+                            <ul>
+                                <li><strong>Save</strong>: Click "DataMate > Save Record" to store data in the <code>Data</code> sheet and view it in <code>View_Print</code>.</li>
+                                <li><strong>View</strong>: Use the dropdown in <code>View_Print!B2</code> to select records.</li>
+                                <li><strong>Update</strong>: Edit records in the <code>Update</code> sheet; changes sync to <code>Data</code>.</li>
+                                <li><strong>Print</strong>: In <code>View_Print</code>, go to "File > Print > Current Selection."</li>
+                                <li><strong>Reset</strong>: Use "Reset Input" or "Reset View/Print" to refresh sheets from <code>Sheet1</code>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Form Building -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formBuilding">
+                        4. Form Building
+                    </button>
+                </h2>
+                <div id="formBuilding" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Configure Settings</h3>
+                            <p>In the <code>FormSetup</code> sheet:</p>
+                            <ul>
+                                <li><strong>B3</strong>: Form Name (e.g., "Customer Survey")</li>
+                                <li><strong>B4</strong>: Target Sheet (e.g., "Responses")</li>
+                                <li><strong>B5</strong>: Submission Type (<code>SingleCell</code> or <code>TableRow</code>)</li>
+                            </ul>
+                        </div>
+                        <div class="step">
+                            <h3>Add Fields</h3>
+                            <p>Edit <code>A9:E</code> in <code>FormSetup</code>:</p>
+                            <ul>
+                                <li><strong>A</strong>: Field Name</li>
+                                <li><strong>B</strong>: Target Sheet</li>
+                                <li><strong>C</strong>: Target Cell/Column</li>
+                                <li><strong>D</strong>: Field Type</li>
+                                <li><strong>E</strong>: Options (e.g., dropdowns, formulas)</li>
+                            </ul>
+                        </div>
+                        <div class="step">
+                            <h3>Supported Field Types</h3>
+                            <p>All supported field types with examples:</p>
+                            <div class="field-type">
+                                <h4>Text</h4>
+                                <p>A single-line text input.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Name", "Responses", "A", "Text", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Dropdown</h4>
+                                <p>A dropdown menu with selectable options.</p>
+                                <ul><li><strong>E</strong>: Comma-separated options or sheet range (e.g., "=Sheet1!A:A").</li><li>Example: <code>["Choice", "Responses", "B", "Dropdown", "Red,Blue,Green"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>MultiSelect</h4>
+                                <p>A dropdown allowing multiple selections.</p>
+                                <ul><li><strong>E</strong>: Comma-separated options or sheet range.</li><li>Example: <code>["Interests", "Responses", "C", "MultiSelect", "Tech,Art,Sports"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Date</h4>
+                                <p>A date picker input.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Event Date", "Responses", "D", "Date", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Time</h4>
+                                <p>A time picker input.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Event Time", "Responses", "E", "Time", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Number</h4>
+                                <p>A numeric input field.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Quantity", "Responses", "F", "Number", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Checkbox</h4>
+                                <p>A single checkbox (true/false).</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Urgent", "Responses", "G", "Checkbox", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Radio</h4>
+                                <p>Radio buttons for single-choice selection.</p>
+                                <ul><li><strong>E</strong>: Comma-separated options.</li><li>Example: <code>["Priority", "Responses", "H", "Radio", "Low,Medium,High"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Textarea</h4>
+                                <p>A multi-line text input.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Comments", "Responses", "I", "Textarea", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Email</h4>
+                                <p>An email input with validation.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Email", "Responses", "J", "Email", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>StarRating</h4>
+                                <p>A 5-star rating input.</p>
+                                <ul><li><strong>E</strong>: Leave blank (fixed 1-5 scale).</li><li>Example: <code>["Rating", "Responses", "K", "StarRating", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>RangeSlider</h4>
+                                <p>A slider for selecting a value within a range.</p>
+                                <ul><li><strong>E</strong>: "min,max,step" (e.g., "0,100,5").</li><li>Example: <code>["Satisfaction", "Responses", "L", "RangeSlider", "0,100,5"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>FileUpload</h4>
+                                <p>Allows file uploads (max 6MB).</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li><strong>Behavior</strong>: Stores link in Google Drive.</li><li>Example: <code>["Attachment", "Responses", "M", "FileUpload", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Conditional</h4>
+                                <p>A field shown based on another field's value.</p>
+                                <ul><li><strong>E</strong>: "FieldName=Value" (e.g., "Urgent=Yes").</li><li>Example: <code>["Reason", "Responses", "N", "Conditional", "Urgent=Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Calculated</h4>
+                                <p>A read-only calculated field.</p>
+                                <ul><li><strong>E</strong>: "FieldName=Formula" (e.g., "Total=Quantity*10").</li><li>Example: <code>["Total", "Responses", "O", "Calculated", "Total=Quantity*10"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Signature</h4>
+                                <p>A canvas for drawing a signature.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li><strong>Behavior</strong>: Saves as PNG link in Google Drive.</li><li>Example: <code>["Signature", "Responses", "P", "Signature", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Geolocation</h4>
+                                <p>Captures latitude and longitude.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li><strong>Behavior</strong>: User clicks to share location.</li><li>Example: <code>["Location", "Responses", "Q", "Geolocation", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>ProgressBar</h4>
+                                <p>Displays a static progress bar.</p>
+                                <ul><li><strong>E</strong>: Number (0-100).</li><li>Example: <code>["Progress", "Responses", "R", "ProgressBar", "75"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Captcha</h4>
+                                <p>A simple verification (fixed "3 + 5").</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li><strong>Behavior</strong>: User enters "8".</li><li>Example: <code>["Verification", "Responses", "S", "Captcha", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Image</h4>
+                                <p>Displays a static image.</p>
+                                <ul><li><strong>E</strong>: Google Drive link (e.g., "https://drive.google.com/uc?id=FILE_ID").</li><li>Example: <code>["Product Image", "Responses", "T", "Image", "https://drive.google.com/uc?id=1a2b3c"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Video</h4>
+                                <p>Displays a playable video.</p>
+                                <ul><li><strong>E</strong>: Direct video URL.</li><li>Example: <code>["Product Video", "Responses", "U", "Video", "https://www.w3schools.com/html/mov_bbb.mp4"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>ImageLink</h4>
+                                <p>Allows input of an image URL.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Upload Image URL", "Responses", "V", "ImageLink", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>VideoLink</h4>
+                                <p>Allows input of a video URL.</p>
+                                <ul><li><strong>E</strong>: Leave blank.</li><li>Example: <code>["Upload Video URL", "Responses", "W", "VideoLink", ""]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>StaticText</h4>
+                                <p>Displays static text.</p>
+                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Welcome", "Responses", "X", "StaticText", "Please fill out this form."]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Table</h4>
+                                <p>Displays a table from a sheet range.</p>
+                                <ul><li><strong>E</strong>: Range (e.g., "Sheet2!A1:C5").</li><li>Example: <code>["Sales Data", "Responses", "Y", "Table", "Sheet2!A1:C5"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Container</h4>
+                                <p>Groups fields with custom styling.</p>
+                                <ul><li><strong>E</strong>: Inline CSS or blank.</li><li>Example: <code>["Section 1", "Responses", "Z", "Container", "background: #f0f0f0;"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Header</h4>
+                                <p>A styled header section.</p>
+                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Header", "Responses", "AA", "Header", "Welcome"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Footer</h4>
+                                <p>A styled footer section.</p>
+                                <ul><li><strong>E</strong>: Text to display.</li><li>Example: <code>["Form Footer", "Responses", "AB", "Footer", "© 2025"]</code></li></ul>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <h3>Preview & Deploy</h3>
+                            <p>Use "DataMate > FormBuilder > Preview Form". Deploy via Apps Script: "Deploy > New Deployment > Web App."</p>
+                        </div>
+                        <div class="step">
+                            <h3>Collect Data</h3>
+                            <p>Share the URL. Data saves to the target sheet based on submission type.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Contact Management -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactManagement">
+                        5. Contact Management
+                    </button>
+                </h2>
+                <div id="contactManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Setup Contact Sheets</h3>
+                            <p>Select "DataMate > AddressBlock > Add Contact Sheets" to create <code>contacts</code>, <code>Address</code>, and <code>NewContact</code> sheets.</p>
+                        </div>
+                        <div class="step">
+                            <h3>Import Contacts</h3>
+                            <p>Use "Import Gmail™ Contacts" to upload a CSV file from Gmail or Outlook into <code>contacts</code>.</p>
+                            <p><a href="https://www.youtube.com/embed/C5kKbSRCkGc" target="_blank">Watch the AddressBlock Video</a></p>
+                        </div>
+                        <div class="step">
+                            <h3>Add New Contacts</h3>
+                            <p>Enter details in <code>NewContact</code> and save via "AddressBlock > Save New Contact."</p>
+                        </div>
+                        <div class="step">
+                            <h3>Generate Address Blocks</h3>
+                            <p>In <code>Address</code>, set <code>F1</code> to a cell reference, then use "AddressBlock > Address Block Name" or "Company" to populate contact data.</p>
+                        </div>
+                        <div class="tip">
+                            <h3>Tips</h3>
+                            <ul>
+                                <li>Use <code>NewContact</code> for data integrity.</li>
+                                <li>Edit <code>contacts</code> directly for updates.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Templates -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#templates">
+                        6. Templates
+                    </button>
+                </h2>
+                <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Job Application Form Template</h3>
+                            <p>Paste this into <code>FormSetup!A9:E</code> (set <code>B3</code>: "Job Application Form", <code>B4</code>: "Responses", <code>B5</code>: "TableRow"):</p>
+                            <table>
+                                <tr><th>Form Fields (A)</th><th>Target Sheet (B)</th><th>Target Cells (C)</th><th>Field Type (D)</th><th>Dropdown Options (E)</th></tr>
+                                <tr><td>Section 1: Personal Information</td><td>Responses</td><td>A</td><td>Header</td><td>Personal Information</td></tr>
+                                <tr><td>Full Name</td><td>Responses</td><td>B</td><td>Text</td><td></td></tr>
+                                <tr><td>Address Container</td><td>Responses</td><td>C</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Street</td><td>Responses</td><td>D</td><td>Text</td><td></td></tr>
+                                <tr><td>City</td><td>Responses</td><td>E</td><td>Text</td><td></td></tr>
+                                <tr><td>State</td><td>Responses</td><td>F</td><td>Text</td><td></td></tr>
+                                <tr><td>ZIP</td><td>Responses</td><td>G</td><td>Text</td><td></td></tr>
+                                <tr><td>Phone Number</td><td>Responses</td><td>H</td><td>Text</td><td></td></tr>
+                                <tr><td>Email Address</td><td>Responses</td><td>I</td><td>Email</td><td></td></tr>
+                                <tr><td>Are you at least 18 years old?</td><td>Responses</td><td>J</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>Section 2: Position Information</td><td>Responses</td><td>K</td><td>Header</td><td>Position Information</td></tr>
+                                <tr><td>Position Applying For</td><td>Responses</td><td>L</td><td>Dropdown</td><td>Developer,Designer,Manager</td></tr>
+                                <tr><td>Desired Salary</td><td>Responses</td><td>M</td><td>Radio</td><td>$40,000-$50,000,$50,001-$60,000,$60,001+</td></tr>
+                                <tr><td>Date Available to Start</td><td>Responses</td><td>N</td><td>Date</td><td></td></tr>
+                                <tr><td>Availability Container</td><td>Responses</td><td>O</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Full-time</td><td>Responses</td><td>P</td><td>Checkbox</td><td></td></tr>
+                                <tr><td>Part-time</td><td>Responses</td><td>Q</td><td>Checkbox</td><td></td></tr>
+                                <tr><td>Weekends</td><td>Responses</td><td>R</td><td>Checkbox</td><td></td></tr>
+                                <tr><td>Evenings</td><td>Responses</td><td>S</td><td>Checkbox</td><td></td></tr>
+                                <tr><td>How did you hear about this position?</td><td>Responses</td><td>T</td><td>Dropdown</td><td>Website,Referral,Job Board</td></tr>
+                                <tr><td>Section 3: Employment Eligibility</td><td>Responses</td><td>U</td><td>Header</td><td>Employment Eligibility</td></tr>
+                                <tr><td>Are you legally authorized to work in this country?</td><td>Responses</td><td>V</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>Will you now or in the future require work sponsorship?</td><td>Responses</td><td>W</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>Section 4: Employment History</td><td>Responses</td><td>X</td><td>Header</td><td>Employment History</td></tr>
+                                <tr><td>Employment History Container</td><td>Responses</td><td>Y</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Employer Name</td><td>Responses</td><td>Z</td><td>Text</td><td></td></tr>
+                                <tr><td>Job Title</td><td>Responses</td><td>AA</td><td>Text</td><td></td></tr>
+                                <tr><td>Start Date</td><td>Responses</td><td>AB</td><td>Date</td><td></td></tr>
+                                <tr><td>End Date</td><td>Responses</td><td>AC</td><td>Date</td><td></td></tr>
+                                <tr><td>Duties and Responsibilities</td><td>Responses</td><td>AD</td><td>Textarea</td><td></td></tr>
+                                <tr><td>Supervisor’s Name and Contact Info</td><td>Responses</td><td>AE</td><td>Text</td><td></td></tr>
+                                <tr><td>May we contact this employer?</td><td>Responses</td><td>AF</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>Reason for Leaving</td><td>Responses</td><td>AG</td><td>Text</td><td></td></tr>
+                                <tr><td>Section 5: Education</td><td>Responses</td><td>AH</td><td>Header</td><td>Education</td></tr>
+                                <tr><td>Education Container</td><td>Responses</td><td>AI</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Institution Name</td><td>Responses</td><td>AJ</td><td>Text</td><td></td></tr>
+                                <tr><td>Degree or Certification Earned</td><td>Responses</td><td>AK</td><td>Text</td><td></td></tr>
+                                <tr><td>Field of Study</td><td>Responses</td><td>AL</td><td>Text</td><td></td></tr>
+                                <tr><td>Graduation Date</td><td>Responses</td><td>AM</td><td>Date</td><td></td></tr>
+                                <tr><td>Section 6: Skills and Qualifications</td><td>Responses</td><td>AN</td><td>Header</td><td>Skills and Qualifications</td></tr>
+                                <tr><td>List relevant skills</td><td>Responses</td><td>AO</td><td>Textarea</td><td></td></tr>
+                                <tr><td>Certifications or Licenses</td><td>Responses</td><td>AP</td><td>Text</td><td></td></tr>
+                                <tr><td>Section 7: References</td><td>Responses</td><td>AQ</td><td>Header</td><td>References</td></tr>
+                                <tr><td>References Container</td><td>Responses</td><td>AR</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                                <tr><td>Reference Full Name</td><td>Responses</td><td>AS</td><td>Text</td><td></td></tr>
+                                <tr><td>Relationship</td><td>Responses</td><td>AT</td><td>Text</td><td></td></tr>
+                                <tr><td>Phone/Email</td><td>Responses</td><td>AU</td><td>Text</td><td></td></tr>
+                                <tr><td>Years Known</td><td>Responses</td><td>AV</td><td>Text</td><td></td></tr>
+                                <tr><td>Section 8: Legal and Background</td><td>Responses</td><td>AW</td><td>Header</td><td>Legal and Background</td></tr>
+                                <tr><td>Have you ever been convicted of a felony?</td><td>Responses</td><td>AX</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>If yes, please explain</td><td>Responses</td><td>AY</td><td>Conditional</td><td>Have you ever been convicted of a felony?=Yes</td></tr>
+                                <tr><td>Do you consent to a background check?</td><td>Responses</td><td>AZ</td><td>Radio</td><td>Yes,No</td></tr>
+                                <tr><td>Section 9: Declaration</td><td>Responses</td><td>BA</td><td>Header</td><td>Declaration</td></tr>
+                                <tr><td>I certify that the information provided is true and complete</td><td>Responses</td><td>BB</td><td>Checkbox</td><td></td></tr>
+                                <tr><td>Signature</td><td>Responses</td><td>BC</td><td>Text</td><td></td></tr>
+                                <tr><td>Date</td><td>Responses</td><td>BD</td><td>Date</td><td></td></tr>
+                                <tr><td>Footer</td><td>Responses</td><td>BE</td><td>Footer</td><td>Thank you for applying!</td></tr>
+                            </table>
+                            <p class="note">Note: Adjust column E as needed (e.g., customize dropdowns, add more history/reference sections).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Support -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#support">
+                        7. Support
+                    </button>
+                </h2>
+                <div id="support" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <p>For help, visit:</p>
+                        <ul>
+                            <li><a href="https://datamateapp.github.io/help.html">Help Page</a></li>
+                            <li><a href="mailto:datamateapp@gmail.com">Contact Us</a></li>
+                            <li><a href="https://github.com/DataMateApp/DataMate-code.gs">Open Source Code</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 DataMateApps | <a href="https://datamateapp.github.io/privacypolicy.html">Privacy Policy</a> | <a href="https://datamateapp.github.io/termsconditions.html">Terms & Conditions</a></p>
+        </footer>
     </div>
 
-    <div class="step">
-        <h2>Step 2: Add Fields</h2>
-        <p>Add fields using the sidebar or edit <code>A9:E</code> directly:</p>
-        <ul>
-            <li><strong>A</strong>: Field Name (e.g., "Name") - The label for the field.</li>
-            <li><strong>B</strong>: Target Sheet (e.g., "Responses") - Must match <code>B4</code> or specify another sheet.</li>
-            <li><strong>C</strong>: Target Cell/Column (e.g., "A1" or "A") - Where data is stored (<code>A1</code> for SingleCell, column letter like <code>A</code> for TableRow).</li>
-            <li><strong>D</strong>: Field Type (e.g., "Text") - Defines the input type (see below).</li>
-            <li><strong>E</strong>: Options (e.g., "Option1,Option2" or "=Sheet1!A:A") - Additional settings like dropdown options or formulas.</li>
-        </ul>
-    </div>
-
-    <div class="step">
-        <h2>Step 3: Field Types</h2>
-        <p>Below are all supported field types with instructions:</p>
-
-        <div class="field-type">
-            <h3>Text</h3>
-            <p>A single-line text input.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Name", "Responses", "A", "Text", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Dropdown</h3>
-            <p>A dropdown menu with selectable options.</p>
-            <ul>
-                <li><strong>E</strong>: Comma-separated options (e.g., "Yes,No") or a sheet range (e.g., "=Sheet1!A:A").</li>
-                <li>Example: <code>["Choice", "Responses", "B", "Dropdown", "Red,Blue,Green"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>MultiSelect</h3>
-            <p>A dropdown allowing multiple selections.</p>
-            <ul>
-                <li><strong>E</strong>: Comma-separated options or a sheet range.</li>
-                <li>Example: <code>["Interests", "Responses", "C", "MultiSelect", "Tech,Art,Sports"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Date</h3>
-            <p>A date picker input.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Event Date", "Responses", "D", "Date", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Time</h3>
-            <p>A time picker input.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Event Time", "Responses", "E", "Time", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Number</h3>
-            <p>A numeric input field.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Quantity", "Responses", "F", "Number", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Checkbox</h3>
-            <p>A single checkbox (true/false).</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Urgent", "Responses", "G", "Checkbox", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Radio</h3>
-            <p>Radio buttons for single-choice selection.</p>
-            <ul>
-                <li><strong>E</strong>: Comma-separated options.</li>
-                <li>Example: <code>["Priority", "Responses", "H", "Radio", "Low,Medium,High"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Textarea</h3>
-            <p>A multi-line text input.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Comments", "Responses", "I", "Textarea", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Email</h3>
-            <p>An email input with validation.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Email", "Responses", "J", "Email", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>StarRating</h3>
-            <p>A 5-star rating input.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank (fixed 1-5 scale).</li>
-                <li>Example: <code>["Rating", "Responses", "K", "StarRating", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>RangeSlider</h3>
-            <p>A slider for selecting a value within a range.</p>
-            <ul>
-                <li><strong>E</strong>: "min,max,step" (e.g., "0,100,5").</li>
-                <li>Example: <code>["Satisfaction", "Responses", "L", "RangeSlider", "0,100,5"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>FileUpload</h3>
-            <p>Allows users to upload files (images or PDFs, max 6MB).</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li><strong>Behavior</strong>: Files are uploaded to Google Drive, and the form stores a link.</li>
-                <li>Example: <code>["Attachment", "Responses", "M", "FileUpload", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Conditional</h3>
-            <p>A field that appears based on another field's value.</p>
-            <ul>
-                <li><strong>E</strong>: "FieldName=Value" (e.g., "Urgent=Yes").</li>
-                <li>Example: <code>["Reason", "Responses", "N", "Conditional", "Urgent=Yes"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Calculated</h3>
-            <p>A read-only field that calculates a value.</p>
-            <ul>
-                <li><strong>E</strong>: "FieldName=Formula" (e.g., "Total=Quantity*10").</li>
-                <li>Example: <code>["Total", "Responses", "O", "Calculated", "Total=Quantity*10"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Signature</h3>
-            <p>A canvas for drawing a signature.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li><strong>Behavior</strong>: Saves as a PNG link in Google Drive.</li>
-                <li>Example: <code>["Signature", "Responses", "P", "Signature", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Geolocation</h3>
-            <p>Captures latitude and longitude coordinates.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li><strong>Behavior</strong>: Users click a button to share their location.</li>
-                <li>Example: <code>["Location", "Responses", "Q", "Geolocation", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>ProgressBar</h3>
-            <p>Displays a static progress bar.</p>
-            <ul>
-                <li><strong>E</strong>: A number (0-100) for the progress value.</li>
-                <li>Example: <code>["Progress", "Responses", "R", "ProgressBar", "75"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Captcha</h3>
-            <p>A simple verification field (fixed to "3 + 5").</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li><strong>Behavior</strong>: Users must enter "8" to pass.</li>
-                <li>Example: <code>["Verification", "Responses", "S", "Captcha", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Image</h3>
-            <p>Displays a static image.</p>
-            <ul>
-                <li><strong>E</strong>: A Google Drive link (e.g., "https://drive.google.com/uc?id=FILE_ID").</li>
-                <li>
-                    <strong>How to Add</strong>:
-                    <ol>
-                        <li>Upload an image to Google Drive.</li>
-                        <li>Share it as "Anyone with the link."</li>
-                        <li>Use format: <code>https://drive.google.com/uc?id=FILE_ID</code>.</li>
-                    </ol>
-                </li>
-                <li>Example: <code>["Product Image", "Responses", "T", "Image", "https://drive.google.com/uc?id=1a2b3c4d5e6f7g8h9i0j"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Video</h3>
-            <p>Displays a playable video.</p>
-            <ul>
-                <li><strong>E</strong>: A direct video URL (e.g., MP4 link).</li>
-                <li>Example: <code>["Product Video", "Responses", "U", "Video", "https://www.w3schools.com/html/mov_bbb.mp4"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>ImageLink</h3>
-            <p>Allows users to input an image URL.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Upload Image URL", "Responses", "V", "ImageLink", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>VideoLink</h3>
-            <p>Allows users to input a video URL.</p>
-            <ul>
-                <li><strong>E</strong>: Leave blank.</li>
-                <li>Example: <code>["Upload Video URL", "Responses", "W", "VideoLink", ""]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>StaticText</h3>
-            <p>Displays static text.</p>
-            <ul>
-                <li><strong>E</strong>: The text to display.</li>
-                <li>Example: <code>["Welcome", "Responses", "X", "StaticText", "Please fill out this form."]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Table</h3>
-            <p>Displays a table from a sheet range.</p>
-            <ul>
-                <li><strong>E</strong>: A range (e.g., "Sheet2!A1:C5").</li>
-                <li>Example: <code>["Sales Data", "Responses", "Y", "Table", "Sheet2!A1:C5"]</code></li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Container</h3>
-            <p>A section to group fields with optional custom styling.</p>
-            <ul>
-                <li><strong>E</strong>: Inline CSS (e.g., "background: #f0f0f0; padding: 10px;") or leave blank for default styling.</li>
-                <li><strong>Behavior</strong>: Groups all following fields until another <code>Container</code> or <code>Footer</code>.</li>
-                <li>Example: <code>["Section 1", "Responses", "Z", "Container", "background: #f0f0f0; border: 2px solid #ccc;"]</code></li>
-                <li><strong>Tip</strong>: Place before the fields you want to group.</li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Header</h3>
-            <p>A styled header section at the top or within the form.</p>
-            <ul>
-                <li><strong>E</strong>: Text to display in the header.</li>
-                <li>Example: <code>["Form Header", "Responses", "AA", "Header", "Welcome to Our Survey"]</code></li>
-                <li><strong>Tip</strong>: Use at the start of <code>A9:E</code> for a top header.</li>
-            </ul>
-        </div>
-
-        <div class="field-type">
-            <h3>Footer</h3>
-            <p>A styled footer section at the bottom or within the form.</p>
-            <ul>
-                <li><strong>E</strong>: Text to display in the footer.</li>
-                <li>Example: <code>["Form Footer", "Responses", "AB", "Footer", "© 2025 Your Company"]</code></li>
-                <li><strong>Tip</strong>: Place at the end of <code>A9:E</code> for a bottom footer.</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="step">
-        <h2>Step 4: Preview & Deploy</h2>
-        <p>Preview via "Form Builder > Preview Form". Deploy via Apps Script:</p>
-        <ul>
-            <li>Go to the Apps Script editor.</li>
-            <li>Click "Deploy > New Deployment > Web App."</li>
-            <li>Set "Who has access" to "Anyone" or as needed, then deploy.</li>
-            <li>Copy the generated URL.</li>
-        </ul>
-    </div>
-
-    <div class="step">
-        <h2>Step 5: Collect Data</h2>
-        <p>Share the web app URL with respondents. Data is stored in the target sheet:</p>
-        <ul>
-            <li><strong>SingleCell</strong>: Overwrites specified cells.</li>
-            <li><strong>TableRow</strong>: Adds new rows (creates new sheets if over 40,000 rows).</li>
-            <li><strong>FileUpload/Signature</strong>: Files save to Google Drive with links in the sheet.</li>
-        </ul>
-    </div>
-
-    <h2>Setting Up Your Form</h2>
-    <p>To configure your form, edit the <code>FormSetup</code> sheet starting at row 9 (columns A to E). Below is a template for a "Job Application Form" that you can copy and paste into your <code>FormSetup</code> sheet.</p>
-
-    <h2>Job Application Form Template</h2>
-    <p>Copy the table below and paste it into <code>FormSetup</code> at <code>A9:E</code>. Adjust the values as needed (e.g., dropdown options, container styles).</p>
-
-    <table>
-        <tr>
-            <th>Form Fields (A)</th>
-            <th>Target Sheet (B)</th>
-            <th>Target Cells (C)</th>
-            <th>Field Type (D)</th>
-            <th>Dropdown Options (E)</th>
-        </tr>
-        <!-- Section 1: Personal Information -->
-        <tr><td>Section 1: Personal Information</td><td>Responses</td><td>A</td><td>Header</td><td>Personal Information</td></tr>
-        <tr><td>Full Name</td><td>Responses</td><td>B</td><td>Text</td><td></td></tr>
-        <tr><td>Address Container</td><td>Responses</td><td>C</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-        <tr><td>Street</td><td>Responses</td><td>D</td><td>Text</td><td></td></tr>
-        <tr><td>City</td><td>Responses</td><td>E</td><td>Text</td><td></td></tr>
-        <tr><td>State</td><td>Responses</td><td>F</td><td>Text</td><td></td></tr>
-        <tr><td>ZIP</td><td>Responses</td><td>G</td><td>Text</td><td></td></tr>
-        <tr><td>Phone Number</td><td>Responses</td><td>H</td><td>Text</td><td></td></tr>
-        <tr><td>Email Address</td><td>Responses</td><td>I</td><td>Email</td><td></td></tr>
-        <tr><td>Are you at least 18 years old?</td><td>Responses</td><td>J</td><td>Radio</td><td>Yes,No</td></tr>
-
-        <!-- Section 2: Position Information -->
-        <tr><td>Section 2: Position Information</td><td>Responses</td><td>K</td><td>Header</td><td>Position Information</td></tr>
-        <tr><td>Position Applying For</td><td>Responses</td><td>L</td><td>Dropdown</td><td>Developer,Designer,Manager</td></tr>
-        <tr><td>Desired Salary</td><td>Responses</td><td>M</td><td>Radio</td><td>$40,000-$50,000,$50,001-$60,000,$60,001+</td></tr>
-        <tr><td>Date Available to Start</td><td>Responses</td><td>N</td><td>Date</td><td></td></tr>
-        <tr><td>Availability Container</td><td>Responses</td><td>O</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-        <tr><td>Full-time</td><td>Responses</td><td>P</td><td>Checkbox</td><td></td></tr>
-        <tr><td>Part-time</td><td>Responses</td><td>Q</td><td>Checkbox</td><td></td></tr>
-        <tr><td>Weekends</td><td>Responses</td><td>R</td><td>Checkbox</td><td></td></tr>
-        <tr><td>Evenings</td><td>Responses</td><td>S</td><td>Checkbox</td><td></td></tr>
-        <tr><td>How did you hear about this position?</td><td>Responses</td><td>T</td><td>Dropdown</td><td>Website,Referral,Job Board</td></tr>
-
-        <!-- Section 3: Employment Eligibility -->
-        <tr><td>Section 3: Employment Eligibility</td><td>Responses</td><td>U</td><td>Header</td><td>Employment Eligibility</td></tr>
-        <tr><td>Are you legally authorized to work in this country?</td><td>Responses</td><td>V</td><td>Radio</td><td>Yes,No</td></tr>
-        <tr><td>Will you now or in the future require work sponsorship?</td><td>Responses</td><td>W</td><td>Radio</td><td>Yes,No</td></tr>
-
-        <!-- Section 4: Employment History -->
-        <tr><td>Section 4: Employment History</td><td>Responses</td><td>X</td><td>Header</td><td>Employment History</td></tr>
-        <tr><td>Employment History Container</td><td>Responses</td><td>Y</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-        <tr><td>Employer Name</td><td>Responses</td><td>Z</td><td>Text</td><td></td></tr>
-        <tr><td>Job Title</td><td>Responses</td><td>AA</td><td>Text</td><td></td></tr>
-        <tr><td>Start Date</td><td>Responses</td><td>AB</td><td>Date</td><td></td></tr>
-        <tr><td>End Date</td><td>Responses</td><td>AC</td><td>Date</td><td></td></tr>
-        <tr><td>Duties and Responsibilities</td><td>Responses</td><td>AD</td><td>Textarea</td><td></td></tr>
-        <tr><td>Supervisor’s Name and Contact Info</td><td>Responses</td><td>AE</td><td>Text</td><td></td></tr>
-        <tr><td>May we contact this employer?</td><td>Responses</td><td>AF</td><td>Radio</td><td>Yes,No</td></tr>
-        <tr><td>Reason for Leaving</td><td>Responses</td><td>AG</td><td>Text</td><td></td></tr>
-
-        <!-- Section 5: Education -->
-        <tr><td>Section 5: Education</td><td>Responses</td><td>AH</td><td>Header</td><td>Education</td></tr>
-        <tr><td>Education Container</td><td>Responses</td><td>AI</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-        <tr><td>Institution Name</td><td>Responses</td><td>AJ</td><td>Text</td><td></td></tr>
-        <tr><td>Degree or Certification Earned</td><td>Responses</td><td>AK</td><td>Text</td><td></td></tr>
-        <tr><td>Field of Study</td><td>Responses</td><td>AL</td><td>Text</td><td></td></tr>
-        <tr><td>Graduation Date</td><td>Responses</td><td>AM</td><td>Date</td><td></td></tr>
-
-        <!-- Section 6: Skills and Qualifications -->
-        <tr><td>Section 6: Skills and Qualifications</td><td>Responses</td><td>AN</td><td>Header</td><td>Skills and Qualifications</td></tr>
-        <tr><td>List relevant skills</td><td>Responses</td><td>AO</td><td>Textarea</td><td></td></tr>
-        <tr><td>Certifications or Licenses</td><td>Responses</td><td>AP</td><td>Text</td><td></td></tr>
-
-        <!-- Section 7: References -->
-        <tr><td>Section 7: References</td><td>Responses</td><td>AQ</td><td>Header</td><td>References</td></tr>
-        <tr><td>References Container</td><td>Responses</td><td>AR</td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-        <tr><td>Reference Full Name</td><td>Responses</td><td>AS</td><td>Text</td><td></td></tr>
-        <tr><td>Relationship</td><td>Responses</td><td>AT</td><td>Text</td><td></td></tr>
-        <tr><td>Phone/Email</td><td>Responses</td><td>AU</td><td>Text</td><td></td></tr>
-        <tr><td>Years Known</td><td>Responses</td><td>AV</td><td>Text</td><td></td></tr>
-
-        <!-- Section 8: Legal and Background -->
-        <tr><td>Section 8: Legal and Background</td><td>Responses</td><td>AW</td><td>Header</td><td>Legal and Background</td></tr>
-        <tr><td>Have you ever been convicted of a felony?</td><td>Responses</td><td>AX</td><td>Radio</td><td>Yes,No</td></tr>
-        <tr><td>If yes, please explain</td><td>Responses</td><td>AY</td><td>Conditional</td><td>Have you ever been convicted of a felony?=Yes</td></tr>
-        <tr><td>Do you consent to a background check?</td><td>Responses</td><td>AZ</td><td>Radio</td><td>Yes,No</td></tr>
-
-        <!-- Section 9: Declaration -->
-        <tr><td>Section 9: Declaration</td><td>Responses</td><td>BA</td><td>Header</td><td>Declaration</td></tr>
-        <tr><td>I certify that the information provided is true and complete</td><td>Responses</td><td>BB</td><td>Checkbox</td><td></td></tr>
-        <tr><td>Signature</td><td>Responses</td><td>BC</td><td>Text</td><td></td></tr>
-        <tr><td>Date</td><td>Responses</td><td>BD</td><td>Date</td><td></td></tr>
-        <tr><td>Footer</td><td>Responses</td><td>BE</td><td>Footer</td><td>Thank you for applying!</td></tr>
-    </table>
-
-    <p class="note">Note: Copy the above table into <code>FormSetup</code> starting at <code>A9</code>. Ensure <code>B3</code> is set to "Job Application Form", <code>B4</code> to "Responses", and <code>B5</code> to "TableRow" for proper submission.</p>
-
-    <h2>Instructions</h2>
-    <p>
-        1. Open your spreadsheet and locate or create the <code>FormSetup</code> sheet.<br>
-        2. Paste the template above starting at <code>A9</code>.<br>
-        3. Adjust column E (Dropdown Options) as needed (e.g., customize dropdowns, add more history/reference sections).<br>
-        4. Use the "Preview Form" menu option to test, or deploy as a web app via the Apps Script editor.<br>
-    </p>
-
-    <h2>Limitations</h2>
-    <p>
-        - <strong>Repeatable Sections</strong>: This template includes one instance of Employment History and References. To add more, duplicate the relevant rows in <code>FormSetup</code> with unique field names (e.g., "Employer Name 2").<br>
-        - <strong>Formatting</strong>: Use the <code>Container</code> field type to group sections visually, and adjust styles in column E.<br>
-    </p>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Optional: Add close button functionality if used in Apps Script
+        document.querySelectorAll('.btn-close')?.forEach(btn => btn.addEventListener('click', () => google.script.host.close()));
+    </script>
 </body>
 </html>
-
