@@ -3688,8 +3688,8 @@ function createFormSetupSheet() {
     ["Terms Notice", "Responses", "AI", "Conditional", "Agree to Terms=No"],
     ["Form Footer", "Responses", "AJ", "Footer", "Thank you for your submission!"]
 ];
-    formSetupSheet.getRange("A9:E36").setValues(formFields);
-    formSetupSheet.getRange("A9:E36")
+    formSetupSheet.getRange("A9:E44").setValues(formFields);
+    formSetupSheet.getRange("A9:E44")
       .setBackground("#ffffff")
       .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
 
