@@ -2530,6 +2530,12 @@ function updateInventory() {
   }
 }
 
+
+
+
+
+
+
 function showTutorial() {
   var html = HtmlService.createHtmlOutputFromFile('tutorial')
     .setWidth(900)
@@ -2562,7 +2568,7 @@ function showFormBuilder() {
           <input type="text" id="targetSheet" value="Responses">
         </div>
         <div class="field">
-          <label>Target Cell/Column</label>
+          <label>Target Cell/Column (e.g., A1 for SingleCell, A for TableRow)</label>
           <input type="text" id="targetCell" value="A">
         </div>
         <div class="field">
@@ -2593,14 +2599,13 @@ function showFormBuilder() {
             <option value="VideoLink">Video Link</option>
             <option value="StaticText">Static Text</option>
             <option value="Table">Table</option>
-            <option value="DynamicTable">Dynamic Table</option> <!-- New field type -->
             <option value="Container">Container</option>
             <option value="Header">Header</option>
             <option value="Footer">Footer</option>
           </select>
         </div>
         <div class="field">
-          <label>Options (e.g., "Option1,Option2" or "=Sheet1!A:A" or "=Inventory!A:A,PriceColumn:C")</label>
+          <label>Options (e.g., "Option1,Option2" or "=Sheet1!A:A")</label>
           <input type="text" id="options">
         </div>
         <button onclick="saveField()">Add Field</button>
@@ -2640,6 +2645,13 @@ function previewForm() {
   );
 }
 
+
+
+
+
+
+
+
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var setupSheet = ss.getSheetByName("FormSetup");
@@ -2648,14 +2660,24 @@ function doGet(e) {
     setupSheet = ss.getSheetByName("FormSetup");
   }
 
-  var formName = setupSheet.getRange("B3").getValue() || "My Custom";
-  var targetSheetName = setupSheet.getRange("B4").getValue() || "Responses";
-  var submissionType = setupSheet.getRange("B5").getValue() || "SingleCell";
+  // Get fields data from A9:E
   var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
 
+  // Determine form name from the first Header field, or leave blank if no fields
+  var formName = "";
+  if (fieldsData.length > 0) {
+    for (var i = 0; i < fieldsData.length; i++) {
+      if (fieldsData[i][3].toUpperCase() === "HEADER" && fieldsData[i][4]) {
+        formName = fieldsData[i][4];
+        break;
+      }
+    }
+  }
+
   var processedFieldsData = fieldsData.map((row, index) => {
     var fieldName = row[0];
+    var targetSheet = row[1] || "Responses";
     var fieldType = row[3] || "Text";
     var cell = setupSheet.getRange("E" + (index + 9));
     var dropdownOptions = cell.getFormula() || row[4];
@@ -2713,27 +2735,8 @@ function doGet(e) {
         Logger.log('Error fetching table range "' + dropdownOptions + '": ' + e.message);
         options = [["Error: Invalid range " + dropdownOptions]];
       }
-    } else if (fieldType.toUpperCase() === "DYNAMICTABLE" && dropdownOptions) {
-      // Parse "=Sheet!Range,PriceColumn:Column" format
-      var parts = dropdownOptions.split(",");
-      if (parts.length >= 1 && parts[0].startsWith("=")) {
-        var rangeStr = parts[0].substring(1);
-        try {
-          var range = ss.getRange(rangeStr);
-          options = range.getValues().flat().filter(String);
-        } catch (e) {
-          Logger.log('Error fetching dynamic table range "' + rangeStr + '": ' + e.message);
-          options = ["Error: Invalid range " + rangeStr];
-        }
-      }
-      if (parts.length === 2 && parts[1].startsWith("PriceColumn:")) {
-        var priceCol = parts[1].split(":")[1];
-        options.push({ priceColumn: priceCol });
-      } else {
-        options.push({ priceColumn: null });
-      }
     }
-    return [fieldName, fieldType, options];
+    return [fieldName, fieldType, options, targetSheet, row[2]]; // Include targetSheet and targetCell
   });
 
   var template = HtmlService.createTemplate(`
@@ -2800,8 +2803,8 @@ function doGet(e) {
             color: #555;
           }
           input[type="text"], input[type="date"], input[type="number"], 
-          input[type="email"], input[type="color"], input[type="time"], 
-          input[type="range"], select, textarea, input[type="file"] {
+          input[type="email"], input[type="time"], input[type="range"], 
+          select, textarea, input[type="file"] {
             width: 250px;
             padding: 8px 12px;
             border: 1px solid #ddd;
@@ -2809,9 +2812,7 @@ function doGet(e) {
             font-size: 14px;
             transition: border-color 0.3s;
           }
-          input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus,
-          input[type="email"]:focus, input[type="color"]:focus, input[type="time"]:focus,
-          input[type="range"]:focus, select:focus, textarea:focus, input[type="file"]:focus {
+          input:focus, select:focus, textarea:focus {
             border-color: #4CAF50;
             outline: none;
           }
@@ -2868,34 +2869,20 @@ function doGet(e) {
             font-size: 16px;
             color: #444;
           }
-          .table-display, .dynamic-table {
+          .table-display {
             width: 100%;
             margin: 0 0 20px 150px;
             border-collapse: collapse;
             background: #fff;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow: auto;
           }
-          .table-display th, .table-display td, .dynamic-table th, .dynamic-table td {
+          .table-display th, .table-display td {
             padding: 10px;
             border: 1px solid #ddd;
-            text-align: left;
-            font-size: 14px;
           }
-          .table-display th, .dynamic-table th {
+          .table-display th {
             background: #f1f1f1;
             font-weight: bold;
-            color: #333;
-          }
-          .table-display td, .dynamic-table td {
-            color: #555;
-          }
-          .dynamic-table select, .dynamic-table input {
-            width: 100%;
-          }
-          .dynamic-table-buttons {
-            margin: 10px 0 0 150px;
           }
           .range-output {
             margin-left: 10px;
@@ -2927,8 +2914,6 @@ function doGet(e) {
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            transition: background 0.3s;
-            margin: 10px 0;
           }
           button:hover:not(:disabled) {
             background: #45a049;
@@ -2967,473 +2952,348 @@ function doGet(e) {
             margin-left: 165px;
             margin-top: 5px;
           }
-          .totals {
-            margin: 20px 0 0 150px;
-            font-weight: bold;
+          .no-fields {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            padding: 20px;
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <h1><?= formName ?> Form</h1>
-          <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
-            <? var inContainer = false; ?>
-            <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
-              <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
-                <div class="header"><?= processedFieldsData[i][2][0] ?></div>
-              <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
-                <? if (inContainer) { ?></div><? inContainer = false; } ?>
-                <div class="footer"><?= processedFieldsData[i][2][0] ?></div>
-              <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
-                <? if (inContainer) { ?></div><? } ?>
-                <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
-                <? inContainer = true; ?>
-              <? } else { ?>
-                <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
-                  <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
-                    <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
-                  <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
-                    <label><?= processedFieldsData[i][0] ?>:</label>
-                    <table class="table-display">
-                      <? var tableData = processedFieldsData[i][2]; ?>
-                      <? for (var row = 0; row < tableData.length; row++) { ?>
-                        <tr>
-                          <? var isHeader = row === 0; ?>
-                          <? for (var col = 0; col < tableData[row].length; col++) { ?>
-                            <? if (isHeader) { ?>
-                              <th><?= tableData[row][col] || '' ?></th>
-                            <? } else { ?>
-                              <td><?= tableData[row][col] || '' ?></td>
+          <? if (processedFieldsData.length > 0) { ?>
+            <? if (formName) { ?>
+              <h1><?= formName ?> Form</h1>
+            <? } ?>
+            <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
+              <? var inContainer = false; ?>
+              <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
+                <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
+                  <div class="header"><?= processedFieldsData[i][2][0] ?></div>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? inContainer = false; } ?>
+                  <div class="footer"><?= processedFieldsData[i][2][0] ?></div>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? } ?>
+                  <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
+                  <? inContainer = true; ?>
+                <? } else { ?>
+                  <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
+                    <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
+                      <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
+                      <label><?= processedFieldsData[i][0] ?>:</label>
+                      <table class="table-display">
+                        <? var tableData = processedFieldsData[i][2]; ?>
+                        <? for (var row = 0; row < tableData.length; row++) { ?>
+                          <tr>
+                            <? var isHeader = row === 0; ?>
+                            <? for (var col = 0; col < tableData[row].length; col++) { ?>
+                              <? if (isHeader) { ?>
+                                <th><?= tableData[row][col] || '' ?></th>
+                              <? } else { ?>
+                                <td><?= tableData[row][col] || '' ?></td>
+                              <? } ?>
                             <? } ?>
-                          <? } ?>
-                        </tr>
-                      <? } ?>
-                    </table>
-                  <? } else if (processedFieldsData[i][1].toUpperCase() === "DYNAMICTABLE" && processedFieldsData[i][2].length > 0) { ?>
-                    <label><?= processedFieldsData[i][0] ?>:</label>
-                    <table class="dynamic-table" id="dynamicTable-<?= processedFieldsData[i][0] ?>">
-                      <tr>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                      </tr>
-                      <tr class="dynamic-row">
-                        <td><select name="description" onchange="updatePrice(this, '<?= processedFieldsData[i][0] ?>')">
-                          <option value="">Select an item</option>
-                          <? var options = processedFieldsData[i][2].slice(0, -1); ?>
+                          </tr>
+                        <? } ?>
+                      </table>
+                    <? } else { ?>
+                      <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                          <? var options = processedFieldsData[i][2]; ?>
                           <? for (var j = 0; j < options.length; j++) { ?>
                             <option value="<?= options[j] ?>"><?= options[j] ?></option>
                           <? } ?>
-                        </select></td>
-                        <td><input type="number" name="quantity" min="0" oninput="updateTotals('<?= processedFieldsData[i][0] ?>')"></td>
-                        <td><input type="number" name="unitPrice" readonly></td>
-                      </tr>
-                    </table>
-                    <div class="dynamic-table-buttons">
-                      <button type="button" onclick="addRow('<?= processedFieldsData[i][0] ?>')">Add Item</button>
-                      <button type="button" onclick="removeRow('<?= processedFieldsData[i][0] ?>')">Remove Item</button>
-                    </div>
-                    <div class="totals" id="totals-<?= processedFieldsData[i][0] ?>">
-                      <p>Subtotal: <span id="subtotal-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
-                      <p>Tax: <span id="tax-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
-                      <p>Total: <span id="total-<?= processedFieldsData[i][0] ?>">$0.00</span></p>
-                    </div>
-                  <? } else { ?>
-                    <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
-                    <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
-                      <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                        <? var options = processedFieldsData[i][2]; ?>
-                        <? for (var j = 0; j < options.length; j++) { ?>
-                          <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple>
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
+                        <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
+                        <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
+                        <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
+                        <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
+                        <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <div>
+                              <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>">
+                              <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
+                            </div>
+                          <? } ?>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
+                        <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></textarea>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
+                        <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
+                        <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5">
+                          <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
+                          <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-3" name="<?= processedFieldsData[i][0] ?>" value="3">
+                          <label for="<?= processedFieldsData[i][0] ?>-3">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-2" name="<?= processedFieldsData[i][0] ?>" value="2">
+                          <label for="<?= processedFieldsData[i][0] ?>-2">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-1" name="<?= processedFieldsData[i][0] ?>" value="1">
+                          <label for="<?= processedFieldsData[i][0] ?>-1">★</label>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
+                        <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
+                          min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>">
+                        <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
+                        <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
+                        <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
+                        <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly>
+                        <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
+                        <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)">
+                        <span id="captcha-question">What is 3 + 5?</span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>">
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
+                        <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
+                          <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= processedFieldsData[i][2][0].split('/').pop().split('?')[0] ?>" frameborder="0" allowfullscreen></iframe>
+                        <? } else { ?>
+                          <video controls id="<?= processedFieldsData[i][0] ?>">
+                            <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
+                            Your browser does not support the video tag.
+                          </video>
                         <? } ?>
-                      </select>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
-                      <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple>
-                        <? var options = processedFieldsData[i][2]; ?>
-                        <? for (var j = 0; j < options.length; j++) { ?>
-                          <option value="<?= options[j] ?>"><?= options[j] ?></option>
-                        <? } ?>
-                      </select>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
-                      <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
-                      <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
-                      <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
-                      <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
-                      <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
-                        <? var options = processedFieldsData[i][2]; ?>
-                        <? for (var j = 0; j < options.length; j++) { ?>
-                          <div>
-                            <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>">
-                            <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
-                          </div>
-                        <? } ?>
-                      </div>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
-                      <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></textarea>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
-                      <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
-                      <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
-                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5">
-                        <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
-                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
-                        <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
-                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-3" name="<?= processedFieldsData[i][0] ?>" value="3">
-                        <label for="<?= processedFieldsData[i][0] ?>-3">★</label>
-                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-2" name="<?= processedFieldsData[i][0] ?>" value="2">
-                        <label for="<?= processedFieldsData[i][0] ?>-2">★</label>
-                        <input type="radio" id="<?= processedFieldsData[i][0] ?>-1" name="<?= processedFieldsData[i][0] ?>" value="1">
-                        <label for="<?= processedFieldsData[i][0] ?>-1">★</label>
-                      </div>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
-                      <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
-                        min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>">
-                      <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
-                      <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
-                      <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
-                      <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly>
-                      <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
-                      <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)">
-                      <span id="captcha-question">What is 3 + 5?</span>
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
-                      <div id="<?= processedFieldsData[i][0] ?>-container">
-                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" 
-                          onerror="this.style.display='none'; this.nextSibling.style.display='block';">
-                        <span style="display: none; color: #d32f2f;">Image failed to load</span>
-                      </div>
-                      <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
-                      <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
-                        <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= processedFieldsData[i][2][0].split('/').pop().split('?')[0] ?>" frameborder="0" allowfullscreen></iframe>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
                       <? } else { ?>
-                        <video controls id="<?= processedFieldsData[i][0] ?>">
-                          <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
-                          Your browser does not support the video tag.
-                        </video>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
                       <? } ?>
-                      <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
-                    <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
-                    <? } else { ?>
-                      <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
                     <? } ?>
-                    <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
-                  <? } ?>
-                </div>
+                  </div>
+                <? } ?>
               <? } ?>
-            <? } ?>
-            <? if (inContainer) { ?></div><? } ?>
-            <button type="submit" id="submitButton">Submit <span class="spinner" id="spinner"></span></button>
-          </form>
-          <div id="message">Data submitted successfully!</div>
+              <? if (inContainer) { ?></div><? } ?>
+              <button type="submit" id="submitButton">Submit <span class="spinner" id="spinner"></span></button>
+            </form>
+            <div id="message">Data submitted successfully!</div>
+          <? } else { ?>
+            <div class="no-fields">No fields defined. Please add fields in FormSetup A9:E.</div>
+          <? } ?>
         </div>
         <script>
-          const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
-          const submissionType = '<?!= submissionType ?>';
-          const targetSheetName = '<?!= targetSheetName ?>';
-          let signatureCanvases = {};
+          <? if (processedFieldsData.length > 0) { ?>
+            const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
+            let signatureCanvases = {};
 
-          function handleSubmit(event) {
-            event.preventDefault();
-            console.log('Form submission started');
+            function handleSubmit(event) {
+              event.preventDefault();
+              const form = document.getElementById('myForm');
+              const submitButton = document.getElementById('submitButton');
+              const spinner = document.getElementById('spinner');
+              const dataToSend = {};
+              let isValid = true;
+              let pendingFiles = 0;
 
-            const form = document.getElementById('myForm');
-            const submitButton = document.getElementById('submitButton');
-            const spinner = document.getElementById('spinner');
-            const dataToSend = {};
-            let isValid = true;
-            let pendingFiles = 0;
+              const inputs = form.querySelectorAll('input, select, textarea');
+              inputs.forEach(input => {
+                const name = input.name;
+                if (!name || input.type === 'button') return;
 
-            const inputs = form.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-              const name = input.name;
-              if (!name || input.type === 'button') return;
+                let value;
+                const errorSpan = document.getElementById(name + '-error');
 
-              let value;
-              const errorSpan = document.getElementById(name + '-error');
-
-              if (input.closest('.dynamic-table')) {
-                const tableId = input.closest('.dynamic-table').id.split('-')[1];
-                if (!dataToSend[tableId]) dataToSend[tableId] = [];
-                const row = input.closest('.dynamic-row');
-                const idx = Array.from(row.parentNode.children).indexOf(row) - 1;
-                if (!dataToSend[tableId][idx]) dataToSend[tableId][idx] = {};
-                dataToSend[tableId][idx][name] = input.value;
-                return;
-              }
-
-              if (input.type === 'file' && input.files.length > 0) {
-                const file = input.files[0];
-                if (file.size > 6 * 1024 * 1024) {
-                  errorSpan.textContent = 'File too large (max 6 MB)';
-                  isValid = false;
-                } else {
-                  pendingFiles++;
-                  const reader = new FileReader();
-                  reader.onload = function(e) {
-                    dataToSend[name] = {
-                      name: file.name,
-                      data: e.target.result.split(',')[1],
-                      type: file.type || 'application/octet-stream'
+                if (input.type === 'file' && input.files.length > 0) {
+                  const file = input.files[0];
+                  if (file.size > 6 * 1024 * 1024) {
+                    errorSpan.textContent = 'File too large (max 6 MB)';
+                    isValid = false;
+                  } else {
+                    pendingFiles++;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                      dataToSend[name] = {
+                        name: file.name,
+                        data: e.target.result.split(',')[1],
+                        type: file.type || 'application/octet-stream'
+                      };
+                      pendingFiles--;
+                      if (pendingFiles === 0 && isValid) submitForm();
                     };
-                    pendingFiles--;
-                    if (pendingFiles === 0 && isValid) submitForm();
-                  };
-                  reader.readAsDataURL(file);
-                }
-              } else if (input.type === 'checkbox') {
-                value = input.checked;
-                dataToSend[name] = value;
-              } else if (input.type === 'radio') {
-                if (input.checked) dataToSend[name] = input.value;
-                return;
-              } else if (input.tagName === 'SELECT' && input.multiple) {
-                value = Array.from(input.selectedOptions).map(option => option.value).join(',');
-                dataToSend[name] = value;
-              } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
-                value = signatureCanvases[name].toDataURL().split(',')[1];
-                dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
-              } else {
-                value = input.value;
-                dataToSend[name] = value;
-              }
-
-              if (input.type === 'number' && value && isNaN(value)) {
-                errorSpan.textContent = 'Please enter a valid number';
-                isValid = false;
-              } else if (input.type === 'date' && value) {
-                const date = new Date(value);
-                if (isNaN(date.getTime())) {
-                  errorSpan.textContent = 'Please enter a valid date';
-                  isValid = false;
+                    reader.readAsDataURL(file);
+                  }
+                } else if (input.type === 'checkbox') {
+                  value = input.checked;
+                  dataToSend[name] = value;
+                } else if (input.type === 'radio') {
+                  if (input.checked) dataToSend[name] = input.value;
+                  return;
+                } else if (input.tagName === 'SELECT' && input.multiple) {
+                  value = Array.from(input.selectedOptions).map(option => option.value).join(',');
+                  dataToSend[name] = value;
+                } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
+                  value = signatureCanvases[name].toDataURL().split(',')[1];
+                  dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
                 } else {
-                  errorSpan.textContent = '';
+                  value = input.value;
+                  dataToSend[name] = value;
                 }
-              } else if (input.type === 'email' && value) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
+
+                if (input.type === 'number' && value && isNaN(value)) {
+                  errorSpan.textContent = 'Please enter a valid number';
+                  isValid = false;
+                } else if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                   errorSpan.textContent = 'Please enter a valid email';
                   isValid = false;
+                } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
+                  errorSpan.textContent = 'Incorrect answer. Please enter 8.';
+                  isValid = false;
                 } else {
                   errorSpan.textContent = '';
                 }
-              } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
-                errorSpan.textContent = 'Incorrect answer. Please enter 8.';
-                isValid = false;
-              } else {
-                errorSpan.textContent = '';
+              });
+
+              processedFieldsData.forEach(field => {
+                if (field[1].toUpperCase() === "CALCULATED" && field[2][0]) {
+                  const calcField = document.getElementById(field[0]);
+                  const formula = field[2][0].split('=')[1];
+                  const parts = formula.match(/(\w+|\d+|[*+/-])/g);
+                  let result = 0;
+                  if (parts) {
+                    result = evaluateFormula(parts, dataToSend);
+                    calcField.value = result;
+                    dataToSend[field[0]] = result;
+                  }
+                }
+              });
+
+              if (pendingFiles === 0 && isValid) submitForm();
+
+              function submitForm() {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                spinner.style.display = 'inline-block';
+
+                google.script.run
+                  .withSuccessHandler(() => {
+                    form.reset();
+                    resetSignatures();
+                    showMessage();
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .withFailureHandler(error => {
+                    alert('Error submitting form: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .processForm(dataToSend);
               }
-            });
+            }
+
+            function evaluateFormula(parts, data) {
+              let result = 0;
+              let operator = '+';
+              parts.forEach(part => {
+                if (['+', '-', '*', '/'].includes(part)) {
+                  operator = part;
+                } else {
+                  const num = isNaN(part) ? (data[part] || 0) : Number(part);
+                  if (operator === '+') result += num;
+                  else if (operator === '-') result -= num;
+                  else if (operator === '*') result *= num;
+                  else if (operator === '/' && num !== 0) result /= num;
+                }
+              });
+              return result;
+            }
+
+            function showMessage() {
+              const message = document.getElementById('message');
+              message.style.display = 'block';
+              setTimeout(() => message.style.display = 'none', 3000);
+            }
+
+            function getLocation(fieldId) {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  position => {
+                    document.getElementById(fieldId).value = position.coords.latitude + ',' + position.coords.longitude;
+                  },
+                  error => document.getElementById(fieldId + '-error').textContent = 'Unable to get location'
+                );
+              } else {
+                document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
+              }
+            }
 
             processedFieldsData.forEach(field => {
-              if (field[1].toUpperCase() === "STARRATING") {
-                const starRatingErrorSpan = document.getElementById(field[0] + '-error');
-                const checkedRating = document.querySelector('input[name="' + field[0] + '"]:checked');
-                if (!checkedRating && document.getElementById(field[0])) {
-                  starRatingErrorSpan.textContent = 'Please select a rating';
-                  isValid = false;
-                } else if (checkedRating) {
-                  starRatingErrorSpan.textContent = '';
-                  dataToSend[field[0]] = checkedRating.value;
-                }
-              } else if (field[1].toUpperCase() === "CALCULATED" && field[2][0]) {
-                const calcField = document.getElementById(field[0]);
-                const formula = field[2][0].split('=')[1];
-                const parts = formula.match(/(\w+|\d+|[*+/-])/g);
-                let result = 0;
-                if (parts) {
-                  result = evaluateFormula(parts, dataToSend);
-                  calcField.value = result;
-                  dataToSend[field[0]] = result;
-                }
-              }
-            });
+              if (field[1].toUpperCase() === "RANGESLIDER") {
+                const slider = document.getElementById(field[0]);
+                const output = document.getElementById(field[0] + '-output');
+                slider.oninput = () => output.textContent = slider.value;
+              } else if (field[1].toUpperCase() === "SIGNATURE") {
+                const canvas = document.getElementById(field[0]);
+                const ctx = canvas.getContext('2d');
+                let drawing = false;
+                signatureCanvases[field[0]] = canvas;
 
-            if (pendingFiles === 0 && isValid) submitForm();
-
-            function submitForm() {
-              console.log('Form is valid, submitting:', dataToSend);
-              submitButton.disabled = true;
-              submitButton.textContent = 'Submitting...';
-              spinner.style.display = 'inline-block';
-
-              google.script.run
-                .withSuccessHandler(function(response) {
-                  console.log('Submission successful:', response);
-                  form.reset();
-                  resetSignatures();
-                  resetDynamicTables();
-                  showMessage();
-                  submitButton.disabled = false;
-                  submitButton.textContent = 'Submit';
-                  spinner.style.display = 'none';
-                })
-                .withFailureHandler(function(error) {
-                  console.error('Submission failed:', error);
-                  alert('Error submitting form: ' + error.message);
-                  submitButton.disabled = false;
-                  submitButton.textContent = 'Submit';
-                  spinner.style.display = 'none';
-                })
-                .processForm(dataToSend, submissionType, targetSheetName);
-            }
-          }
-
-          function evaluateFormula(parts, data) {
-            let result = 0;
-            let operator = '+';
-            parts.forEach(part => {
-              if (['+', '-', '*', '/'].includes(part)) {
-                operator = part;
-              } else {
-                const num = isNaN(part) ? (data[part] || 0) : Number(part);
-                if (operator === '+') result += num;
-                else if (operator === '-') result -= num;
-                else if (operator === '*') result *= num;
-                else if (operator === '/' && num !== 0) result /= num;
-              }
-            });
-            return result;
-          }
-
-          function showMessage() {
-            const message = document.getElementById('message');
-            message.style.display = 'block';
-            setTimeout(() => {
-              message.style.display = 'none';
-            }, 3000);
-          }
-
-          function getLocation(fieldId) {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                function(position) {
-                  const coords = position.coords.latitude + ',' + position.coords.longitude;
-                  document.getElementById(fieldId).value = coords;
-                },
-                function(error) {
-                  document.getElementById(fieldId + '-error').textContent = 'Unable to get location';
-                }
-              );
-            } else {
-              document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
-            }
-          }
-
-          function updatePrice(select, tableId) {
-            const row = select.closest('.dynamic-row');
-            const description = select.value;
-            google.script.run.withSuccessHandler(price => {
-              row.querySelector('input[name="unitPrice"]').value = price;
-              updateTotals(tableId);
-            }).getUnitPrice(description, processedFieldsData.find(f => f[0] === tableId)[2].slice(-1)[0].priceColumn);
-          }
-
-          function addRow(tableId) {
-            const table = document.getElementById('dynamicTable-' + tableId);
-            const newRow = table.rows[1].cloneNode(true);
-            newRow.querySelector('select').value = "";
-            newRow.querySelector('input[name="quantity"]').value = "";
-            newRow.querySelector('input[name="unitPrice"]').value = "";
-            table.appendChild(newRow);
-          }
-
-          function removeRow(tableId) {
-            const table = document.getElementById('dynamicTable-' + tableId);
-            if (table.rows.length > 2) {
-              table.deleteRow(-1);
-              updateTotals(tableId);
-            }
-          }
-
-          function updateTotals(tableId) {
-            let subtotal = 0;
-            document.querySelectorAll('#dynamicTable-' + tableId + ' .dynamic-row').forEach(row => {
-              const qty = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
-              const price = parseFloat(row.querySelector('input[name="unitPrice"]').value) || 0;
-              subtotal += qty * price;
-            });
-            document.getElementById('subtotal-' + tableId).textContent = '$' + subtotal.toFixed(2);
-            google.script.run.withSuccessHandler(taxRate => {
-              const tax = subtotal * taxRate;
-              const total = subtotal + tax;
-              document.getElementById('tax-' + tableId).textContent = '$' + tax.toFixed(2);
-              document.getElementById('total-' + tableId).textContent = '$' + total.toFixed(2);
-            }).getTaxRate();
-          }
-
-          function resetDynamicTables() {
-            processedFieldsData.forEach(field => {
-              if (field[1].toUpperCase() === "DYNAMICTABLE") {
-                const table = document.getElementById('dynamicTable-' + field[0]);
-                while (table.rows.length > 2) table.deleteRow(-1);
-                const row = table.rows[1];
-                row.querySelector('select').value = "";
-                row.querySelector('input[name="quantity"]').value = "";
-                row.querySelector('input[name="unitPrice"]').value = "";
-                updateTotals(field[0]);
-              }
-            });
-          }
-
-          processedFieldsData.forEach(field => {
-            if (field[1].toUpperCase() === "RANGESLIDER") {
-              const slider = document.getElementById(field[0]);
-              const output = document.getElementById(field[0] + '-output');
-              slider.oninput = () => output.textContent = slider.value;
-            } else if (field[1].toUpperCase() === "SIGNATURE") {
-              const canvas = document.getElementById(field[0]);
-              const ctx = canvas.getContext('2d');
-              let drawing = false;
-              signatureCanvases[field[0]] = canvas;
-
-              canvas.onmousedown = (e) => {
-                drawing = true;
-                ctx.beginPath();
-                ctx.moveTo(e.offsetX, e.offsetY);
-              };
-              canvas.onmousemove = (e) => {
-                if (drawing) {
-                  ctx.lineTo(e.offsetX, e.offsetY);
-                  ctx.stroke();
-                }
-              };
-              canvas.onmouseup = () => drawing = false;
-              canvas.onmouseleave = () => drawing = false;
-            } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
-              const [triggerField, triggerValue] = field[2][0].split('=');
-              const triggerInput = document.getElementById(triggerField);
-              const conditionalGroup = document.getElementById('group-' + field[0]);
-              if (triggerInput) {
-                triggerInput.onchange = () => {
-                  const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
-                  conditionalGroup.style.display = show ? 'flex' : 'none';
+                canvas.onmousedown = e => {
+                  drawing = true;
+                  ctx.beginPath();
+                  ctx.moveTo(e.offsetX, e.offsetY);
                 };
+                canvas.onmousemove = e => {
+                  if (drawing) {
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                  }
+                };
+                canvas.onmouseup = () => drawing = false;
+                canvas.onmouseleave = () => drawing = false;
+              } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
+                const [triggerField, triggerValue] = field[2][0].split('=');
+                const triggerInput = document.getElementById(triggerField);
+                const conditionalGroup = document.getElementById('group-' + field[0]);
+                if (triggerInput) {
+                  triggerInput.onchange = () => {
+                    const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
+                    conditionalGroup.style.display = show ? 'flex' : 'none';
+                  };
+                }
               }
-            }
-          });
-
-          function resetSignatures() {
-            Object.values(signatureCanvases).forEach(canvas => {
-              const ctx = canvas.getContext('2d');
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
             });
-          }
+
+            function resetSignatures() {
+              Object.values(signatureCanvases).forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              });
+            }
+          <? } ?>
         </script>
       </body>
     </html>
@@ -3441,96 +3301,80 @@ function doGet(e) {
 
   template.formName = formName;
   template.processedFieldsData = processedFieldsData;
-  template.submissionType = submissionType;
-  template.targetSheetName = targetSheetName;
 
-  return template.evaluate().setTitle(formName + " Form");
+  return template.evaluate().setTitle(formName || "Form Setup");
 }
 
-function processForm(formData, submissionType, targetSheetName) {
-  Logger.log('Starting processForm with submission type: ' + submissionType + ' and target sheet: ' + targetSheetName);
-  Logger.log('Received form data: ' + JSON.stringify(formData));
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var setupSheet = ss.getSheetByName("FormSetup");
-    if (!setupSheet) throw new Error("FormSetup sheet not found.");
 
-    var targetSheet = getOrCreateSheet(ss, targetSheetName);
-    var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
-    var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
-    var processedData = formData;
 
-    if (submissionType.toUpperCase() === "SINGLECELL") {
-      var ranges = [];
-      var values = [];
-      for (var i = 0; i < fieldsData.length; i++) {
-        var fieldName = fieldsData[i][0];
-        var targetCell = fieldsData[i][2];
-        var fieldValue = processedData[fieldName];
-        if (fieldValue !== undefined && targetCell) {
-          if (typeof fieldValue === 'object' && fieldValue.data) {
-            fieldValue = uploadFile(fieldValue);
-          } else if (Array.isArray(fieldValue)) {
-            fieldValue = JSON.stringify(fieldValue); // Serialize dynamic table data
-          }
-          ranges.push(targetSheet.getRange(targetCell));
-          values.push([fieldValue]);
-        }
-      }
-      ranges.forEach((range, idx) => range.setValues([values[idx]]));
-    } else if (submissionType.toUpperCase() === "TABLEROW") {
-      var lastRow = targetSheet.getLastRow();
-      if (lastRow >= 40000) {
-        targetSheet = getOrCreateSheet(ss, targetSheetName + "_" + (Math.floor(lastRow / 40000) + 1));
-        lastRow = targetSheet.getLastRow();
-      }
-      var nextRow = lastRow + 1;
-      if (nextRow === 1) nextRow = 2;
-      var rowData = new Array(fieldsData.length).fill('');
-      var columns = fieldsData.map(row => row[2].match(/[A-Z]+/i)?.[0] || row[2]);
 
-      for (var i = 0; i < fieldsData.length; i++) {
-        var fieldName = fieldsData[i][0];
-        var fieldValue = processedData[fieldName];
-        if (fieldValue !== undefined) {
-          if (typeof fieldValue === 'object' && fieldValue.data) {
-            fieldValue = uploadFile(fieldValue);
-          } else if (Array.isArray(fieldValue)) {
-            fieldValue = JSON.stringify(fieldValue); // Serialize dynamic table data
-          }
-          var colIndex = columns.indexOf(columns[i]);
-          rowData[colIndex] = fieldValue;
-        }
-      }
-      targetSheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
 
-      // Post-submission processing for DynamicTable (if Order Form specific functions exist)
-      fieldsData.forEach(row => {
-        if (row[0] === "Order Items" && row[3].toUpperCase() === "DYNAMICTABLE") {
-          if (typeof newContactit === 'function') newContactit();
-          if (typeof save === 'function') save();
-          if (typeof updateInventory === 'function') updateInventory();
-          if (typeof copyInput1 === 'function') copyInput1();
-          targetSheet.getRange("B11").setFormula("=Log!A10+1");
-          SpreadsheetApp.flush();
-        }
+
+function processForm(formData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+  var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  // Group fields by target sheet and submission type
+  var sheetsData = {};
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var targetSheetName = row[1] || "Responses";
+    var targetCell = row[2];
+    var fieldValue = formData[fieldName];
+
+    if (fieldValue === undefined) return;
+
+    if (typeof fieldValue === 'object' && fieldValue.data) {
+      fieldValue = uploadFile(fieldValue);
+    }
+
+    if (!sheetsData[targetSheetName]) sheetsData[targetSheetName] = { singleCell: [], tableRow: [] };
+
+    // Determine submission type based on targetCell format
+    if (/^[A-Z]+[0-9]+$/.test(targetCell)) { // e.g., A1, B3 - SingleCell
+      sheetsData[targetSheetName].singleCell.push({ fieldName, targetCell, value: fieldValue });
+    } else if (/^[A-Z]+$/.test(targetCell)) { // e.g., A, B - TableRow
+      sheetsData[targetSheetName].tableRow.push({ fieldName, column: targetCell, value: fieldValue });
+    }
+  });
+
+  // Process SingleCell submissions
+  Object.keys(sheetsData).forEach(sheetName => {
+    var sheet = getOrCreateSheet(ss, sheetName);
+    var singleCellData = sheetsData[sheetName].singleCell;
+    singleCellData.forEach(data => {
+      sheet.getRange(data.targetCell).setValue(data.value);
+    });
+
+    // Process TableRow submissions
+    var tableRowData = sheetsData[sheetName].tableRow;
+    if (tableRowData.length > 0) {
+      var lastRow = sheet.getLastRow();
+      var nextRow = lastRow >= 1 ? lastRow + 1 : 2; // Skip header row if present
+      var columns = tableRowData.map(data => data.column);
+      var rowData = new Array(Math.max(...columns.map(col => col.charCodeAt(0) - 64))).fill('');
+      tableRowData.forEach(data => {
+        var colIndex = data.column.charCodeAt(0) - 65; // Convert A->0, B->1, etc.
+        rowData[colIndex] = data.value;
       });
-    } else {
-      throw new Error("Invalid submission type: " + submissionType);
+      sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
     }
+  });
 
-    var dataMateRecord = setupSheet.getRange("B6").getValue();
-    if (dataMateRecord === "Yes") {
-      save();
-      copyInput1();
-    }
+  // Execute DataMate functions based on checkboxes
+  var runSave = setupSheet.getRange("B6").getValue() === "Yes";
+  var runCopyInput = setupSheet.getRange("B7").getValue() === "Yes";
+  var runNewContact = setupSheet.getRange("B8").getValue() === "Yes";
 
-    Logger.log('processForm completed successfully');
-    return "Success";
-  } catch (error) {
-    Logger.log('Error in processForm: ' + error.toString());
-    throw error;
-  }
+  if (runSave) save();
+  if (runCopyInput) copyInput1();
+  if (runNewContact) newContactit();
+
+  return "Success";
 }
 
 function uploadFile(fileData) {
@@ -3545,80 +3389,28 @@ function uploadFile(fileData) {
   return file.getUrl();
 }
 
-function getUnitPrice(description, priceColumn) {
-  if (!priceColumn) return 0;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Inventory");
-  var data = sheet.getRange("A1:" + priceColumn + sheet.getLastRow()).getValues();
-  var item = data.find(row => row[0] === description);
-  return item ? item[priceColumn.charCodeAt(0) - 65] : 0;
-}
-
-function getTaxRate() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Sheet1");
-  return sheet.getRange("C33").getValue() || 0;
-}
-
 function getOrCreateSheet(ss, name) {
   var sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    var headers = ['Form Description','Customer','Interests','Event Date','Event Time','Quantity','Urgent','Priority','Comments','Email','Rating','Satisfaction','Attachment','Reason','Total','Signature','Location','Progress','Verification','Product Image','Product Video','Upload Image URL','Upload Video URL','Product Name','Sales Data'];
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   }
   return sheet;
 }
 
+
+
+
+
+
+
+
 function createFormSetupSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var formSetupSheet = ss.getSheetByName("FormSetup");
-  var tablesSheet = ss.getSheetByName("Tables");
-  var responsesSheet = ss.getSheetByName("Responses");
-
-  // Create Responses sheet with headers
-  if (!responsesSheet) {
-    responsesSheet = ss.insertSheet("Responses");
-    const headers = [
-      "Timestamp", "Form Header", "Section 1", "Name", "Customer", "Interests", 
-      "Event Date", "Event Time", "Quantity", "Urgent", "Priority", "Comments",
-      "Email", "Satisfaction", "Effort Level", "Attachment", "Show Reason",
-      "Total", "Signature", "Location", "Progress", "Verification",
-      "Product Image", "Product Video", "Image URL", "Video URL", "Instructions",
-      "Sales Data", "Section 2: Order Details", "Order Items", "Shipping Method",
-      "Discount Code", "Subtotal", "Tax", "Order Total", "Payment Method", 
-      " Agree to Terms", "Terms Notice", "Form Footer"
-    ];
-    responsesSheet.getRange(1, 1, 1, headers.length).setValues([headers])
-      .setFontWeight("bold")
-      .setBackground("#4CAF50")
-      .setFontColor("#ffffff");
-    responsesSheet.setFrozenRows(1);
-  }
-
-  // Create/Update Tables sheet with the provided table
-  if (!tablesSheet) {
-    tablesSheet = ss.insertSheet("Tables");
-  }
-  tablesSheet.clear();
-  
-  // Single table with Customers and Inventory
-  const tableData = [
-    ["Customers", "Item", "Description", "Unit Price"],
-    ["Moe", "Widget", "Standard Widget", "10"],
-    ["Larry", "Gadget", "Advanced Gadget", "25"],
-    ["Curly", "Tool", "Basic Tool", "15"]
-  ];
-  tablesSheet.getRange(1, 1, tableData.length, 4).setValues(tableData);
-  
-  SpreadsheetApp.flush();
-
-  // FormSetup Sheet creation
   if (!formSetupSheet) {
     formSetupSheet = ss.insertSheet("FormSetup");
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
-    // Header formatting
     formSetupSheet.getRange("A1:E1").merge();
     formSetupSheet.getRange("A1")
       .setValue("Form Setup Dashboard")
@@ -3637,28 +3429,7 @@ function createFormSetupSheet() {
       .setHorizontalAlignment("center")
       .setWrap(true);
 
-    // Form configuration
-    formSetupSheet.getRange("A3").setValue("Form Name:")
-      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
-    formSetupSheet.getRange("B3").setValue("Enhanced")
-      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
-
-    formSetupSheet.getRange("A4").setValue("Target Sheet:")
-      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
-    formSetupSheet.getRange("B4").setValue("Responses")
-      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
-
-    formSetupSheet.getRange("A5").setValue("Submission Type:")
-      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
-    formSetupSheet.getRange("B5").setValue("TableRow")
-      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
-    var rule = SpreadsheetApp.newDataValidation()
-      .requireValueInList(["SingleCell", "TableRow"], true)
-      .setAllowInvalid(false)
-      .build();
-    formSetupSheet.getRange("B5").setDataValidation(rule);
-
-    formSetupSheet.getRange("A6").setValue("DataMate Record:")
+    formSetupSheet.getRange("A6").setValue("Run Save Record:")
       .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
     formSetupSheet.getRange("B6").setValue("No")
       .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
@@ -3668,100 +3439,726 @@ function createFormSetupSheet() {
       .build();
     formSetupSheet.getRange("B6").setDataValidation(yesNoRule);
 
-    formSetupSheet.getRange("A7:F7").setBackground("#f0f0f0");
+    formSetupSheet.getRange("A7").setValue("Run Reset Input:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B7").setValue("No")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+    formSetupSheet.getRange("B7").setDataValidation(yesNoRule);
 
-    // Field headers
-    formSetupSheet.getRange("A8").setValue("Form Fields");
-    formSetupSheet.getRange("B8").setValue("Target Sheet");
-    formSetupSheet.getRange("C8").setValue("Target Cells");
-    formSetupSheet.getRange("D8").setValue("Field Type");
-    formSetupSheet.getRange("E8").setValue("Field Options");
-    formSetupSheet.getRange("A8:E8")
+    formSetupSheet.getRange("A8").setValue("Run New Contact:")
+      .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
+    formSetupSheet.getRange("B8").setValue("No")
+      .setBackground("#ffffff").setBorder(true, true, true, true, false, false);
+    formSetupSheet.getRange("B8").setDataValidation(yesNoRule);
+
+    // Headers will be set dynamically in doGet() if fields exist
+    formSetupSheet.getRange("B9").setValue("Target Sheet");
+    formSetupSheet.getRange("C9").setValue("Target Cell/Column");
+    formSetupSheet.getRange("D9").setValue("Field Type");
+    formSetupSheet.getRange("E9").setValue("Field Options");
+    formSetupSheet.getRange("B9:E9")
       .setFontWeight("bold")
       .setFontColor("#ffffff")
       .setBackground("#4CAF50")
       .setBorder(true, true, true, true, false, false);
 
-    // Form fields with Description added to Order Items
+    // Only set sample fields if you want defaults; otherwise leave empty
     var formFields = [
-      ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
-      ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
-      ["Name", "Responses", "C", "Text", ""],
-      ["Customer", "Responses", "D", "Dropdown", "Tables!A2:A4"],
-      ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
-      ["Event Date", "Responses", "F", "Date", ""],
-      ["Event Time", "Responses", "G", "Time", ""],
-      ["Quantity", "Responses", "H", "Number", ""],
-      ["Urgent", "Responses", "I", "Checkbox", "Yes,No"],
-      ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
-      ["Comments", "Responses", "K", "Textarea", ""],
-      ["Email", "Responses", "L", "Email", ""],
-      ["Satisfaction", "Responses", "M", "StarRating", "5"],
-      ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
-      ["Attachment", "Responses", "O", "FileUpload", "multiple=false"],
-      ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
-      ["Total", "Responses", "Q", "Calculated", "=H*2"],
-      ["Signature", "Responses", "R", "Signature", ""],
-      ["Location", "Responses", "S", "Geolocation", ""],
-      ["Progress", "Responses", "T", "ProgressBar", "75"],
-      ["Verification", "Responses", "U", "Captcha", ""],
-      ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
-      ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
-      ["Image URL", "Responses", "X", "ImageLink", ""],
-      ["Video URL", "Responses", "Y", "VideoLink", ""],
-      ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
-      ["Sales Data", "Responses", "AA", "Table", "Tables!B2:D4"],
-      ["Section 2: Order Details", "Responses", "AB", "Container", "background: #f0f0f0; padding: 15px;"],
-      ["Order Items", "Responses", "AC", "DynamicTable", "Tables!B2:D4 headers=Item,Description,Quantity,Unit Price,Subtotal columns=Dropdown,Calculated,Number,Calculated,Calculated options=Tables!B2:B4,,,, formulas==,=VLOOKUP(Item,Tables!B2:D4,2,FALSE),=2,=VLOOKUP(Item,Tables!B2:D4,3,FALSE),=Quantity*Unit Price"],
-      ["Shipping Method", "Responses", "AD", "Dropdown", "Standard,Express,Overnight"],
-      ["Discount Code", "Responses", "AE", "Text", ""],
-      ["Subtotal", "Responses", "AF", "Calculated", "=SUM(Responses!AC:AC.Subtotal)"],
-      ["Tax", "Responses", "AG", "Calculated", "=Subtotal*0.08"],
-      ["Order Total", "Responses", "AH", "Calculated", "=Subtotal+Tax"],
-      ["Payment Method", "Responses", "AI", "Radio", "Credit Card,PayPal,Bank Transfer"],
-      [" Agree to Terms", "Responses", "AJ", "Checkbox", "Yes,No"],
-      ["Terms Notice", "Responses", "AK", "Conditional", "' Agree to Terms'=No"],
-      ["Form Footer", "Responses", "AL", "Footer", "Thank you for your submission!"]
+      ["Form Header", "Responses", "A", "Header", "Sample Form"],
+      ["Name", "Responses", "B", "Text", ""],
+      ["Email", "Responses", "C", "Email", ""],
+      ["Event Date", "Input", "A1", "Date", ""],
+      ["Comments", "Input", "B1", "Textarea", ""]
     ];
-    
-    formSetupSheet.getRange("A9:E46").setValues(formFields);
-    formSetupSheet.getRange("A9:E45")
-      .setBackground("#ffffff")
-      .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+    if (formFields.length > 0) {
+      formSetupSheet.getRange("A9").setValue("Form Fields");
+      formSetupSheet.getRange("A9:E9")
+        .setFontWeight("bold")
+        .setFontColor("#ffffff")
+        .setBackground("#4CAF50")
+        .setBorder(true, true, true, true, false, false);
+      formSetupSheet.getRange("A10:E" + (10 + formFields.length - 1)).setValues(formFields);
+      formSetupSheet.getRange("A10:E" + (10 + formFields.length - 1))
+        .setBackground("#ffffff")
+        .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+    }
 
-    formSetupSheet.setFrozenRows(8);
+    formSetupSheet.setFrozenRows(9);
     formSetupSheet.setColumnWidth(1, 150);
     formSetupSheet.setColumnWidth(2, 100);
     formSetupSheet.setColumnWidth(3, 100);
     formSetupSheet.setColumnWidth(4, 100);
     formSetupSheet.setColumnWidth(5, 200);
   }
-
-  const recipient = "projectprodigyapp@gmail.com";
-  const subject = "FormSetup Template Created!";
-  const body = `A new FormSetup Template has been created successfully in Google Sheets.\n\n
-Another user from Opensource.`;
-  MailApp.sendEmail(recipient, subject, body);
+  return formSetupSheet;
 }
 
-// Helper function to update Responses sheet headers if needed
-function updateResponsesHeaders() {
+function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var responsesSheet = ss.getSheetByName("Responses");
-  if (responsesSheet) {
-    const headers = [
-      "Timestamp", "Form Header", "Section 1", "Name", "Customer", "Interests", 
-      "Event Date", "Event Time", "Quantity", "Urgent", "Priority", "Comments",
-      "Email", "Satisfaction", "Effort Level", "Attachment", "Show Reason",
-      "Total", "Signature", "Location", "Progress", "Verification",
-      "Product Image", "Product Video", "Image URL", "Video URL", "Instructions",
-      "Sales Data", "Section 2: Order Details", "Order Items", "Shipping Method",
-      "Discount Code", "Subtotal", "Tax", "Order Total", "Payment Method", 
-      " Agree to Terms", "Terms Notice", "Form Footer"
-    ];
-    responsesSheet.getRange(1, 1, 1, headers.length).setValues([headers])
-      .setFontWeight("bold")
-      .setBackground("#4CAF50")
-      .setFontColor("#ffffff");
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
   }
+
+  // Get fields data from A9:E
+  var fieldsRange = setupSheet.getRange("A9:E" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues();
+  var filteredFieldsData = fieldsData.filter(row => row[0] !== "").slice(1); // Skip header row
+
+  // If no fields exist below A9, clear "Form Fields" from A9
+  if (filteredFieldsData.length === 0) {
+    setupSheet.getRange("A9").clear();
+  } else if (setupSheet.getRange("A9").getValue() !== "Form Fields") {
+    setupSheet.getRange("A9").setValue("Form Fields");
+    setupSheet.getRange("A9:E9")
+      .setFontWeight("bold")
+      .setFontColor("#ffffff")
+      .setBackground("#4CAF50")
+      .setBorder(true, true, true, true, false, false);
+  }
+
+  var formName = "";
+  if (filteredFieldsData.length > 0) {
+    for (var i = 0; i < filteredFieldsData.length; i++) {
+      if (filteredFieldsData[i][3].toUpperCase() === "HEADER" && filteredFieldsData[i][4]) {
+        formName = filteredFieldsData[i][4];
+        break;
+      }
+    }
+  }
+
+  var processedFieldsData = filteredFieldsData.map((row, index) => {
+    var fieldName = row[0];
+    var targetSheet = row[1] || "Responses";
+    var fieldType = row[3] || "Text";
+    var cell = setupSheet.getRange("E" + (index + 10)); // Offset by 1 for header
+    var dropdownOptions = cell.getFormula() || row[4];
+    dropdownOptions = dropdownOptions != null ? String(dropdownOptions) : "";
+    var options = [];
+
+    if (fieldType.toUpperCase() === "DROPDOWN" || fieldType.toUpperCase() === "RADIO" || fieldType.toUpperCase() === "MULTISELECT") {
+      var validation = cell.getDataValidation();
+      if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+        options = validation.getCriteriaValues()[0];
+      } else if (dropdownOptions.startsWith("=")) {
+        var formula = dropdownOptions.substring(1);
+        if (formula.match(/^[A-Za-z0-9]+![A-Za-z]+:[A-Za-z]+$/)) {
+          try {
+            var range = ss.getRange(formula);
+            options = range.getValues().flat().filter(String);
+          } catch (e) {
+            Logger.log('Error fetching range from formula "' + formula + '": ' + e.message);
+            options = ["Error: Invalid range " + formula];
+          }
+        } else {
+          options = ["Error: Invalid formula format " + dropdownOptions];
+        }
+      } else if (dropdownOptions.match(/^[A-Za-z0-9]+![A-Za-z]+[0-9]+:[A-Za-z]+[0-9]+$/)) {
+        var range = ss.getRange(dropdownOptions);
+        options = range.getValues().flat().filter(String);
+      } else if (dropdownOptions) {
+        options = dropdownOptions.split(",");
+      }
+    } else if (fieldType.toUpperCase() === "FILEUPLOAD" || fieldType.toUpperCase() === "CONDITIONAL" || fieldType.toUpperCase() === "CALCULATED") {
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "RANGESLIDER" && dropdownOptions) {
+      var parts = dropdownOptions.split(",");
+      options = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
+    } else if (fieldType.toUpperCase() === "IMAGE" || fieldType.toUpperCase() === "VIDEO") {
+      if (dropdownOptions && dropdownOptions.includes("drive.google.com/file/d/")) {
+        var fileIdMatch = dropdownOptions.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+        }
+      } else if (dropdownOptions && dropdownOptions.includes("drive.google.com/uc?id=")) {
+        var fileIdMatch = dropdownOptions.match(/id=([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          dropdownOptions = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+        }
+      }
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "STATICTEXT" || fieldType.toUpperCase() === "PROGRESSBAR" || fieldType.toUpperCase() === "CONTAINER" || fieldType.toUpperCase() === "HEADER" || fieldType.toUpperCase() === "FOOTER") {
+      options = [dropdownOptions];
+    } else if (fieldType.toUpperCase() === "TABLE" && dropdownOptions) {
+      try {
+        var range = ss.getRange(dropdownOptions);
+        options = range.getValues();
+      } catch (e) {
+        Logger.log('Error fetching table range "' + dropdownOptions + '": ' + e.message);
+        options = [["Error: Invalid range " + dropdownOptions]];
+      }
+    }
+    return [fieldName, fieldType, options, targetSheet, row[2]];
+  });
+
+  var template = HtmlService.createTemplate(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <base target="_top">
+        <style>
+          body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+          }
+          .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .custom-container {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .header {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 24px;
+          }
+          .footer {
+            background: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+          h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+          }
+          .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          label {
+            width: 150px;
+            font-weight: 500;
+            margin-right: 15px;
+            color: #555;
+          }
+          input[type="text"], input[type="date"], input[type="number"], 
+          input[type="email"], input[type="time"], input[type="range"], 
+          select, textarea, input[type="file"] {
+            width: 250px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+          }
+          input:focus, select:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+          }
+          textarea {
+            resize: vertical;
+            min-height: 100px;
+          }
+          input[type="checkbox"] {
+            margin-left: 150px;
+          }
+          .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .radio-group label {
+            width: auto;
+            margin: 0 0 0 5px;
+            display: inline;
+          }
+          .star-rating {
+            display: inline-flex;
+            font-size: 28px;
+            direction: rtl;
+          }
+          .star-rating input[type="radio"] {
+            display: none;
+          }
+          .star-rating label {
+            color: #ddd;
+            cursor: pointer;
+            margin: 0 3px;
+            width: auto;
+            transition: color 0.2s;
+          }
+          .star-rating label:hover,
+          .star-rating label:hover ~ label,
+          .star-rating input[type="radio"]:checked ~ label {
+            color: #f5b301;
+          }
+          img, video, iframe {
+            max-width: 250px;
+            max-height: 250px;
+            margin-top: 10px;
+            border-radius: 4px;
+          }
+          .static-text {
+            width: 100%;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            margin: 0 0 20px 150px;
+            font-size: 16px;
+            color: #444;
+          }
+          .table-display {
+            width: 100%;
+            margin: 0 0 20px 150px;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #ddd;
+          }
+          .table-display th, .table-display td {
+            padding: 10px;
+            border: 1px solid #ddd;
+          }
+          .table-display th {
+            background: #f1f1f1;
+            font-weight: bold;
+          }
+          .range-output {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #666;
+          }
+          .conditional-field {
+            display: none;
+          }
+          .calculated-field {
+            background: #f9f9f9;
+            pointer-events: none;
+          }
+          canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 250px;
+            height: 100px;
+          }
+          progress {
+            width: 250px;
+            height: 20px;
+          }
+          button {
+            padding: 12px 25px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+          }
+          button:hover:not(:disabled) {
+            background: #45a049;
+          }
+          button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+          }
+          .spinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+          #message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            display: none;
+          }
+          .error {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-left: 165px;
+            margin-top: 5px;
+          }
+          .no-fields {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            padding: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <? if (processedFieldsData.length > 0) { ?>
+            <? if (formName) { ?>
+              <h1><?= formName ?> Form</h1>
+            <? } ?>
+            <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
+              <? var inContainer = false; ?>
+              <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
+                <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
+                  <div class="header"><?= processedFieldsData[i][2][0] ?></div>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? inContainer = false; } ?>
+                  <div class="footer"><?= processedFieldsData[i][2][0] ?></div>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? } ?>
+                  <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
+                  <? inContainer = true; ?>
+                <? } else { ?>
+                  <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
+                    <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
+                      <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
+                      <label><?= processedFieldsData[i][0] ?>:</label>
+                      <table class="table-display">
+                        <? var tableData = processedFieldsData[i][2]; ?>
+                        <? for (var row = 0; row < tableData.length; row++) { ?>
+                          <tr>
+                            <? var isHeader = row === 0; ?>
+                            <? for (var col = 0; col < tableData[row].length; col++) { ?>
+                              <? if (isHeader) { ?>
+                                <th><?= tableData[row][col] || '' ?></th>
+                              <? } else { ?>
+                                <td><?= tableData[row][col] || '' ?></td>
+                              <? } ?>
+                            <? } ?>
+                          </tr>
+                        <? } ?>
+                      </table>
+                    <? } else { ?>
+                      <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple>
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
+                        <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
+                        <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
+                        <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
+                        <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
+                        <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <div>
+                              <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>">
+                              <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
+                            </div>
+                          <? } ?>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
+                        <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></textarea>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
+                        <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
+                        <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5">
+                          <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
+                          <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-3" name="<?= processedFieldsData[i][0] ?>" value="3">
+                          <label for="<?= processedFieldsData[i][0] ?>-3">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-2" name="<?= processedFieldsData[i][0] ?>" value="2">
+                          <label for="<?= processedFieldsData[i][0] ?>-2">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-1" name="<?= processedFieldsData[i][0] ?>" value="1">
+                          <label for="<?= processedFieldsData[i][0] ?>-1">★</label>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
+                        <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
+                          min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>">
+                        <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
+                        <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
+                        <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
+                        <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly>
+                        <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
+                        <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)">
+                        <span id="captcha-question">What is 3 + 5?</span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>">
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
+                        <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
+                          <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= processedFieldsData[i][2][0].split('/').pop().split('?')[0] ?>" frameborder="0" allowfullscreen></iframe>
+                        <? } else { ?>
+                          <video controls id="<?= processedFieldsData[i][0] ?>">
+                            <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
+                            Your browser does not support the video tag.
+                          </video>
+                        <? } ?>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
+                      <? } else { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                      <? } ?>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    <? } ?>
+                  </div>
+                <? } ?>
+              <? } ?>
+              <? if (inContainer) { ?></div><? } ?>
+              <button type="submit" id="submitButton">Submit <span class="spinner" id="spinner"></span></button>
+            </form>
+            <div id="message">Data submitted successfully!</div>
+          <? } else { ?>
+            <div class="no-fields">No fields defined. Please add fields in FormSetup A9:E.</div>
+          <? } ?>
+        </div>
+        <script>
+          <? if (processedFieldsData.length > 0) { ?>
+            const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
+            let signatureCanvases = {};
+
+            function handleSubmit(event) {
+              event.preventDefault();
+              const form = document.getElementById('myForm');
+              const submitButton = document.getElementById('submitButton');
+              const spinner = document.getElementById('spinner');
+              const dataToSend = {};
+              let isValid = true;
+              let pendingFiles = 0;
+
+              const inputs = form.querySelectorAll('input, select, textarea');
+              inputs.forEach(input => {
+                const name = input.name;
+                if (!name || input.type === 'button') return;
+
+                let value;
+                const errorSpan = document.getElementById(name + '-error');
+
+                if (input.type === 'file' && input.files.length > 0) {
+                  const file = input.files[0];
+                  if (file.size > 6 * 1024 * 1024) {
+                    errorSpan.textContent = 'File too large (max 6 MB)';
+                    isValid = false;
+                  } else {
+                    pendingFiles++;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                      dataToSend[name] = {
+                        name: file.name,
+                        data: e.target.result.split(',')[1],
+                        type: file.type || 'application/octet-stream'
+                      };
+                      pendingFiles--;
+                      if (pendingFiles === 0 && isValid) submitForm();
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                } else if (input.type === 'checkbox') {
+                  value = input.checked;
+                  dataToSend[name] = value;
+                } else if (input.type === 'radio') {
+                  if (input.checked) dataToSend[name] = input.value;
+                  return;
+                } else if (input.tagName === 'SELECT' && input.multiple) {
+                  value = Array.from(input.selectedOptions).map(option => option.value).join(',');
+                  dataToSend[name] = value;
+                } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
+                  value = signatureCanvases[name].toDataURL().split(',')[1];
+                  dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
+                } else {
+                  value = input.value;
+                  dataToSend[name] = value;
+                }
+
+                if (input.type === 'number' && value && isNaN(value)) {
+                  errorSpan.textContent = 'Please enter a valid number';
+                  isValid = false;
+                } else if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                  errorSpan.textContent = 'Please enter a valid email';
+                  isValid = false;
+                } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
+                  errorSpan.textContent = 'Incorrect answer. Please enter 8.';
+                  isValid = false;
+                } else {
+                  errorSpan.textContent = '';
+                }
+              });
+
+              processedFieldsData.forEach(field => {
+                if (field[1].toUpperCase() === "CALCULATED" && field[2][0]) {
+                  const calcField = document.getElementById(field[0]);
+                  const formula = field[2][0].split('=')[1];
+                  const parts = formula.match(/(\w+|\d+|[*+/-])/g);
+                  let result = 0;
+                  if (parts) {
+                    result = evaluateFormula(parts, dataToSend);
+                    calcField.value = result;
+                    dataToSend[field[0] = result;
+                  }
+                }
+              });
+
+              if (pendingFiles === 0 && isValid) submitForm();
+
+              function submitForm() {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                spinner.style.display = 'inline-block';
+
+                google.script.run
+                  .withSuccessHandler(() => {
+                    form.reset();
+                    resetSignatures();
+                    showMessage();
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .withFailureHandler(error => {
+                    alert('Error submitting form: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .processForm(dataToSend);
+              }
+            }
+
+            function evaluateFormula(parts, data) {
+              let result = 0;
+              let operator = '+';
+              parts.forEach(part => {
+                if (['+', '-', '*', '/'].includes(part)) {
+                  operator = part;
+                } else {
+                  const num = isNaN(part) ? (data[part] || 0) : Number(part);
+                  if (operator === '+') result += num;
+                  else if (operator === '-') result -= num;
+                  else if (operator === '*') result *= num;
+                  else if (operator === '/' && num !== 0) result /= num;
+                }
+              });
+              return result;
+            }
+
+            function showMessage() {
+              const message = document.getElementById('message');
+              message.style.display = 'block';
+              setTimeout(() => message.style.display = 'none', 3000);
+            }
+
+            function getLocation(fieldId) {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  position => {
+                    document.getElementById(fieldId).value = position.coords.latitude + ',' + position.coords.longitude;
+                  },
+                  error => document.getElementById(fieldId + '-error').textContent = 'Unable to get location'
+                );
+              } else {
+                document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
+              }
+            }
+
+            processedFieldsData.forEach(field => {
+              if (field[1].toUpperCase() === "RANGESLIDER") {
+                const slider = document.getElementById(field[0]);
+                const output = document.getElementById(field[0] + '-output');
+                slider.oninput = () => output.textContent = slider.value;
+              } else if (field[1].toUpperCase() === "SIGNATURE") {
+                const canvas = document.getElementById(field[0]);
+                const ctx = canvas.getContext('2d');
+                let drawing = false;
+                signatureCanvases[field[0]] = canvas;
+
+                canvas.onmousedown = e => {
+                  drawing = true;
+                  ctx.beginPath();
+                  ctx.moveTo(e.offsetX, e.offsetY);
+                };
+                canvas.onmousemove = e => {
+                  if (drawing) {
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                  }
+                };
+                canvas.onmouseup = () => drawing = false;
+                canvas.onmouseleave = () => drawing = false;
+              } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
+                const [triggerField, triggerValue] = field[2][0].split('=');
+                const triggerInput = document.getElementById(triggerField);
+                const conditionalGroup = document.getElementById('group-' + field[0]);
+                if (triggerInput) {
+                  triggerInput.onchange = () => {
+                    const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
+                    conditionalGroup.style.display = show ? 'flex' : 'none';
+                  };
+                }
+              }
+            });
+
+            function resetSignatures() {
+              Object.values(signatureCanvases).forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              });
+            }
+          <? } ?>
+        </script>
+      </body>
+    </html>
+  `);
+
+  template.formName = formName;
+  template.processedFieldsData = processedFieldsData;
+
+  return template.evaluate().setTitle(formName || "Form Setup");
 }
+
+// Placeholder functions (replace with actual implementations)
+function save() { Logger.log("Save Record executed"); }
+function copyInput1() { Logger.log("Reset Input executed"); }
+function newContactit() { Logger.log("New Contact executed"); }
