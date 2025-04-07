@@ -3573,21 +3573,52 @@ function getOrCreateSheet(ss, name) {
 function createFormSetupSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var formSetupSheet = ss.getSheetByName("FormSetup");
-  var sheet1Sheet = ss.getSheetByName("Sheet1");
+  var tablesSheet = ss.getSheetByName("Tables");
+  var responsesSheet = ss.getSheetByName("Responses");
 
-  if (!sheet1Sheet) {
-    sheet1Sheet = ss.insertSheet("Sheet1");
-    sheet1Sheet.getRange("A1:A2").setValues([["Moe"], ["Larry"]]);
-    SpreadsheetApp.flush();
-  } else {
-    sheet1Sheet.getRange("A1:A2").setValues([["Moe"], ["Larry"]]);
+  // Create Responses sheet with headers
+  if (!responsesSheet) {
+    responsesSheet = ss.insertSheet("Responses");
+    const headers = [
+      "Timestamp", "Form Header", "Section 1", "Name", "Customer", "Interests", 
+      "Event Date", "Event Time", "Quantity", "Urgent", "Priority", "Comments",
+      "Email", "Satisfaction", "Effort Level", "Attachment", "Show Reason",
+      "Total", "Signature", "Location", "Progress", "Verification",
+      "Product Image", "Product Video", "Image URL", "Video URL", "Instructions",
+      "Sales Data", "Section 2: Order Details", "Order Items", "Shipping Method",
+      "Discount Code", "Subtotal", "Tax", "Order Total", "Payment Method", 
+      " Agree to Terms", "Terms Notice", "Form Footer"
+    ];
+    responsesSheet.getRange(1, 1, 1, headers.length).setValues([headers])
+      .setFontWeight("bold")
+      .setBackground("#4CAF50")
+      .setFontColor("#ffffff");
+    responsesSheet.setFrozenRows(1);
   }
+
+  // Create/Update Tables sheet with the provided table
+  if (!tablesSheet) {
+    tablesSheet = ss.insertSheet("Tables");
+  }
+  tablesSheet.clear();
+  
+  // Single table with Customers and Inventory
+  const tableData = [
+    ["Customers", "Item", "Description", "Unit Price"],
+    ["Moe", "Widget", "Standard Widget", "10"],
+    ["Larry", "Gadget", "Advanced Gadget", "25"],
+    ["Curly", "Tool", "Basic Tool", "15"]
+  ];
+  tablesSheet.getRange(1, 1, tableData.length, 4).setValues(tableData);
+  
   SpreadsheetApp.flush();
 
+  // FormSetup Sheet creation
   if (!formSetupSheet) {
     formSetupSheet = ss.insertSheet("FormSetup");
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
+    // Header formatting
     formSetupSheet.getRange("A1:E1").merge();
     formSetupSheet.getRange("A1")
       .setValue("Form Setup Dashboard")
@@ -3606,6 +3637,7 @@ function createFormSetupSheet() {
       .setHorizontalAlignment("center")
       .setWrap(true);
 
+    // Form configuration
     formSetupSheet.getRange("A3").setValue("Form Name:")
       .setFontWeight("bold").setBackground("#d0d0d0").setVerticalAlignment("middle");
     formSetupSheet.getRange("B3").setValue("Enhanced")
@@ -3638,58 +3670,62 @@ function createFormSetupSheet() {
 
     formSetupSheet.getRange("A7:F7").setBackground("#f0f0f0");
 
+    // Field headers
     formSetupSheet.getRange("A8").setValue("Form Fields");
     formSetupSheet.getRange("B8").setValue("Target Sheet");
     formSetupSheet.getRange("C8").setValue("Target Cells");
     formSetupSheet.getRange("D8").setValue("Field Type");
-    formSetupSheet.getRange("E8").setValue("Dropdown Options");
+    formSetupSheet.getRange("E8").setValue("Field Options");
     formSetupSheet.getRange("A8:E8")
       .setFontWeight("bold")
       .setFontColor("#ffffff")
       .setBackground("#4CAF50")
       .setBorder(true, true, true, true, false, false);
 
+    // Form fields with Description added to Order Items
     var formFields = [
-    ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
-    ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
-    ["Name", "Responses", "C", "Text", ""],
-    ["Customer", "Responses", "D", "Dropdown", "=Sheet1!A:A"],
-    ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
-    ["Event Date", "Responses", "F", "Date", ""],
-    ["Event Time", "Responses", "G", "Time", ""],
-    ["Quantity", "Responses", "H", "Number", ""],
-    ["Urgent", "Responses", "I", "Checkbox", ""],
-    ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
-    ["Comments", "Responses", "K", "Textarea", ""],
-    ["Email", "Responses", "L", "Email", ""],
-    ["Satisfaction", "Responses", "M", "StarRating", ""],
-    ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
-    ["Attachment", "Responses", "O", "FileUpload", ""],
-    ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
-    ["Total", "Responses", "Q", "Calculated", "=Quantity*2"],
-    ["Signature", "Responses", "R", "Signature", ""],
-    ["Location", "Responses", "S", "Geolocation", ""],
-    ["Progress", "Responses", "T", "ProgressBar", "75"],
-    ["Verification", "Responses", "U", "Captcha", ""],
-    ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
-    ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
-    ["Image URL", "Responses", "X", "ImageLink", ""],
-    ["Video URL", "Responses", "Y", "VideoLink", ""],
-    ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
-    ["Sales Data", "Responses", "AA", "Table", "Sheet1!A1:C3"],
-    // New Fields Added Below
-    ["Section 2: Order Details", "Responses", "AB", "Container", "background: #f0f0f0; padding: 15px;"],
-    ["Order Items", "Responses", "AC", "DynamicTable", "=Inventory!A:A,PriceColumn:C"],
-    ["Shipping Method", "Responses", "AD", "Dropdown", "Standard,Express,Overnight"],
-    ["Discount Code", "Responses", "AE", "Text", ""],
-    ["Order Total", "Responses", "AF", "Calculated", "=Order Items.total"], // Assumes DynamicTable outputs a total
-    ["Payment Method", "Responses", "AG", "Radio", "Credit Card,PayPal,Bank Transfer"],
-    ["Agree to Terms", "Responses", "AH", "Checkbox", ""],
-    ["Terms Notice", "Responses", "AI", "Conditional", "Agree to Terms=No"],
-    ["Form Footer", "Responses", "AJ", "Footer", "Thank you for your submission!"]
-];
-    formSetupSheet.getRange("A9:E44").setValues(formFields);
-    formSetupSheet.getRange("A9:E44")
+      ["Form Header", "Responses", "A", "Header", "Form Builder with DataMate. Welcome to the Enhanced Form! This form demonstrates all available fields."],
+      ["Section 1", "Responses", "B", "Container", "background: #f0f0f0; padding: 15px;"],
+      ["Name", "Responses", "C", "Text", ""],
+      ["Customer", "Responses", "D", "Dropdown", "Tables!A2:A4"],
+      ["Interests", "Responses", "E", "MultiSelect", "Tech,Science,Art"],
+      ["Event Date", "Responses", "F", "Date", ""],
+      ["Event Time", "Responses", "G", "Time", ""],
+      ["Quantity", "Responses", "H", "Number", ""],
+      ["Urgent", "Responses", "I", "Checkbox", "Yes,No"],
+      ["Priority", "Responses", "J", "Radio", "Low,Medium,High"],
+      ["Comments", "Responses", "K", "Textarea", ""],
+      ["Email", "Responses", "L", "Email", ""],
+      ["Satisfaction", "Responses", "M", "StarRating", "5"],
+      ["Effort Level", "Responses", "N", "RangeSlider", "0,10,1"],
+      ["Attachment", "Responses", "O", "FileUpload", "multiple=false"],
+      ["Show Reason", "Responses", "P", "Conditional", "Urgent=Yes"],
+      ["Total", "Responses", "Q", "Calculated", "=H*2"],
+      ["Signature", "Responses", "R", "Signature", ""],
+      ["Location", "Responses", "S", "Geolocation", ""],
+      ["Progress", "Responses", "T", "ProgressBar", "75"],
+      ["Verification", "Responses", "U", "Captcha", ""],
+      ["Product Image", "Responses", "V", "Image", "https://drive.google.com/uc?id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj"],
+      ["Product Video", "Responses", "W", "Video", "https://youtu.be/_cduOVxVafc?si=R83WLFsUOykTfgGi"],
+      ["Image URL", "Responses", "X", "ImageLink", ""],
+      ["Video URL", "Responses", "Y", "VideoLink", ""],
+      ["Instructions", "Responses", "Z", "StaticText", "Please fill out all required fields."],
+      ["Sales Data", "Responses", "AA", "Table", "Tables!B2:D4"],
+      ["Section 2: Order Details", "Responses", "AB", "Container", "background: #f0f0f0; padding: 15px;"],
+      ["Order Items", "Responses", "AC", "DynamicTable", "Tables!B2:D4 headers=Item,Description,Quantity,Unit Price,Subtotal columns=Dropdown,Calculated,Number,Calculated,Calculated options=Tables!B2:B4,,,, formulas==,=VLOOKUP(Item,Tables!B2:D4,2,FALSE),=2,=VLOOKUP(Item,Tables!B2:D4,3,FALSE),=Quantity*Unit Price"],
+      ["Shipping Method", "Responses", "AD", "Dropdown", "Standard,Express,Overnight"],
+      ["Discount Code", "Responses", "AE", "Text", ""],
+      ["Subtotal", "Responses", "AF", "Calculated", "=SUM(Responses!AC:AC.Subtotal)"],
+      ["Tax", "Responses", "AG", "Calculated", "=Subtotal*0.08"],
+      ["Order Total", "Responses", "AH", "Calculated", "=Subtotal+Tax"],
+      ["Payment Method", "Responses", "AI", "Radio", "Credit Card,PayPal,Bank Transfer"],
+      [" Agree to Terms", "Responses", "AJ", "Checkbox", "Yes,No"],
+      ["Terms Notice", "Responses", "AK", "Conditional", "' Agree to Terms'=No"],
+      ["Form Footer", "Responses", "AL", "Footer", "Thank you for your submission!"]
+    ];
+    
+    formSetupSheet.getRange("A9:E46").setValues(formFields);
+    formSetupSheet.getRange("A9:E45")
       .setBackground("#ffffff")
       .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
 
@@ -3706,4 +3742,26 @@ function createFormSetupSheet() {
   const body = `A new FormSetup Template has been created successfully in Google Sheets.\n\n
 Another user from Opensource.`;
   MailApp.sendEmail(recipient, subject, body);
+}
+
+// Helper function to update Responses sheet headers if needed
+function updateResponsesHeaders() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var responsesSheet = ss.getSheetByName("Responses");
+  if (responsesSheet) {
+    const headers = [
+      "Timestamp", "Form Header", "Section 1", "Name", "Customer", "Interests", 
+      "Event Date", "Event Time", "Quantity", "Urgent", "Priority", "Comments",
+      "Email", "Satisfaction", "Effort Level", "Attachment", "Show Reason",
+      "Total", "Signature", "Location", "Progress", "Verification",
+      "Product Image", "Product Video", "Image URL", "Video URL", "Instructions",
+      "Sales Data", "Section 2: Order Details", "Order Items", "Shipping Method",
+      "Discount Code", "Subtotal", "Tax", "Order Total", "Payment Method", 
+      " Agree to Terms", "Terms Notice", "Form Footer"
+    ];
+    responsesSheet.getRange(1, 1, 1, headers.length).setValues([headers])
+      .setFontWeight("bold")
+      .setBackground("#4CAF50")
+      .setFontColor("#ffffff");
+  }
 }
