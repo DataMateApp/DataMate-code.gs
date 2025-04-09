@@ -3505,6 +3505,7 @@ function generateFormHTML() {
 
 function previewForm() {
   var html = generateFormHTML();
+  html.setWidth(1200).setHeight(600); // Set the size here
   SpreadsheetApp.getUi().showModalDialog(html, html.getTitle());
 }
 
