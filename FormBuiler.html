@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: 'Roboto', Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        color: #4CAF50;
+        text-align: center;
+        margin-bottom: 20px;
+        display: none; /* Hidden initially */
+      }
+      #formBuilder {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      .row {
+        display: none; /* Hidden initially */
+        margin-bottom: 25px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fafafa;
+      }
+      .row.visible {
+        display: block; /* Shown when made visible */
+      }
+      .group {
+        margin-bottom: 15px;
+      }
+      .group-header {
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 10px;
+        font-size: 14px;
+        text-transform: uppercase;
+      }
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .field input, .field select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 100%;
+      }
+      .field select.field-type {
+        width: 100%;
+      }
+      .field label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 4px;
+      }
+      .field .description {
+        font-size: 12px;
+        color: #777;
+        margin-top: 2px;
+      }
+      #addRow {
+        padding: 10px 20px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      #addRow:hover {
+        background: #45a049;
+      }
+      #saveRows {
+        padding: 10px 20px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+        margin-left: 10px;
+      }
+      #saveRows:hover {
+        background: #1e88e5;
+      }
+      #message {
+        color: #4CAF50;
+        text-align: center;
+        margin-top: 10px;
+        display: none; /* Hidden initially */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="formBuilder">
+      <h1>Form Builder</h1>
+      <div id="rows"></div>
+      <button id="addRow">Add Row</button>
+      <button id="saveRows">Save to FormSetup</button>
+      <div id="message">Rows saved successfully!</div>
+    </div>
+
+    <script>
+      const fieldTypes = [
+        "Text", "Email", "Date", "Time", "Number", "Checkbox", "Radio", "Textarea",
+        "Dropdown", "MultiSelect", "StarRating", "RangeSlider", "FileUpload",
+        "Conditional", "Calculated", "Signature", "Geolocation", "ProgressBar",
+        "Captcha", "Image", "Video", "ImageLink", "VideoLink", "StaticText",
+        "Table", "Container", "Header", "Footer"
+      ];
+
+      const examples = {
+        "Text": "e.g., John Doe",
+        "Email": "e.g., user@example.com",
+        "Date": "",
+        "Time": "",
+        "Number": "e.g., 42",
+        "Checkbox": "",
+        "Radio": "e.g., Yes,No,Maybe",
+        "Textarea": "",
+        "Dropdown": "e.g., Option1,Option2,Option3",
+        "MultiSelect": "e.g., Red,Green,Blue",
+        "StarRating": "",
+        "RangeSlider": "e.g., 0,100,5 (min,max,step)",
+        "FileUpload": "",
+        "Conditional": "e.g., Checkbox=true",
+        "Calculated": "e.g., =Number*2",
+        "Signature": "",
+        "Geolocation": "",
+        "ProgressBar": "e.g., 75",
+        "Captcha": "",
+        "Image": "e.g., https://via.placeholder.com/150",
+        "Video": "e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "ImageLink": "",
+        "VideoLink": "",
+        "StaticText": "e.g., This is static text",
+        "Table": "e.g., Sheet1!A1:B2",
+        "Container": "e.g., border: 2px dashed #4CAF50;",
+        "Header": "e.g., Sample Form",
+        "Footer": "e.g., Thank you for submitting!"
+      };
+
+      function createRow(data = {}) {
+        const row = document.createElement('div');
+        row.className = 'row visible'; // Initially visible when added
+        
+        row.innerHTML = `
+          <div class="group">
+            <div class="group-header">Field Definition</div>
+            <div class="fields">
+              <div class="field">
+                <label>Field Name</label>
+                <input type="text" placeholder="Field Name" value="${data.fieldName || ''}">
+                <span class="description">Name of the form field</span>
+              </div>
+              <div class="field">
+                <label>Field Type</label>
+                <select class="field-type">
+                  ${fieldTypes.map(type => `<option value="${type}" ${data.type === type ? 'selected' : ''}>${type}</option>`).join('')}
+                </select>
+                <span class="description">Type of input field</span>
+              </div>
+              <div class="field">
+                <label>Options</label>
+                <input type="text" id="options" placeholder="${examples[data.type || 'Text']}" value="${data.options || ''}">
+                <span class="description">Field-specific options (if applicable)</span>
+              </div>
+              <div class="field">
+                <label>Required</label>
+                <select>
+                  <option value="No" ${data.required !== 'Yes' ? 'selected' : ''}>No</option>
+                  <option value="Yes" ${data.required === 'Yes' ? 'selected' : ''}>Yes</option>
+                </select>
+                <span class="description">Is this field mandatory?</span>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <div class="group-header">Primary Target</div>
+            <div class="fields">
+              <div class="field">
+                <label>Target Sheet 1</label>
+                <input type="text" placeholder="Sheet 1" value="${data.sheet1 || ''}">
+                <span class="description">First target sheet name</span>
+              </div>
+              <div class="field">
+                <label>Cell/Col 1</label>
+                <input type="text" placeholder="Cell/Col 1" value="${data.cell1 || ''}">
+                <span class="description">Cell (e.g., A1) or column (e.g., A)</span>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <div class="group-header">Additional Targets</div>
+            <div class="fields">
+              <div class="field">
+                <label>Target Sheet 2</label>
+                <input type="text" placeholder="Sheet 2" value="${data.sheet2 || ''}">
+                <span class="description">Second target sheet name (optional)</span>
+              </div>
+              <div class="field">
+                <label>Cell/Col 2</label>
+                <input type="text" placeholder="Cell/Col 2" value="${data.cell2 || ''}">
+                <span class="description">Cell (e.g., B2) or column (e.g., B)</span>
+              </div>
+              <div class="field">
+                <label>Target Sheet 3</label>
+                <input type="text" placeholder="Sheet 3" value="${data.sheet3 || ''}">
+                <span class="description">Third target sheet name (optional)</span>
+              </div>
+              <div class="field">
+                <label>Cell/Col 3</label>
+                <input type="text" placeholder="Cell/Col 3" value="${data.cell3 || ''}">
+                <span class="description">Cell (e.g., C3) or column (e.g., C)</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const typeSelect = row.querySelector('.field-type');
+        const optionsInput = row.querySelector('#options');
+        typeSelect.onchange = () => {
+          optionsInput.placeholder = examples[typeSelect.value];
+        };
+
+        document.getElementById('rows').appendChild(row);
+      }
+
+      document.getElementById('addRow').onclick = () => createRow();
+
+      document.getElementById('saveRows').onclick = () => {
+        const rows = document.querySelectorAll('.row.visible');
+        const data = Array.from(rows).map(row => {
+          const inputs = row.querySelectorAll('input, select');
+          return {
+            fieldName: inputs[0].value,
+            sheet1: inputs[4].value,
+            cell1: inputs[5].value,
+            sheet2: inputs[6].value,
+            cell2: inputs[7].value,
+            sheet3: inputs[8].value,
+            cell3: inputs[9].value,
+            type: inputs[1].value,
+            options: inputs[2].value,
+            required: inputs[3].value
+          };
+        });
+        google.script.run
+          .withSuccessHandler(() => {
+            const message = document.getElementById('message');
+            message.style.display = 'block';
+            setTimeout(() => message.style.display = 'none', 3000);
+          })
+          .withFailureHandler(error => alert('Error saving rows: ' + error.message))
+          .saveFormRows(data);
+      };
+
+      // Load existing rows (hidden initially)
+      google.script.run
+        .withSuccessHandler(rows => rows.forEach(row => {
+          createRow(row);
+          document.querySelector('.row:last-child').classList.remove('visible'); // Hide loaded rows
+        }))
+        .loadFormRows();
+    </script>
+  </body>
+</html>
