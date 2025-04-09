@@ -2549,15 +2549,24 @@ function processForm(formData) {
   var setupSheet = ss.getSheetByName("FormSetup");
   if (!setupSheet) throw new Error("FormSetup sheet not found.");
 
-  var fieldsRange = setupSheet.getRange("A9:I" + setupSheet.getLastRow());
+  var fieldsRange = setupSheet.getRange("A9:J" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
 
-  // Process form data
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var isRequired = row[9].toString().toLowerCase() === "yes";
+    var fieldValue = formData[fieldName];
+
+    if (isRequired && (fieldValue === undefined || fieldValue === "" || fieldValue === null)) {
+      throw new Error(`Field "${fieldName}" is required but was not provided.`);
+    }
+  });
+
   var sheetsData = {};
   fieldsData.forEach(row => {
     var fieldName = row[0];
-    var targetSheets = [row[1], row[3], row[5]].filter(Boolean); // B, D, F columns
-    var targetCells = [row[2], row[4], row[6]].filter(Boolean); // C, E, G columns
+    var targetSheets = [row[1], row[3], row[5]].filter(Boolean);
+    var targetCells = [row[2], row[4], row[6]].filter(Boolean);
     var fieldValue = formData[fieldName];
 
     if (fieldValue === undefined) return;
@@ -2579,7 +2588,6 @@ function processForm(formData) {
     });
   });
 
-  // Write data to target sheets
   Object.keys(sheetsData).forEach(sheetName => {
     var sheet = getOrCreateSheet(ss, sheetName);
     var singleCellData = sheetsData[sheetName].singleCell;
@@ -2601,15 +2609,13 @@ function processForm(formData) {
     }
   });
 
-  // Execute on-submit functions from dashboard area (A3)
-  var onSubmitFunctions = setupSheet.getRange("A3").getValue();
+  var onSubmitFunctions = setupSheet.getRange("B6").getValue();
   if (onSubmitFunctions) {
     var functionNames = onSubmitFunctions.split(',').map(name => name.trim());
     var functionMap = {
       "save": save,
       "copyInput1": copyInput1,
       "newContactit": newContactit
-      // Add more functions here as needed
     };
 
     functionNames.forEach(funcName => {
@@ -2641,7 +2647,7 @@ function createFormSetupSheet() {
     formSetupSheet = ss.insertSheet("FormSetup");
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
-    formSetupSheet.getRange("A1:I1").merge();
+    formSetupSheet.getRange("A1:J1").merge();
     formSetupSheet.getRange("A1")
       .setValue("Form Setup Dashboard")
       .setFontSize(16)
@@ -2650,18 +2656,19 @@ function createFormSetupSheet() {
       .setBackground("#4CAF50")
       .setHorizontalAlignment("center");
 
-    formSetupSheet.getRange("A2:I2").merge();
+    formSetupSheet.getRange("A2:J2").merge();
     formSetupSheet.getRange("A2")
-      .setValue("Configure your form below. Add fields and targets in A9:I directly.")
+      .setValue("Configure your form below. Add fields and targets in A9:J directly.")
       .setFontSize(12)
       .setFontColor("#666666")
       .setBackground("#e0e0e0")
       .setHorizontalAlignment("center")
       .setWrap(true);
 
-    formSetupSheet.getRange("A3:I3").merge();
-    formSetupSheet.getRange("A3")
-      .setValue("On Submit Functions: save, copyInput1, newContactit")
+    formSetupSheet.getRange("A6").setValue("On Submit Functions:");
+    formSetupSheet.getRange("B6:J6").merge();
+    formSetupSheet.getRange("B6")
+      .setValue("save, copyInput1, newContactit")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
@@ -2676,45 +2683,46 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("G9").setValue("Target Cell/Column 3");
     formSetupSheet.getRange("H9").setValue("Field Type");
     formSetupSheet.getRange("I9").setValue("Options");
-    formSetupSheet.getRange("A9:I9")
+    formSetupSheet.getRange("J9").setValue("Required");
+    formSetupSheet.getRange("A9:J9")
       .setFontWeight("bold")
       .setFontColor("#ffffff")
       .setBackground("#4CAF50")
       .setBorder(true, true, true, true, false, false);
 
     var sampleFields = [
-      ["Form Header", "Responses", "A", "", "", "", "", "Header", "Sample Form"],
-      ["Name", "Sheet1", "A1", "Sheet2", "B2", "", "", "Text", ""],
-      ["Email", "Responses", "A", "", "", "", "", "Email", ""],
-      ["Date", "Input", "A1", "Records", "B1", "", "", "Date", ""],
-      ["Time", "Input", "A2", "", "", "", "", "Time", ""],
-      ["Number", "Input", "A3", "", "", "", "", "Number", ""],
-      ["Checkbox", "Responses", "B", "", "", "", "", "Checkbox", ""],
-      ["Radio", "Responses", "C", "", "", "", "", "Radio", "Yes,No,Maybe"],
-      ["Textarea", "Input", "A4", "", "", "", "", "Textarea", ""],
-      ["Dropdown", "Responses", "D", "", "", "", "", "Dropdown", "Option1,Option2,Option3"],
-      ["MultiSelect", "Responses", "E", "", "", "", "", "MultiSelect", "Red,Green,Blue"],
-      ["StarRating", "Responses", "F", "", "", "", "", "StarRating", ""],
-      ["RangeSlider", "Input", "A5", "", "", "", "", "RangeSlider", "0,100,5"],
-      ["FileUpload", "Sheet1", "A6", "", "", "", "", "FileUpload", ""],
-      ["Conditional", "Input", "A7", "", "", "", "", "Conditional", "Checkbox=true"],
-      ["Calculated", "Input", "A8", "", "", "", "", "Calculated", "=Number*2"],
-      ["Signature", "Sheet1", "A9", "", "", "", "", "Signature", ""],
-      ["Geolocation", "Sheet1", "A10", "", "", "", "", "Geolocation", ""],
-      ["ProgressBar", "Input", "A11", "", "", "", "", "ProgressBar", "75"],
-      ["Captcha", "Responses", "G", "", "", "", "", "Captcha", ""],
-      ["Image", "Sheet1", "A12", "", "", "", "", "Image", "https://via.placeholder.com/150"],
-      ["Video", "Sheet1", "A13", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
-      ["ImageLink", "Sheet1", "A14", "", "", "", "", "ImageLink", ""],
-      ["VideoLink", "Sheet1", "A15", "", "", "", "", "VideoLink", ""],
-      ["StaticText", "", "", "", "", "", "", "StaticText", "This is static text"],
-      ["Table", "", "", "", "", "", "", "Table", "Sheet1!A1:B2"],
-      ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;"],
-      ["Form Footer", "Responses", "H", "", "", "", "", "Footer", "Thank you for submitting!"]
+      ["Form Header", "Responses", "A", "", "", "", "", "Header", "Sample Form", "No"],
+      ["Name", "Sheet1", "A1", "Sheet2", "B2", "", "", "Text", "", "Yes"],
+      ["Email", "Responses", "A", "", "", "", "", "Email", "", "Yes"],
+      ["Date", "Input", "A1", "Records", "B1", "", "", "Date", "", "No"],
+      ["Time", "Input", "A2", "", "", "", "", "Time", "", "No"],
+      ["Number", "Input", "A3", "", "", "", "", "Number", "", "Yes"],
+      ["Checkbox", "Responses", "B", "", "", "", "", "Checkbox", "", "No"],
+      ["Radio", "Responses", "C", "", "", "", "", "Radio", "Yes,No,Maybe", "Yes"],
+      ["Textarea", "Input", "A4", "", "", "", "", "Textarea", "", "No"],
+      ["Dropdown", "Responses", "D", "", "", "", "", "Dropdown", "Option1,Option2,Option3", "Yes"],
+      ["MultiSelect", "Responses", "E", "", "", "", "", "MultiSelect", "Red,Green,Blue", "No"],
+      ["StarRating", "Responses", "F", "", "", "", "", "StarRating", "", "No"],
+      ["RangeSlider", "Input", "A5", "", "", "", "", "RangeSlider", "0,100,5", "No"],
+      ["FileUpload", "Sheet1", "A6", "", "", "", "", "FileUpload", "", "No"],
+      ["Conditional", "Input", "A7", "", "", "", "", "Conditional", "Checkbox=true", "No"],
+      ["Calculated", "Input", "A8", "", "", "", "", "Calculated", "=Number*2", "No"],
+      ["Signature", "Sheet1", "A9", "", "", "", "", "Signature", "", "No"],
+      ["Geolocation", "Sheet1", "A10", "", "", "", "", "Geolocation", "", "No"],
+      ["ProgressBar", "Input", "A11", "", "", "", "", "ProgressBar", "75", "No"],
+      ["Captcha", "Responses", "G", "", "", "", "", "Captcha", "", "Yes"],
+      ["Image", "Sheet1", "A12", "", "", "", "", "Image", "https://via.placeholder.com/150", "No"],
+      ["Video", "Sheet1", "A13", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "No"],
+      ["ImageLink", "Sheet1", "A14", "", "", "", "", "ImageLink", "", "No"],
+      ["VideoLink", "Sheet1", "A15", "", "", "", "", "VideoLink", "", "No"],
+      ["StaticText", "", "", "", "", "", "", "StaticText", "This is static text", "No"],
+      ["Table", "", "", "", "", "", "", "Table", "Sheet1!A1:B2", "No"],
+      ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
+      ["Form Footer", "Responses", "H", "", "", "", "", "Footer", "Thank you for submitting!", "No"]
     ];
     if (sampleFields.length > 0) {
-      formSetupSheet.getRange("A10:I" + (10 + sampleFields.length - 1)).setValues(sampleFields);
-      formSetupSheet.getRange("A10:I" + (10 + sampleFields.length - 1))
+      formSetupSheet.getRange("A10:J" + (10 + sampleFields.length - 1)).setValues(sampleFields);
+      formSetupSheet.getRange("A10:J" + (10 + sampleFields.length - 1))
         .setBackground("#ffffff")
         .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
     }
@@ -2729,6 +2737,7 @@ function createFormSetupSheet() {
     formSetupSheet.setColumnWidth(7, 100);
     formSetupSheet.setColumnWidth(8, 100);
     formSetupSheet.setColumnWidth(9, 150);
+    formSetupSheet.setColumnWidth(10, 80);
   }
   return formSetupSheet;
 }
@@ -2759,22 +2768,17 @@ function generateFormHTML() {
     setupSheet = ss.getSheetByName("FormSetup");
   }
 
-  var fieldsRange = setupSheet.getRange("A9:I" + setupSheet.getLastRow());
+  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
 
-  var formName = "";
-  for (var i = 0; i < fieldsData.length; i++) {
-    if (fieldsData[i][7].toUpperCase() === "HEADER" && fieldsData[i][8]) {
-      formName = fieldsData[i][8];
-      break;
-    }
-  }
+  var formName = setupSheet.getRange("B2").getValue() || "Custom";
 
   var processedFieldsData = fieldsData.map((row, index) => {
     var fieldName = row[0];
     var fieldType = row[7] || "Text";
-    var cell = setupSheet.getRange("I" + (index + 9));
+    var cell = setupSheet.getRange("I" + (index + 10));
     var options = cell.getFormula() || row[8] || "";
+    var required = row[9].toString().toLowerCase() === "yes";
     options = String(options);
     var targets = [
       { sheet: row[1], cell: row[2] },
@@ -2803,18 +2807,45 @@ function generateFormHTML() {
       if (options.includes("drive.google.com/file/d/")) {
         var fileIdMatch = options.match(/\/d\/([a-zA-Z0-9_-]+)/);
         if (fileIdMatch) options = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+      } else if (options.includes("drive.google.com/uc")) {
+        var idMatch = options.match(/id=([a-zA-Z0-9_-]+)/);
+        if (idMatch) options = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + idMatch[1];
       }
       fieldOptions = [options];
     } else if (fieldType.toUpperCase() === "TABLE" && options) {
       try {
         var range = ss.getRange(options);
-        fieldOptions = range.getValues();
+        fieldOptions = range.getValues().map(row => row.map(cell => {
+          if (String(cell).includes("drive.google.com/file/d/")) {
+            var fileIdMatch = cell.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch) return "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
+          } else if (String(cell).includes("drive.google.com/uc")) {
+            var idMatch = cell.match(/id=([a-zA-Z0-9_-]+)/);
+            if (idMatch) return "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + idMatch[1];
+          }
+          return cell;
+        }));
       } catch (e) {
         fieldOptions = [["Error: Invalid range " + options]];
       }
     }
 
-    return [fieldName, fieldType, fieldOptions, targets];
+    return [fieldName, fieldType, fieldOptions, targets, required];
+  });
+
+  var additionalStyles = [];
+  var hasCustomHeader = false;
+  var hasCustomFooter = false;
+  processedFieldsData.forEach(field => {
+    if (["HEADER", "FOOTER"].includes(field[1].toUpperCase()) && field[2][0]) {
+      var options = field[2][0];
+      if (options.match(/<!DOCTYPE|<html/i)) {
+        var styleMatch = options.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        if (styleMatch) additionalStyles.push(styleMatch[1]);
+        if (field[1].toUpperCase() === "HEADER") hasCustomHeader = true;
+        if (field[1].toUpperCase() === "FOOTER") hasCustomFooter = true;
+      }
+    }
   });
 
   var template = HtmlService.createTemplate(`
@@ -2845,7 +2876,7 @@ function generateFormHTML() {
             border-radius: 4px;
           }
           .header {
-            background: #4CAF50;
+            ${hasCustomHeader ? '' : 'background: #4CAF50;'}
             color: white;
             padding: 15px;
             text-align: center;
@@ -2854,7 +2885,7 @@ function generateFormHTML() {
             font-size: 24px;
           }
           .footer {
-            background: #333;
+            ${hasCustomFooter ? '' : 'background: #333;'}
             color: white;
             padding: 15px;
             text-align: center;
@@ -2962,6 +2993,16 @@ function generateFormHTML() {
             background: #f1f1f1;
             font-weight: bold;
           }
+          .table-display img {
+            width: 100px;
+            height: auto;
+            display: block;
+          }
+          .table-display iframe {
+            width: 200px;
+            height: 150px;
+            border: none;
+          }
           .range-output {
             margin-left: 10px;
             font-size: 14px;
@@ -3036,22 +3077,48 @@ function generateFormHTML() {
             font-size: 16px;
             padding: 20px;
           }
+          .required::after {
+            content: " *";
+            color: #d32f2f;
+          }
+          ${additionalStyles.join('\n')}
         </style>
       </head>
       <body>
         <div class="container">
           <? if (processedFieldsData.length > 0) { ?>
-            <? if (formName) { ?>
-              <h1><?= formName ?> Form</h1>
-            <? } ?>
             <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
               <? var inContainer = false; ?>
               <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
                 <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
-                  <div class="header"><?= processedFieldsData[i][2][0] ?></div>
+                  <? var options = processedFieldsData[i][2][0]; ?>
+                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+                    <? if (bodyMatch) { ?>
+                      <div class="header"><?!= bodyMatch[1] ?></div>
+                    <? } else { ?>
+                      <div class="header"><?= processedFieldsData[i][0] ?></div>
+                    <? } ?>
+                  <? } else if (options.includes(':')) { ?>
+                    <div class="header" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+                  <? } else { ?>
+                    <div class="header"><?!= options ?></div>
+                  <? } ?>
                 <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
                   <? if (inContainer) { ?></div><? inContainer = false; } ?>
-                  <div class="footer"><?= processedFieldsData[i][2][0] ?></div>
+                  <? var options = processedFieldsData[i][2][0]; ?>
+                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+                    <? if (bodyMatch) { ?>
+                      <div class="footer"><?!= bodyMatch[1] ?></div>
+                    <? } else { ?>
+                      <div class="footer"><?= processedFieldsData[i][0] ?></div>
+                    <? } ?>
+                  <? } else if (options.includes(':')) { ?>
+                    <div class="footer" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+                  <? } else { ?>
+                    <div class="footer"><?!= options ?></div>
+                  <? } ?>
                 <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
                   <? if (inContainer) { ?></div><? } ?>
                   <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
@@ -3061,7 +3128,7 @@ function generateFormHTML() {
                     <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
                       <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
-                      <label><?= processedFieldsData[i][0] ?>:</label>
+                      <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
                       <table class="table-display">
                         <? var tableData = processedFieldsData[i][2]; ?>
                         <? for (var row = 0; row < tableData.length; row++) { ?>
@@ -3071,53 +3138,72 @@ function generateFormHTML() {
                               <? if (isHeader) { ?>
                                 <th><?= tableData[row][col] || '' ?></th>
                               <? } else { ?>
-                                <td><?= tableData[row][col] || '' ?></td>
+                                <td>
+                                  <? var cellValue = String(tableData[row][col] || '').trim(); ?>
+                                  <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
+                                    <img src="<?= cellValue ?>" style="width: 100px; height: auto;" alt="Table Image" 
+                                         onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue ?>';">
+                                  <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
+                                    <? 
+                                      var videoId;
+                                      if (cellValue.includes("youtu.be")) {
+                                        videoId = cellValue.split('/').pop().split('?')[0];
+                                      } else {
+                                        var match = cellValue.match(/[?&]v=([^&]+)/);
+                                        videoId = match ? match[1] : cellValue.split('/').pop().split('?')[0];
+                                      }
+                                    ?>
+                                    <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+                                  <? } else { ?>
+                                    <?= cellValue ?>
+                                  <? } ?>
+                                </td>
                               <? } ?>
                             <? } ?>
                           </tr>
                         <? } ?>
                       </table>
                     <? } else { ?>
-                      <label for="<?= processedFieldsData[i][0] ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <label for="<?= processedFieldsData[i][0] ?>" class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
                       <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
-                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                           <? var options = processedFieldsData[i][2]; ?>
                           <? for (var j = 0; j < options.length; j++) { ?>
                             <option value="<?= options[j] ?>"><?= options[j] ?></option>
                           <? } ?>
                         </select>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
-                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                           <? var options = processedFieldsData[i][2]; ?>
                           <? for (var j = 0; j < options.length; j++) { ?>
                             <option value="<?= options[j] ?>"><?= options[j] ?></option>
                           <? } ?>
                         </select>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
-                        <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
-                        <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
-                        <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
-                        <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
                         <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
                           <? var options = processedFieldsData[i][2]; ?>
                           <? for (var j = 0; j < options.length; j++) { ?>
                             <div>
-                              <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>">
+                              <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>" <?= processedFieldsData[i][4] && j === 0 ? 'required' : '' ?>>
                               <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
                             </div>
                           <? } ?>
                         </div>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
-                        <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></textarea>
+                        <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>></textarea>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
-                        <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
                         <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
-                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5">
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                           <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
                           <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
                           <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
@@ -3130,27 +3216,28 @@ function generateFormHTML() {
                         </div>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
                         <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
-                          min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>">
+                          min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                         <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
-                        <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf">
+                        <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
-                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>">
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
                         <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
                         <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
-                        <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
-                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                         <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
                         <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
-                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)">
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                         <span id="captcha-question">What is 3 + 5?</span>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
-                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>">
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" 
+                             onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0] ?>';">
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
                         <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
@@ -3162,10 +3249,14 @@ function generateFormHTML() {
                           </video>
                         <? } ?>
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
-                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK" || processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
-                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter URL">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Image URL" <?= processedFieldsData[i][4] ? 'required' : '' ?> oninput="previewImage(this)">
+                        <img id="<?= processedFieldsData[i][0] ?>-preview" style="display: none;" alt="Preview">
+                        <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Video URL" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } else { ?>
-                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>">
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
                       <? } ?>
                       <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
                     <? } ?>
@@ -3177,7 +3268,7 @@ function generateFormHTML() {
             </form>
             <div id="message">Data submitted successfully!</div>
           <? } else { ?>
-            <div class="no-fields">No fields defined. Please add fields in FormSetup A9:I.</div>
+            <div class="no-fields">No fields defined. Please add fields in FormSetup A10:J.</div>
           <? } ?>
         </div>
         <script>
@@ -3201,6 +3292,8 @@ function generateFormHTML() {
 
                 let value;
                 const errorSpan = document.getElementById(name + '-error');
+                const fieldData = processedFieldsData.find(f => f[0] === name);
+                const isRequired = fieldData && fieldData[4];
 
                 if (input.type === 'file' && input.files.length > 0) {
                   const file = input.files[0];
@@ -3238,7 +3331,10 @@ function generateFormHTML() {
                   dataToSend[name] = value;
                 }
 
-                if (input.type === 'number' && value && isNaN(value)) {
+                if (isRequired && (!value || value === '')) {
+                  errorSpan.textContent = 'This field is required';
+                  isValid = false;
+                } else if (input.type === 'number' && value && isNaN(value)) {
                   errorSpan.textContent = 'Please enter a valid number';
                   isValid = false;
                 } else if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -3328,6 +3424,21 @@ function generateFormHTML() {
               }
             }
 
+            function previewImage(input) {
+              const preview = document.getElementById(input.id + '-preview');
+              if (input.value) {
+                preview.src = input.value;
+                preview.style.display = 'block';
+                preview.onerror = () => {
+                  preview.style.display = 'none';
+                  document.getElementById(input.id + '-error').textContent = 'Invalid image URL';
+                };
+              } else {
+                preview.style.display = 'none';
+                document.getElementById(input.id + '-error').textContent = '';
+              }
+            }
+
             processedFieldsData.forEach(field => {
               if (field[1].toUpperCase() === "RANGESLIDER") {
                 const slider = document.getElementById(field[0]);
@@ -3379,6 +3490,7 @@ function generateFormHTML() {
 
   template.formName = formName;
   template.processedFieldsData = processedFieldsData;
+  template.additionalStyles = additionalStyles;
   return template.evaluate().setTitle(formName || "Form Preview");
 }
 
@@ -3391,9 +3503,80 @@ function doGet(e) {
   return generateFormHTML();
 }
 
+function showFormBuilder() {
+  var html = HtmlService.createHtmlOutputFromFile('FormBuilder')
+    .setWidth(1200)
+    .setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
+}
 
+function loadFormRows() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
 
-// Placeholder functions
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow < 9) return [];
+
+  var range = setupSheet.getRange("A9:J" + lastRow);
+  var values = range.getValues();
+
+  return values.map(row => ({
+    fieldName: row[0],
+    sheet1: row[1],
+    cell1: row[2],
+    sheet2: row[3],
+    cell2: row[4],
+    sheet3: row[5],
+    cell3: row[6],
+    type: row[7],
+    options: row[8],
+    required: row[9]
+  }));
+}
+
+function saveFormRows(rows) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow >= 9) {
+    setupSheet.getRange("A9:J" + lastRow).clear();
+  }
+
+  if (rows.length > 0) {
+    var data = rows.map(row => [
+      row.fieldName,
+      row.sheet1,
+      row.cell1,
+      row.sheet2,
+      row.cell2,
+      row.sheet3,
+      row.cell3,
+      row.type,
+      row.options,
+      row.required
+    ]);
+    setupSheet.getRange("A9:J" + (9 + data.length - 1)).setValues(data);
+  }
+}
+
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Form Tools')
+    .addItem('Preview Form', 'previewForm')
+    .addItem('Show Tutorial', 'showTutorial')
+    .addItem('Form Builder', 'showFormBuilder')
+    .addToUi();
+}
+
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
 function newContactit() { Logger.log("New Contact executed"); }
