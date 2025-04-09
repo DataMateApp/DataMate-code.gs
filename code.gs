@@ -19,7 +19,7 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("FormBuilder")
       .addItem("Preview Form", "previewForm") // Previews the custom form
-      .addItem("Show Tutorial", "showTutorial")) // Displays HTML tutorial
+      .addItem('Form Builder', 'showFormBuilder')
     .addSeparator()
     .addSubMenu(ui.createMenu("AddressBlock")
       .addItem("Add Contact Sheets", "contacts") // Sets up contact management
@@ -27,6 +27,8 @@ function onOpen() {
       .addItem("New Contact", "newcontact") // Adds a new contact
       .addItem("Edit Name", "EditAddressSheet")
       .addItem("Edit Company", "EditAddressSheet1"));
+   .addSeparator()
+      .addItem("Show Tutorial", "showTutorial")) // Displays HTML tutorial
   menu.addToUi();
 }
 function doNothing() {
@@ -3568,14 +3570,7 @@ function saveFormRows(rows) {
   }
 }
 
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Form Tools')
-    .addItem('Preview Form', 'previewForm')
-    .addItem('Show Tutorial', 'showTutorial')
-    .addItem('Form Builder', 'showFormBuilder')
-    .addToUi();
-}
+
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
