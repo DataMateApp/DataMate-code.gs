@@ -4,33 +4,40 @@ function onInstall() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   const menu = ui.createMenu("DataMate")
-    .addItem("Save Record", "save") // Saves input data to storage
-    .addItem("Reset Input", "copyInput1") // Resets input sheet to template
-    .addItem("Reset View/Print", "view") // Refreshes view sheet
-    .addItem("New Dataset", "newfile") // Creates a new dataset structure
+    .addItem("Save Record", "save")
+    .addItem("Reset Input", "copyInput1")
+    .addItem("Reset View/Print", "view")
+    .addItem("New Dataset", "newfile")
     .addSeparator()
-    .addItem("➡ Start with a Template ⬅", "doNothing") // Placeholder for template selection
-    .addSubMenu(ui.createMenu("Templates")
-      .addItem("Inventory", "setup") // Sets up inventory template
-      .addItem("Update Inventory", "updateInventory")
-      .addItem("Weekly Timesheets", "setupTS")
-      .addItem("Update Cost Codes", "copyToCodeTotals")
-      .addItem("Purchase Order", "setupPO"))
+    .addItem("➡ Start with a Template ⬅", "doNothing")
+    .addSubMenu(
+      ui.createMenu("Templates")
+        .addItem("Inventory", "setup")
+        .addItem("Update Inventory", "updateInventory")
+        .addItem("Weekly Timesheets", "setupTS")
+        .addItem("Update Cost Codes", "copyToCodeTotals")
+        .addItem("Purchase Order", "setupPO")
+    )
     .addSeparator()
-    .addSubMenu(ui.createMenu("FormBuilder")
-      .addItem("Preview Form", "previewForm") // Previews the custom form
-      .addItem('Form Builder', 'showFormBuilder')
+    .addSubMenu(
+      ui.createMenu("FormBuilder")
+        .addItem("Preview Form", "previewForm")
+        .addItem("Form Builder", "showFormBuilder")
+    )
+    .addSubMenu(
+      ui.createMenu("AddressBlock")
+        .addItem("Add Contact Sheets", "contacts")
+        .addItem("Import Gmail™ Contacts", "showUploadDialog")
+        .addItem("New Contact", "newcontact")
+        .addItem("Edit Name", "EditAddressSheet")
+        .addItem("Edit Company", "EditAddressSheet1")
+    )
     .addSeparator()
-    .addSubMenu(ui.createMenu("AddressBlock")
-      .addItem("Add Contact Sheets", "contacts") // Sets up contact management
-      .addItem("Import Gmail™ Contacts", "showUploadDialog")
-      .addItem("New Contact", "newcontact") // Adds a new contact
-      .addItem("Edit Name", "EditAddressSheet")
-      .addItem("Edit Company", "EditAddressSheet1"));
-   .addSeparator()
-      .addItem("Show Tutorial", "showTutorial")) // Displays HTML tutorial
+    .addItem("Show Tutorial", "showTutorial");
+
   menu.addToUi();
 }
+
 function doNothing() {
   SpreadsheetApp.getUi().alert("Please select a template option below.");
 }
