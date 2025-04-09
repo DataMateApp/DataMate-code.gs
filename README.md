@@ -4,106 +4,115 @@
 ## About DataMateApps  
 Hi, I'm **Dan Northway**—Founder and Developer of DataMateApps. Before retiring, I spent my career as a **Construction Project Manager and Superintendent**.  
 
-At most companies I worked with, spreadsheets were the backbone of project management. Everything—timecards, pay applications, logs—was stored in countless Excel and PDF files, requiring manual tracking.  
+In construction, spreadsheets were the backbone of project management—timecards, pay applications, logs—all stored in countless Excel files and PDFs, tracked manually. I knew databases could streamline this, but Excel was the industry standard. That sparked an idea:  
+> *What if I could turn Excel into a lightweight database?*  
 
-I knew databases could streamline this process, but Excel was the standard. That’s when I had an idea:  
-> *What if I could turn Excel itself into a lightweight database?*  
-
-Using **forms and VBA**, I built a system that stored, logged, and organized data efficiently—making sorting and filtering a breeze. It became an essential tool in my workflow.  
+Using **forms and VBA**, I built a system to store, log, and organize data efficiently—making sorting and filtering effortless. It became indispensable in my workflow.  
 
 ### The Birth of DataMate  
-After retiring, I revisited the concept, and a lightbulb went off:  
-> *Why not make this work with any form?*  
+Post-retirement, I revisited this concept with a new twist:  
+> *Why not make it work with any form?*  
 
-With help from the recently released **ChatGPT**, **DataMate was born!**  
+With help from **ChatGPT**, **DataMate was born!** Built for **Google Sheets** using Apps Script, it’s tailored for **small businesses and teams** who rely on spreadsheets but need a **smarter, structured way to manage data**. It’s not a replacement for **SQL databases** or enterprise systems—it bridges the gap between **manual spreadsheets** and **complex (often costly) solutions** that may overwhelm smaller operations.  
 
-DataMate isn’t a replacement for **full-scale databases like SQL** or enterprise-level solutions. Instead, it’s designed for **small businesses and teams** that rely on spreadsheets but need a **smarter, structured way to manage data**.  
-
-It bridges the gap between **manual spreadsheets** and **complex (often expensive) systems** that may be overkill for smaller operations.  
-
-### Why are DataMateApps Free?  
+### Why is DataMate Free?  
 Because **the idea matters more than the programming.**  
 
-Technology has made development more accessible, and for me, this is both a **passion project** and a way to **keep my mind sharp**. More importantly, I see DataMate as a **legacy—one that grows and evolves with every user.**  
+Technology has democratized development, and for me, this is a **passion project** to **keep my mind sharp** and leave a **legacy**. DataMate grows with every user—your feedback shapes its future!  
 
 ---
 
 ### Installation and Deployment  
 
 #### Step 1: Install the Core Script  
-1. Open **Google Drive** and create a **new spreadsheet**.  
+1. Open **Google Drive** and create a **new Google Sheet**.  
 2. Click **Extensions > Apps Script**.  
 3. Delete any default code in `Code.gs`.  
-4. Copy & paste the provided `Code.gs` from this repository.  
-5. Click **Save**.  
+4. Copy & paste the [`Code.gs`](https://github.com/DataMateApp/DataMate-code.gs) from this repository.  
+5. Click **Save** (Ctrl+S or the disk icon).  
 
 #### Step 2: Add Supporting HTML Files  
-DataMate includes optional HTML files to enhance functionality: `tutorial.html` and `UploadCSV.html`.  
+DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder.html`, and (optionally) `UploadCSV.html`.  
 1. In the Apps Script editor, click the **+** button next to "Files" and select **HTML**.  
-2. Name the first file `tutorial.html`.  
-   - Copy the contents of `tutorial.html` from this repository and paste it into the editor.  
-   - This file provides a detailed guide on using DataMate, including FormBuilder features.  
-3. Name the second file `UploadCSV.html`.  
-   - Copy the contents of `UploadCSV.html` from this repository and paste it into the editor.  
-   - This file enables batch CSV uploads to streamline data entry.  
-4. Click **Save** for each file.  
+2. Create `tutorial.html`:  
+   - Name it `tutorial.html`.  
+   - Copy the contents from [this repository’s `tutorial.html`](https://github.com/DataMateApp/DataMate-code.gs) or use the updated version from the help file guide.  
+   - This displays a modal tutorial (via `showTutorial()`).  
+3. Create `FormBuilder.html`:  
+   - Name it `FormBuilder.html`.  
+   - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
+   - This powers the visual form editor (via `showFormBuilder()`).  
+4. (Optional) Create `UploadCSV.html`:  
+   - Name it `UploadCSV.html`.  
+   - Copy its contents from the repository.  
+   - This enables batch CSV uploads for data entry.  
+5. Click **Save** for each file.  
 
-#### Step 3: Deploy the Add-on  
-1. In the Apps Script editor, click **Run > onInstall**.  
-2. Authorize the script when prompted (you’ll need to grant permissions for Google Sheets and Drive access).  
-3. Open your spreadsheet, refresh it, and look for the **DataMate** menu.  
-4. Select **DataMate > New Dataset** to initialize your spreadsheet with specialized sheets (e.g., `Input`, `Data`, `View_Print`).  
+> **Note**: If `FormBuilder.html` or `UploadCSV.html` aren’t in the repository, basic placeholders can be created (e.g., a form for CSV upload or a field editor). Contact [datamateapp@gmail.com](mailto:datamateapp@gmail.com) for assistance.
+
+#### Step 3: Initialize and Test  
+1. In the Apps Script editor, click **Run > showTutorial** to test permissions.  
+2. Authorize the script (grant access to Google Sheets and Drive when prompted).  
+3. Open your spreadsheet, refresh it (F5), and look for the **DataMate** menu.  
+4. Select **DataMate > FormBuilder > Preview Form** to initialize the `FormSetup` sheet with sample fields (e.g., Text, Table, Signature).  
+   - This creates a pre-configured `FormSetup` sheet starting at `A9:J` with 27 field examples.  
 
 #### Step 4: Web Deployment (Optional)  
-DataMate can be deployed as a web app to share forms or tools with others:  
+Deploy DataMate as a web app to share forms with others:  
 1. In the Apps Script editor, click **Deploy > New Deployment**.  
-2. Choose **Web App** as the deployment type.  
-3. Configure the deployment:  
-   - **Description**: Add a brief note (e.g., "DataMate FormBuilder").  
-   - **Execute as**: Select "Me" (runs under your account).  
-   - **Who has access**: Choose "Anyone" (for public access) or "Anyone with a Google account" (restricted to Google users).  
-4. Click **Deploy** and copy the generated **Web App URL**.  
-5. Share the URL with users to access FormBuilder forms or CSV upload functionality directly in their browsers.  
-   - Example use: Deploy `tutorial.html` as a standalone guide or `UploadCSV.html` for remote data uploads.  
-6. To update the web app later, click **Deploy > Manage Deployments**, select your deployment, and choose **New Version**.  
+2. Select **Web App**.  
+3. Configure:  
+   - **Description**: E.g., "DataMate FormBuilder".  
+   - **Execute as**: "Me" (runs under your account).  
+   - **Who has access**: "Anyone" (public) or "Anyone with a Google account" (Google users only).  
+4. Click **Deploy** and copy the **Web App URL**.  
+5. Share the URL for users to access forms directly in their browsers.  
+   - Example: Deploy `generateFormHTML()` (via `doGet(e)`) to serve the form defined in `FormSetup`.  
+6. To update, go to **Deploy > Manage Deployments**, select your deployment, and click **New Version**.  
 
-**Note**: Web deployment requires `Code.gs` to include functions like `doGet(e)` to serve HTML files (e.g., `return HtmlService.createHtmlOutputFromFile('tutorial')`). Check the repository’s `Code.gs` for implementation details.
+> **Tip**: The provided `Code.gs` includes `doGet(e)` to serve `generateFormHTML()`. Test the URL in a browser to preview your form.
 
 ---
 
 ### Completed Features  
-- Spreadsheet-based database system  
-- Automatic data logging & organization (up to 12 log fields)  
-- Simple UI for data entry  
-- FormBuilder with 25+ field types (e.g., Dynamic Tables, Conditional Logic)  
-- Batch CSV uploads via `UploadCSV.html`  
-- PDF generation from records  
-- Tutorial guide via `tutorial.html`  
+- **Spreadsheet Database**: Store and organize data across sheets (e.g., `Responses`, `Input`).  
+- **FormBuilder**: Build custom forms with **27 field types**, including:  
+  - **Basic**: Text, Dropdown, Checkbox, Radio, Textarea, Email, Number, Date, Time  
+  - **Advanced**: StarRating, RangeSlider, FileUpload (6MB max), Signature, Geolocation  
+  - **Dynamic**: Conditional (show/hide logic), Calculated (basic formulas like `=Number*2`)  
+  - **Display**: StaticText, Table (renders sheet ranges with images/videos), Header/Footer (HTML support)  
+  - **Media**: Image, Video, ImageLink, VideoLink  
+  - **Utility**: ProgressBar, Captcha (fixed "3 + 5 = 8")  
+  - **Layout**: Container (styled grouping)  
+- **Data Logging**: Map form inputs to sheets via `FormSetup!B:G` (up to 3 targets per field).  
+- **UI**: Simple form preview (`previewForm()`) and visual editor (`showFormBuilder()`).  
+- **File Uploads**: Stores files in Google Drive with public links.  
+- **Custom Actions**: Run functions post-submission (e.g., `save, newContactit`) from `FormSetup!B6`.  
+- **Tutorial**: In-app guide via `tutorial.html`.  
 
 ### Upcoming Features  
-- **Multi-user collaboration** – Allow multiple users to access & modify data securely  
-- **Automated backups** – Save snapshots of your data for easy recovery  
-- **Custom form integrations** – Support for Google Forms & other input sources  
-- **Advanced filtering** – Smarter search & filter tools  
-- **Collaboration is welcome!** – Need collaborators to develop these features.  
+- **Multi-User Collaboration**: Secure data access for teams.  
+- **Automated Backups**: Snapshot data for recovery.  
+- **Form Integrations**: Link with Google Forms or external sources.  
+- **Advanced Filtering**: Enhanced search and sort tools.  
+- **Collaboration Welcome!**: Need help to build these—email [datamateapp@gmail.com](mailto:datamateapp@gmail.com).  
 
-Have feature requests? [Email me!](mailto:datamateapp@gmail.com)  
-Visit the website? [Website](https://datamateapp.github.io/)
+**Have ideas?** Share them at [datamateapp@gmail.com](mailto:datamateapp@gmail.com) or visit [our website](https://datamateapp.github.io/).  
 
 ---
 
 ## 💙 Support This Project  
 
-DataMate is free, but if you find it useful, consider supporting development:  
+DataMate is free, but your support fuels its growth:  
 
 [**Support DataMateApps**](https://datamateapp.github.io/Donate%205%20per%20mo.html)  
 
-Every donation helps keep this project alive and evolving!  
+Every donation keeps this project thriving!  
 
 ---
 
 ## License  
-This project is licensed under the **MIT License**. See `LICENSE.txt` for details.  
+Licensed under the **MIT License**. See [`LICENSE.txt`](https://github.com/DataMateApp/DataMate-code.gs/blob/main/LICENSE.txt) in the repository for details.  
 
 ## Credits  
-Developed by **Dan Northway**.  
+Developed by **Dan Northway**. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.  
