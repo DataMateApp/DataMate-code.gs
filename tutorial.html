@@ -11,41 +11,49 @@
             padding: 0;
             background-color: #f4f4f4;
         }
+
         .container {
             width: 90%;
             margin: auto;
             overflow: hidden;
         }
+
         header {
             background: #35424a;
             color: #ffffff;
             padding: 10px 0;
             border-bottom: #e8491d 3px solid;
         }
-        header a {
-            color: #ffffff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 14px;
-            padding: 5px;
-            display: inline-block;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-            text-align: center;
-        }
-        header nav {
-            display: none;
-        }
+
+            header a {
+                color: #ffffff;
+                text-decoration: none;
+                text-transform: uppercase;
+                font-size: 14px;
+                padding: 5px;
+                display: inline-block;
+            }
+
+            header h1 {
+                margin: 0;
+                font-size: 24px;
+                text-align: center;
+            }
+
+            header nav {
+                display: none;
+            }
+
         .highlight, .current a {
             color: #e8491d;
             font-weight: bold;
         }
+
         header a:hover {
             color: #cccccc;
             font-weight: bold;
         }
+
         .showcase {
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('images/datamanagement.jpg') no-repeat center center;
             background-size: cover;
@@ -53,27 +61,33 @@
             color: #ffffff;
             padding: 40px 0;
         }
-        .showcase h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        .showcase p {
-            font-size: 1.2em;
-            padding: 0 20px;
-        }
+
+            .showcase h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+            }
+
+            .showcase p {
+                font-size: 1.2em;
+                padding: 0 20px;
+            }
+
         .features {
             padding: 20px 0;
             text-align: center;
             background: #ffffff;
         }
-        .features h2 {
-            color: #35424a;
-        }
+
+            .features h2 {
+                color: #35424a;
+            }
+
         .feature-box {
             padding: 10px;
             box-sizing: border-box;
             margin-bottom: 20px;
         }
+
         .feature-btn {
             background-color: #e8491d;
             color: white;
@@ -87,25 +101,29 @@
             border: none;
             width: 100%;
         }
+
         .cta {
             background: #35424a;
             color: #fff;
             padding: 20px 0;
             text-align: center;
         }
-        .cta a {
-            display: inline-block;
-            background: #e8491d;
-            color: #ffffff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .cta a:hover {
-            background: #ffffff;
-            color: #e8491d;
-        }
+
+            .cta a {
+                display: inline-block;
+                background: #e8491d;
+                color: #ffffff;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 10px 0;
+            }
+
+                .cta a:hover {
+                    background: #ffffff;
+                    color: #e8491d;
+                }
+
         footer {
             padding: 20px 0;
             margin-top: 20px;
@@ -113,6 +131,7 @@
             background-color: #f4f4f4;
             text-align: center;
         }
+
         .menu-toggle {
             display: block;
             font-size: 2em;
@@ -123,6 +142,7 @@
             padding: 0;
             margin: 10px 0 0 10px;
         }
+
         .mobile-nav {
             display: none;
             background: #35424a;
@@ -132,41 +152,51 @@
             width: 100%;
             z-index: 1000;
         }
-        .mobile-nav a {
-            display: block;
-            padding: 10px 0;
-            text-align: center;
-            border-top: 1px solid #e8491d;
-        }
+
+            .mobile-nav a {
+                display: block;
+                padding: 10px 0;
+                text-align: center;
+                border-top: 1px solid #e8491d;
+            }
+
         @media (min-width: 768px) {
             .container {
                 width: 80%;
             }
+
             header h1 {
                 font-size: 36px;
                 text-align: left;
             }
+
             header nav {
                 display: block;
                 text-align: right;
             }
+
             header a {
                 font-size: 16px;
                 padding: 10px;
             }
+
             .showcase h1 {
                 font-size: 3em;
             }
+
             .showcase p {
                 font-size: 1.5em;
             }
+
             .feature-box {
                 float: left;
                 width: 30%;
             }
+
             .menu-toggle {
                 display: none;
             }
+
             .mobile-nav {
                 display: none;
             }
@@ -213,27 +243,102 @@
         <title>DataMate Tutorial</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
-            .container { max-width: 900px; margin: auto; }
-            h1 { color: #35424a; text-align: center; }
-            h2 { color: #4CAF50; }
-            .accordion-button { background-color: #ffffff; color: #35424a; }
-            .accordion-button:not(.collapsed) { background-color: #e8491d; color: white; }
-            .step, .tip, .capabilities { background: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin-bottom: 15px; border-radius: 4px; }
-            code { background: #f1f1f1; padding: 2px 5px; border-radius: 3px; color: #d32f2f; }
-            pre { background: #f5f5f5; padding: 15px; border: 1px solid #ddd; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background: #4CAF50; color: white; }
-            .note { color: #666; font-style: italic; }
-            footer { text-align: center; padding: 20px 0; color: #000000; background-color: #f4f4f4; }
-            .field-type { margin-left: 10px; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+
+            .container {
+                max-width: 900px;
+                margin: auto;
+            }
+
+            h1 {
+                color: #35424a;
+                text-align: center;
+            }
+
+            h2 {
+                color: #4CAF50;
+            }
+
+            .accordion-button {
+                background-color: #ffffff;
+                color: #35424a;
+            }
+
+                .accordion-button:not(.collapsed) {
+                    background-color: #e8491d;
+                    color: white;
+                }
+
+            .step, .tip, .capabilities {
+                background: #f9f9f9;
+                padding: 15px;
+                border-left: 4px solid #4CAF50;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+
+            code {
+                background: #f1f1f1;
+                padding: 2px 5px;
+                border-radius: 3px;
+                color: #d32f2f;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            th {
+                background: #4CAF50;
+                color: white;
+            }
+
+            .note {
+                color: #666;
+                font-style: italic;
+            }
+
+            footer {
+                text-align: center;
+                padding: 20px 0;
+                color: #000000;
+                background-color: #f4f4f4;
+            }
+
+            .field-type {
+                margin-left: 10px;
+                padding: 10px;
+                background: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
         </style>
     </div>
 
     <div class="container">
         <h1>DataMate Tutorial</h1>
-        <p>Welcome to DataMate! This comprehensive guide covers how to use DataMate for data management, form building, and contact management within Google Sheets. Current date: April 08, 2025.</p>
+        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 09, 2025.</p>
 
         <div class="accordion" id="tutorialAccordion">
             <!-- Section 1: Overview -->
@@ -245,13 +350,13 @@
                 </h2>
                 <div id="overview" class="accordion-collapse collapse show" data-bs-parent="#tutorialAccordion">
                     <div class="accordion-body">
-                        <p><strong>DataMate</strong> is a Google Sheets add-on designed to simplify data management, form creation, and contact organization. Key capabilities include:</p>
+                        <p><strong>DataMate</strong> is a Google Sheets add-on for streamlined data management and form creation. Key features include:</p>
                         <div class="capabilities">
                             <ul>
-                                <li><strong>Automated Data Entry</strong>: Organize data into structured sheets.</li>
-                                <li><strong>Record Management</strong>: Save, view, update, and print records easily.</li>
-                                <li><strong>Customizable Forms</strong>: Build advanced forms with over 25 field types, including dynamic tables for interactive data entry.</li>
-                                <li><strong>Contact Integration</strong>: Import and manage contacts from Gmail or CSV files.</li>
+                                <li><strong>Automated Data Entry</strong>: Organize data across multiple sheets.</li>
+                                <li><strong>Record Management</strong>: Save, update, and view records.</li>
+                                <li><strong>Custom Forms</strong>: Build forms with 27 field types, including tables with media.</li>
+                                <li><strong>Contact Management</strong>: Import and manage Gmail/CSV contacts.</li>
                                 <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
                             </ul>
                         </div>
@@ -271,12 +376,12 @@
                     <div class="accordion-body">
                         <div class="step">
                             <h3>Installation</h3>
-                            <p>Install DataMate from the Google Workspace Marketplace. Open a Google Sheet, and look for the "Form Tools" menu.</p>
+                            <p>Install DataMate from the Google Workspace Marketplace. Open a Google Sheet, and find the "DataMate" menu.</p>
                         </div>
                         <div class="step">
                             <h3>Initialize Your Spreadsheet</h3>
                             <ul>
-                                <li><strong>New Spreadsheet</strong>: Open a new Google Sheet and select "Form Tools > Preview Form" to create the <code>FormSetup</code> sheet.</li>
+                                <li><strong>New Spreadsheet</strong>: Select "DataMate > FormBuilder > Preview Form" to create the <code>FormSetup</code> sheet.</li>
                                 <li><strong>Existing Spreadsheet</strong>: Ensure a <code>FormSetup</code> sheet exists or run "Preview Form" to generate it.</li>
                             </ul>
                         </div>
@@ -295,13 +400,13 @@
                     <div class="accordion-body">
                         <div class="step">
                             <h3>Adding Data</h3>
-                            <p>Use forms created in <code>FormSetup</code> to input data, which can target multiple sheets and cells as defined in columns <code>B:G</code>.</p>
+                            <p>Use forms configured in <code>FormSetup</code> to input data, targeting sheets and cells defined in columns <code>B:G</code>.</p>
                         </div>
                         <div class="step">
                             <h3>Managing Records</h3>
                             <ul>
-                                <li><strong>Save</strong>: Submit a form to store data in target sheets (e.g., <code>Responses</code>, <code>Input</code>).</li>
-                                <li><strong>Custom Actions</strong>: Define "On Submit Functions" in <code>FormSetup!A3</code> (e.g., <code>save, copyInput1</code>) to execute after submission.</li>
+                                <li><strong>Save</strong>: Form submissions store data in target sheets (e.g., <code>Responses</code>).</li>
+                                <li><strong>Custom Actions</strong>: List functions in <code>FormSetup!B6</code> (e.g., <code>save, newContactit</code>) to run after submission.</li>
                             </ul>
                         </div>
                     </div>
@@ -318,179 +423,229 @@
                 <div id="formBuilding" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                     <div class="accordion-body">
                         <div class="step">
-                            <h3>Configure Settings</h3>
-                            <p>In the <code>FormSetup</code> sheet:</p>
-                            <ul>
-                                <li><strong>A3</strong>: On Submit Functions (e.g., "save, copyInput1, newContactit") - Comma-separated list of functions to run after form submission.</li>
-                            </ul>
-                            <p class="note">Note: The form name is set via a <code>Header</code> field in <code>A9:I</code>.</p>
+                            <h3>Using the FormBuilder Interface</h3>
+                            <p>The HTML FormBuilder provides a visual editor for designing forms:</p>
+                            <ol>
+                                <li><strong>Launch</strong>: Go to "DataMate > FormBuilder > Form Builder" to open a 1200x600px modal.</li>
+                                <li>
+                                    <strong>Interface</strong>:
+                                    <ul>
+                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Table) onto the canvas.</li>
+                                        <li><strong>Properties Panel</strong>: Edit field name, targets (sheets/cells), type, options, and required status.</li>
+                                        <li><strong>Preview</strong>: View the form layout as you build.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>Build</strong>:
+                                    <ul>
+                                        <li>Drag a "Header" for the title (e.g., "Order Form").</li>
+                                        <li>Add fields like "Email" or "Table" (link to a sheet range).</li>
+                                        <li>Set properties (e.g., "Required: Yes", "Options: Yes,No").</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Save</strong>: Click "Save" to update <code>FormSetup!A9:J</code>.</li>
+                                <li><strong>Test</strong>: Use "DataMate > FormBuilder > Preview Form" to see the form in action.</li>
+                            </ol>
+                            <p class="note">Manually edit <code>FormSetup</code> for advanced tweaks.</p>
                         </div>
+
+                        <div class="step">
+                            <h3>Configure Settings</h3>
+                            <p>In <code>FormSetup</code>:</p>
+                            <ul>
+                                <li><strong>B2</strong>: Form Name (e.g., "Customer Survey").</li>
+                                <li><strong>B6</strong>: On Submit Functions (e.g., <code>save, copyInput1</code>) - Runs after submission.</li>
+                            </ul>
+                        </div>
+
                         <div class="step">
                             <h3>Add Fields</h3>
-                            <p>Edit <code>A9:I</code> in <code>FormSetup</code>:</p>
+                            <p>Define fields in <code>A9:J</code> (or via FormBuilder):</p>
                             <ul>
                                 <li><strong>A</strong>: Field Name</li>
                                 <li><strong>B</strong>: Target Sheet 1</li>
-                                <li><strong>C</strong>: Target Cell/Column 1 (e.g., <code>A1</code> for single cell, <code>A</code> for table column)</li>
-                                <li><strong>D</strong>: Target Sheet 2 (optional)</li>
-                                <li><strong>E</strong>: Target Cell/Column 2 (optional)</li>
-                                <li><strong>F</strong>: Target Sheet 3 (optional)</li>
-                                <li><strong>G</strong>: Target Cell/Column 3 (optional)</li>
+                                <li><strong>C</strong>: Target Cell/Column 1 (e.g., <code>A1</code> or <code>A</code>)</li>
+                                <li><strong>D</strong>: Target Sheet 2</li>
+                                <li><strong>E</strong>: Target Cell/Column 2</li>
+                                <li><strong>F</strong>: Target Sheet 3</li>
+                                <li><strong>G</strong>: Target Cell/Column 3</li>
                                 <li><strong>H</strong>: Field Type</li>
-                                <li><strong>I</strong>: Options (e.g., dropdown values, formulas, or styling)</li>
+                                <li><strong>I</strong>: Options (e.g., dropdown values, formulas, URLs)</li>
+                                <li><strong>J</strong>: Required (Yes/No)</li>
                             </ul>
                         </div>
+
                         <div class="step">
                             <h3>Supported Field Types</h3>
-                            <p>All supported field types with examples:</p>
+                            <p>All 27 field types with examples:</p>
                             <div class="field-type">
                                 <h4>Text</h4>
-                                <p>A single-line text input.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Name", "Responses", "A", "", "", "", "", "Text", ""]</code></li></ul>
+                                <p>Single-line text input.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Name", "Responses", "A", "", "", "", "", "Text", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Dropdown</h4>
-                                <p>A dropdown menu with selectable options.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options or sheet range (e.g., "=Sheet1!A:A").</li><li>Example: <code>["Choice", "Responses", "B", "", "", "", "", "Dropdown", "Red,Blue,Green"]</code></li></ul>
+                                <p>Single-choice dropdown.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options or range (e.g., "=Sheet1!A:A")</li><li>Example: <code>["Color", "Responses", "B", "", "", "", "", "Dropdown", "Red,Blue", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>MultiSelect</h4>
-                                <p>A dropdown allowing multiple selections.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options or sheet range.</li><li>Example: <code>["Interests", "Responses", "C", "", "", "", "", "MultiSelect", "Tech,Art,Sports"]</code></li></ul>
+                                <p>Multi-choice dropdown.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Hobbies", "Responses", "C", "", "", "", "", "MultiSelect", "Run,Read", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Date</h4>
-                                <p>A date picker input.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Event Date", "Responses", "D", "", "", "", "", "Date", ""]</code></li></ul>
+                                <p>Date picker.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Event Date", "Responses", "D", "", "", "", "", "Date", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Time</h4>
-                                <p>A time picker input.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Event Time", "Responses", "E", "", "", "", "", "Time", ""]</code></li></ul>
+                                <p>Time picker.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Event Time", "Responses", "E", "", "", "", "", "Time", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Number</h4>
-                                <p>A numeric input field.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Quantity", "Responses", "F", "", "", "", "", "Number", ""]</code></li></ul>
+                                <p>Numeric input.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Quantity", "Responses", "F", "", "", "", "", "Number", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Checkbox</h4>
-                                <p>A single checkbox (true/false).</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Urgent", "Responses", "G", "", "", "", "", "Checkbox", ""]</code></li></ul>
+                                <p>True/false checkbox.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Urgent", "Responses", "G", "", "", "", "", "Checkbox", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Radio</h4>
-                                <p>Radio buttons for single-choice selection.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options.</li><li>Example: <code>["Priority", "Responses", "H", "", "", "", "", "Radio", "Low,Medium,High"]</code></li></ul>
+                                <p>Single-choice radio buttons.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Priority", "Responses", "H", "", "", "", "", "Radio", "Low,High", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Textarea</h4>
-                                <p>A multi-line text input.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Comments", "Responses", "I", "", "", "", "", "Textarea", ""]</code></li></ul>
+                                <p>Multi-line text.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Notes", "Responses", "I", "", "", "", "", "Textarea", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Email</h4>
-                                <p>An email input with validation.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Email", "Responses", "J", "", "", "", "", "Email", ""]</code></li></ul>
+                                <p>Email input with validation.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Email", "Responses", "J", "", "", "", "", "Email", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>StarRating</h4>
-                                <p>A 5-star rating input.</p>
-                                <ul><li><strong>I</strong>: Leave blank (fixed 1-5 scale).</li><li>Example: <code>["Rating", "Responses", "K", "", "", "", "", "StarRating", ""]</code></li></ul>
+                                <p>5-star rating.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Rating", "Responses", "K", "", "", "", "", "StarRating", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>RangeSlider</h4>
-                                <p>A slider for selecting a value within a range.</p>
-                                <ul><li><strong>I</strong>: "min,max,step" (e.g., "0,100,5").</li><li>Example: <code>["Satisfaction", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,5"]</code></li></ul>
+                                <p>Slider for numeric range.</p>
+                                <ul><li><strong>I</strong>: "min,max,step" (e.g., "0,100,5")</li><li>Example: <code>["Score", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,10", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>FileUpload</h4>
-                                <p>Allows file uploads (max 6MB).</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li><strong>Behavior</strong>: Stores link in Google Drive.</li><li>Example: <code>["Attachment", "Responses", "M", "", "", "", "", "FileUpload", ""]</code></li></ul>
+                                <p>File upload (max 6MB).</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Stores Google Drive link</li><li>Example: <code>["Photo", "Responses", "M", "", "", "", "", "FileUpload", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Conditional</h4>
-                                <p>A field shown based on another field's value.</p>
-                                <ul><li><strong>I</strong>: "FieldName=Value" (e.g., "Urgent=Yes").</li><li>Example: <code>["Reason", "Responses", "N", "", "", "", "", "Conditional", "Urgent=true"]</code></li></ul>
+                                <p>Shows based on another field’s value.</p>
+                                <ul><li><strong>I</strong>: "FieldName=Value" (e.g., "Urgent=true")</li><li>Example: <code>["Reason", "Responses", "N", "", "", "", "", "Conditional", "Urgent=true", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Calculated</h4>
-                                <p>A read-only calculated field.</p>
-                                <ul><li><strong>I</strong>: "=Formula" (e.g., "=Quantity*10").</li><li>Example: <code>["Total", "Responses", "O", "", "", "", "", "Calculated", "=Quantity*10"]</code></li></ul>
+                                <p>Read-only calculated value.</p>
+                                <ul><li><strong>I</strong>: "=Formula" (e.g., "=Number*2", basic arithmetic only)</li><li>Example: <code>["Total", "Responses", "O", "", "", "", "", "Calculated", "=Quantity*10", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Signature</h4>
-                                <p>A canvas for drawing a signature.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li><strong>Behavior</strong>: Saves as PNG link in Google Drive.</li><li>Example: <code>["Signature", "Responses", "P", "", "", "", "", "Signature", ""]</code></li></ul>
+                                <p>Canvas for drawing signatures.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Saves as PNG link</li><li>Example: <code>["Signature", "Responses", "P", "", "", "", "", "Signature", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Geolocation</h4>
-                                <p>Captures latitude and longitude.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li><strong>Behavior</strong>: User clicks to share location.</li><li>Example: <code>["Location", "Responses", "Q", "", "", "", "", "Geolocation", ""]</code></li></ul>
+                                <p>Captures latitude, longitude.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Click "Get Location" button</li><li>Example: <code>["Location", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>ProgressBar</h4>
-                                <p>Displays a static progress bar.</p>
-                                <ul><li><strong>I</strong>: Number (0-100).</li><li>Example: <code>["Progress", "Responses", "R", "", "", "", "", "ProgressBar", "75"]</code></li></ul>
+                                <p>Static progress bar (0-100).</p>
+                                <ul><li><strong>I</strong>: Number</li><li>Example: <code>["Progress", "Responses", "R", "", "", "", "", "ProgressBar", "50", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Captcha</h4>
-                                <p>A simple verification (fixed "3 + 5").</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li><strong>Behavior</strong>: User enters "8".</li><li>Example: <code>["Verification", "Responses", "S", "", "", "", "", "Captcha", ""]</code></li></ul>
+                                <p>Fixed "3 + 5" verification.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Enter "8"</li><li>Example: <code>["Verify", "Responses", "S", "", "", "", "", "Captcha", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Image</h4>
-                                <p>Displays a static image.</p>
-                                <ul><li><strong>I</strong>: Image URL (e.g., "https://via.placeholder.com/150").</li><li>Example: <code>["Product Image", "Responses", "T", "", "", "", "", "Image", "https://via.placeholder.com/150"]</code></li></ul>
+                                <p>Static image display.</p>
+                                <ul><li><strong>I</strong>: URL (e.g., Google Drive)</li><li>Example: <code>["Logo", "Responses", "T", "", "", "", "", "Image", "https://drive.google.com/uc?id=xyz", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Video</h4>
-                                <p>Displays a playable video.</p>
-                                <ul><li><strong>I</strong>: Video URL (e.g., YouTube or direct link).</li><li>Example: <code>["Product Video", "Responses", "U", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ"]</code></li></ul>
+                                <p>Playable video.</p>
+                                <ul><li><strong>I</strong>: YouTube or MP4 URL</li><li>Example: <code>["Tutorial", "Responses", "U", "", "", "", "", "Video", "https://youtu.be/abc", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>ImageLink</h4>
-                                <p>Allows input of an image URL.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Upload Image URL", "Responses", "V", "", "", "", "", "ImageLink", ""]</code></li></ul>
+                                <p>Input URL with preview.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Image URL", "Responses", "V", "", "", "", "", "ImageLink", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>VideoLink</h4>
-                                <p>Allows input of a video URL.</p>
-                                <ul><li><strong>I</strong>: Leave blank.</li><li>Example: <code>["Upload Video URL", "Responses", "W", "", "", "", "", "VideoLink", ""]</code></li></ul>
+                                <p>Input video URL.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Video URL", "Responses", "W", "", "", "", "", "VideoLink", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>StaticText</h4>
-                                <p>Displays static text.</p>
-                                <ul><li><strong>I</strong>: Text to display.</li><li>Example: <code>["Welcome", "", "", "", "", "", "", "StaticText", "Please fill out this form."]</code></li></ul>
+                                <p>Static text display.</p>
+                                <ul><li><strong>I</strong>: Text</li><li>Example: <code>["Info", "", "", "", "", "", "", "StaticText", "Fill this out", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Table</h4>
-                                <p>Displays a static table from a sheet range.</p>
-                                <ul><li><strong>I</strong>: Range (e.g., "Sheet2!A1:C5").</li><li>Example: <code>["Sales Data", "", "", "", "", "", "", "Table", "Sheet2!A1:C5"]</code></li></ul>
+                                <p>Displays a sheet range with media.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Range (e.g., "Sheet1!A1:B2")</li>
+                                    <li><strong>Behavior</strong>: Renders URLs as images (Google Drive) or videos (YouTube)</li>
+                                    <li>Example: <code>["Data", "", "", "", "", "", "", "Table", "Sheet1!A1:B2", "No"]</code></li>
+                                    <li>
+                                        <strong>Sample Sheet1</strong>:
+                                        <table>
+                                            <tr><th>A</th><th>B</th></tr>
+                                            <tr><td>Photo</td><td>https://drive.google.com/uc?id=xyz</td></tr>
+                                            <tr><td>Video</td><td>https://youtu.be/abc</td></tr>
+                                        </table>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="field-type">
                                 <h4>Container</h4>
-                                <p>Groups fields with custom styling.</p>
-                                <ul><li><strong>I</strong>: Inline CSS or blank.</li><li>Example: <code>["Section 1", "", "", "", "", "", "", "Container", "background: #f0f0f0;"]</code></li></ul>
+                                <p>Groups fields with styling.</p>
+                                <ul><li><strong>I</strong>: Inline CSS</li><li>Example: <code>["Section", "", "", "", "", "", "", "Container", "border: 1px solid #ddd;", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Header</h4>
-                                <p>A styled header section.</p>
-                                <ul><li><strong>I</strong>: Text to display (also sets form name).</li><li>Example: <code>["Form Header", "Responses", "A", "", "", "", "", "Header", "Welcome"]</code></li></ul>
+                                <p>Styled header with HTML support.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Text, CSS (e.g., "color: blue;"), or HTML (e.g., "<h2>Title</h2>")</li>
+                                    <li>Example: <code>["Header", "Responses", "A", "", "", "", "", "Header", "<h2>Welcome</h2>", "No"]</code></li>
+                                </ul>
                             </div>
                             <div class="field-type">
                                 <h4>Footer</h4>
-                                <p>A styled footer section.</p>
-                                <ul><li><strong>I</strong>: Text to display.</li><li>Example: <code>["Form Footer", "Responses", "B", "", "", "", "", "Footer", "Thank You"]</code></li></ul>
+                                <p>Styled footer with HTML support.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Text, CSS, or HTML</li>
+                                    <li>Example: <code>["Footer", "Responses", "B", "", "", "", "", "Footer", "<p>Thanks!</p>", "No"]</code></li>
+                                </ul>
                             </div>
                         </div>
+
                         <div class="step">
                             <h3>Preview & Deploy</h3>
-                            <p>Use "Form Tools > Preview Form" to test the form. Deploy via Apps Script: "Deploy > New Deployment > Web App."</p>
+                            <p>Test with "DataMate > FormBuilder > Preview Form". Deploy as a web app via "Deploy > New Deployment > Web App."</p>
                         </div>
+
                         <div class="step">
                             <h3>Collect Data</h3>
-                            <p>Share the web app URL. Data saves to target sheets and cells as defined in <code>B:G</code>. On-submit functions in <code>A3</code> execute post-submission.</p>
+                            <p>Share the web app URL. Data saves to sheets per <code>B:G</code>. Functions in <code>B6</code> run post-submission.</p>
                         </div>
                     </div>
                 </div>
@@ -507,7 +662,7 @@
                     <div class="accordion-body">
                         <div class="step">
                             <h3>Using Forms for Contacts</h3>
-                            <p>Create a form targeting the <code>NewContact</code> sheet and include <code>newContactit</code> in <code>A3</code> to save contacts.</p>
+                            <p>Target <code>NewContact</code> in <code>B:G</code> and add <code>newContactit</code> to <code>B6</code> to save contacts.</p>
                         </div>
                     </div>
                 </div>
@@ -523,91 +678,17 @@
                 <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                     <div class="accordion-body">
                         <div class="step">
-                            <h3>Job Application Form Template</h3>
-                            <p>Paste this into <code>FormSetup!A9:I</code> and set <code>A3</code> to "save":</p>
+                            <h3>Feedback Form Template</h3>
+                            <p>Paste into <code>FormSetup!A9:J</code>, preview form:</p>
                             <table>
-                                <tr><th>Form Fields (A)</th><th>Target Sheet 1 (B)</th><th>Target Cell 1 (C)</th><th>Target Sheet 2 (D)</th><th>Target Cell 2 (E)</th><th>Target Sheet 3 (F)</th><th>Target Cell 3 (G)</th><th>Field Type (H)</th><th>Options (I)</th></tr>
-                                <tr><td>Form Header</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>Job Application Form</td></tr>
-                                <tr><td>Section 1: Personal Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Full Name</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Street</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>City</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>State</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>ZIP</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Phone Number</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Email Address</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Email</td><td></td></tr>
-                                <tr><td>Are you at least 18 years old?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>Section 2: Position Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Position Applying For</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Developer,Designer,Manager</td></tr>
-                                <tr><td>Desired Salary</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>Radio</td><td>$40,000-$50,000,$50,001-$60,000,$60,001+</td></tr>
-                                <tr><td>Date Available to Start</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>Full-time</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                                <tr><td>Part-time</td><td>Responses</td><td>N</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                                <tr><td>Weekends</td><td>Responses</td><td>O</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                                <tr><td>Evenings</td><td>Responses</td><td>P</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                                <tr><td>How did you hear about this position?</td><td>Responses</td><td>Q</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Job Board</td></tr>
-                                <tr><td>Section 3: Employment Eligibility</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Are you legally authorized to work in this country?</td><td>Responses</td><td>R</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>Will you now or in the future require work sponsorship?</td><td>Responses</td><td>S</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>Section 4: Employment History</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Employer Name</td><td>Responses</td><td>T</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Job Title</td><td>Responses</td><td>U</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Start Date</td><td>Responses</td><td>V</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>End Date</td><td>Responses</td><td>W</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>Duties and Responsibilities</td><td>Responses</td><td>X</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
-                                <tr><td>Supervisor’s Name and Contact Info</td><td>Responses</td><td>Y</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>May we contact this employer?</td><td>Responses</td><td>Z</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>Reason for Leaving</td><td>Responses</td><td>AA</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Section 5: Education</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Institution Name</td><td>Responses</td><td>AB</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Degree or Certification Earned</td><td>Responses</td><td>AC</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Field of Study</td><td>Responses</td><td>AD</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Graduation Date</td><td>Responses</td><td>AE</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>Section 6: Skills and Qualifications</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>List relevant skills</td><td>Responses</td><td>AF</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
-                                <tr><td>Certifications or Licenses</td><td>Responses</td><td>AG</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Section 7: References</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Reference Full Name</td><td>Responses</td><td>AH</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Relationship</td><td>Responses</td><td>AI</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Phone/Email</td><td>Responses</td><td>AJ</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Years Known</td><td>Responses</td><td>AK</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Section 8: Legal and Background</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Have you ever been convicted of a felony?</td><td>Responses</td><td>AL</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>If yes, please explain</td><td>Responses</td><td>AM</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Have you ever been convicted of a felony?=Yes</td></tr>
-                                <tr><td>Do you consent to a background check?</td><td>Responses</td><td>AN</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                                <tr><td>Section 9: Declaration</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>I certify that the information provided is true and complete</td><td>Responses</td><td>AO</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                                <tr><td>Signature</td><td>Responses</td><td>AP</td><td></td><td></td><td></td><td></td><td>Signature</td><td></td></tr>
-                                <tr><td>Date</td><td>Responses</td><td>AQ</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>Form Footer</td><td>Responses</td><td>AR</td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for applying!</td></tr>
+                                <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
+                                <tr><td>Header</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;h2&gt;Feedback&lt;/h2&gt;</td><td>No</td></tr>
+                                <tr><td>Name</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                                <tr><td>Email</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+                                <tr><td>Rating</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+                                <tr><td>Comments</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+                                <tr><td>Footer</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;p&gt;Thanks!&lt;/p&gt;</td><td>No</td></tr>
                             </table>
-                            <p class="note">Note: Adjust column I as needed (e.g., customize dropdowns, add more history/reference sections).</p>
-                        </div>
-                        <div class="step">
-                            <h3>Dynamic Order Form Template</h3>
-                            <p>Paste this into <code>FormSetup!A9:I</code> and set <code>A3</code> to "save, newContactit":</p>
-                            <table>
-                                <tr><th>Form Fields (A)</th><th>Target Sheet 1 (B)</th><th>Target Cell 1 (C)</th><th>Target Sheet 2 (D)</th><th>Target Cell 2 (E)</th><th>Target Sheet 3 (F)</th><th>Target Cell 3 (G)</th><th>Field Type (H)</th><th>Options (I)</th></tr>
-                                <tr><td>Order Form Header</td><td>Input</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>Dynamic Order Form</td></tr>
-                                <tr><td>Section 1: Customer Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>First Name</td><td>NewContact</td><td>B1</td><td>Input</td><td>B</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Last Name</td><td>NewContact</td><td>B3</td><td>Input</td><td>C</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Company</td><td>NewContact</td><td>B4</td><td>Input</td><td>D</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>E-mail Address</td><td>NewContact</td><td>B9</td><td>Input</td><td>E</td><td></td><td></td><td>Email</td><td></td></tr>
-                                <tr><td>Section 2: Address Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Home Street</td><td>NewContact</td><td>B12</td><td>Input</td><td>F</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Home City</td><td>NewContact</td><td>B13</td><td>Input</td><td>G</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Home State</td><td>NewContact</td><td>B14</td><td>Input</td><td>H</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Home Zip</td><td>NewContact</td><td>B15</td><td>Input</td><td>I</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Home Country</td><td>NewContact</td><td>B16</td><td>Input</td><td>J</td><td></td><td></td><td>Text</td><td></td></tr>
-                                <tr><td>Section 3: Order Details</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Order Date</td><td>Input</td><td>K</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                                <tr><td>Delivery Instructions</td><td>Input</td><td>L</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
-                                <tr><td>Section 4: Verification</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                                <tr><td>Verification</td><td>Input</td><td>M</td><td></td><td></td><td></td><td></td><td>Captcha</td><td></td></tr>
-                                <tr><td>Order Footer</td><td>Input</td><td>N</td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for your order!</td></tr>
-                            </table>
-                            <p class="note">Note: This template saves customer data to both <code>NewContact</code> and <code>Input</code>. Ensure <code>newContactit</code> is defined in your script for contact management.</p>
                         </div>
                     </div>
                 </div>
@@ -622,7 +703,7 @@
                 </h2>
                 <div id="support" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                     <div class="accordion-body">
-                        <p>For help, visit:</p>
+                        <p>Visit:</p>
                         <ul>
                             <li><a href="https://datamateapp.github.io/help.html">Help Page</a></li>
                             <li><a href="mailto:datamateapp@gmail.com">Contact Us</a></li>
