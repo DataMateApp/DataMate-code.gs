@@ -338,7 +338,7 @@
 
     <div class="container">
         <h1>DataMate Tutorial</h1>
-        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 09, 2025.</p>
+        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 10, 2025.</p>
 
         <div class="accordion" id="tutorialAccordion">
             <!-- Section 1: Overview -->
@@ -355,7 +355,7 @@
                             <ul>
                                 <li><strong>Automated Data Entry</strong>: Organize data across multiple sheets.</li>
                                 <li><strong>Record Management</strong>: Save, update, and view records.</li>
-                                <li><strong>Custom Forms</strong>: Build forms with 27 field types, including tables with media.</li>
+                                <li><strong>Custom Forms</strong>: Build forms with 27 field types, including tables with media (images/videos).</li>
                                 <li><strong>Contact Management</strong>: Import and manage Gmail/CSV contacts.</li>
                                 <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
                             </ul>
@@ -430,7 +430,7 @@
                                 <li>
                                     <strong>Interface</strong>:
                                     <ul>
-                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Table) onto the canvas.</li>
+                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Table, ImageLink) onto the canvas.</li>
                                         <li><strong>Properties Panel</strong>: Edit field name, targets (sheets/cells), type, options, and required status.</li>
                                         <li><strong>Preview</strong>: View the form layout as you build.</li>
                                     </ul>
@@ -439,8 +439,8 @@
                                     <strong>Build</strong>:
                                     <ul>
                                         <li>Drag a "Header" for the title (e.g., "Order Form").</li>
-                                        <li>Add fields like "Email" or "Table" (link to a sheet range).</li>
-                                        <li>Set properties (e.g., "Required: Yes", "Options: Yes,No").</li>
+                                        <li>Add fields like "Email", "ImageLink", or "Table" (link to a sheet range with media).</li>
+                                        <li>Set properties (e.g., "Required: Yes", "Options: Red,Blue").</li>
                                     </ul>
                                 </li>
                                 <li><strong>Save</strong>: Click "Save" to update <code>FormSetup!A9:J</code>.</li>
@@ -481,27 +481,27 @@
                             <div class="field-type">
                                 <h4>Text</h4>
                                 <p>Single-line text input.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Name", "Responses", "A", "", "", "", "", "Text", "", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Customer Name", "Responses", "A", "", "", "", "", "Text", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Dropdown</h4>
                                 <p>Single-choice dropdown.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options or range (e.g., "=Sheet1!A:A")</li><li>Example: <code>["Color", "Responses", "B", "", "", "", "", "Dropdown", "Red,Blue", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Comma-separated options or range</li><li>Example: <code>["Product Size", "Responses", "B", "", "", "", "", "Dropdown", "S,M,L,XL", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>MultiSelect</h4>
                                 <p>Multi-choice dropdown.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Hobbies", "Responses", "C", "", "", "", "", "MultiSelect", "Run,Read", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Interests", "Responses", "C", "", "", "", "", "MultiSelect", "Tech,Travel,Food", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Date</h4>
                                 <p>Date picker.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Event Date", "Responses", "D", "", "", "", "", "Date", "", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Order Date", "Responses", "D", "", "", "", "", "Date", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Time</h4>
                                 <p>Time picker.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Event Time", "Responses", "E", "", "", "", "", "Time", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Delivery Time", "Responses", "E", "", "", "", "", "Time", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Number</h4>
@@ -511,92 +511,92 @@
                             <div class="field-type">
                                 <h4>Checkbox</h4>
                                 <p>True/false checkbox.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Urgent", "Responses", "G", "", "", "", "", "Checkbox", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Rush Order", "Responses", "G", "", "", "", "", "Checkbox", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Radio</h4>
                                 <p>Single-choice radio buttons.</p>
-                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Priority", "Responses", "H", "", "", "", "", "Radio", "Low,High", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Payment Method", "Responses", "H", "", "", "", "", "Radio", "Cash,Card", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Textarea</h4>
                                 <p>Multi-line text.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Notes", "Responses", "I", "", "", "", "", "Textarea", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Order Notes", "Responses", "I", "", "", "", "", "Textarea", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Email</h4>
                                 <p>Email input with validation.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Email", "Responses", "J", "", "", "", "", "Email", "", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Contact Email", "Responses", "J", "", "", "", "", "Email", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>StarRating</h4>
                                 <p>5-star rating.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Rating", "Responses", "K", "", "", "", "", "StarRating", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Service Rating", "Responses", "K", "", "", "", "", "StarRating", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>RangeSlider</h4>
                                 <p>Slider for numeric range.</p>
-                                <ul><li><strong>I</strong>: "min,max,step" (e.g., "0,100,5")</li><li>Example: <code>["Score", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,10", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: "min,max,step"</li><li>Example: <code>["Satisfaction", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,10", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>FileUpload</h4>
                                 <p>File upload (max 6MB).</p>
-                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Stores Google Drive link</li><li>Example: <code>["Photo", "Responses", "M", "", "", "", "", "FileUpload", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Stores Google Drive link</li><li>Example: <code>["Receipt", "Responses", "M", "", "", "", "", "FileUpload", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Conditional</h4>
                                 <p>Shows based on another field’s value.</p>
-                                <ul><li><strong>I</strong>: "FieldName=Value" (e.g., "Urgent=true")</li><li>Example: <code>["Reason", "Responses", "N", "", "", "", "", "Conditional", "Urgent=true", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: "FieldName=Value"</li><li>Example: <code>["Details", "Responses", "N", "", "", "", "", "Conditional", "Rush Order=true", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Calculated</h4>
                                 <p>Read-only calculated value.</p>
-                                <ul><li><strong>I</strong>: "=Formula" (e.g., "=Number*2", basic arithmetic only)</li><li>Example: <code>["Total", "Responses", "O", "", "", "", "", "Calculated", "=Quantity*10", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: "=Formula" (basic arithmetic)</li><li>Example: <code>["Total Cost", "Responses", "O", "", "", "", "", "Calculated", "=Quantity*50", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Signature</h4>
                                 <p>Canvas for drawing signatures.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Saves as PNG link</li><li>Example: <code>["Signature", "Responses", "P", "", "", "", "", "Signature", "", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Saves as PNG link</li><li>Example: <code>["Customer Signature", "Responses", "P", "", "", "", "", "Signature", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Geolocation</h4>
                                 <p>Captures latitude, longitude.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Click "Get Location" button</li><li>Example: <code>["Location", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Click "Get Location"</li><li>Example: <code>["Delivery Location", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>ProgressBar</h4>
                                 <p>Static progress bar (0-100).</p>
-                                <ul><li><strong>I</strong>: Number</li><li>Example: <code>["Progress", "Responses", "R", "", "", "", "", "ProgressBar", "50", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Number</li><li>Example: <code>["Order Progress", "Responses", "R", "", "", "", "", "ProgressBar", "75", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Captcha</h4>
                                 <p>Fixed "3 + 5" verification.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Enter "8"</li><li>Example: <code>["Verify", "Responses", "S", "", "", "", "", "Captcha", "", "Yes"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Enter "8"</li><li>Example: <code>["Verification", "Responses", "S", "", "", "", "", "Captcha", "", "Yes"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Image</h4>
                                 <p>Static image display.</p>
-                                <ul><li><strong>I</strong>: URL (e.g., Google Drive)</li><li>Example: <code>["Logo", "Responses", "T", "", "", "", "", "Image", "https://drive.google.com/uc?id=xyz", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: URL</li><li>Example: <code>["Company Logo", "", "", "", "", "", "", "Image", "https://drive.google.com/uc?id=1A2B3C", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Video</h4>
                                 <p>Playable video.</p>
-                                <ul><li><strong>I</strong>: YouTube or MP4 URL</li><li>Example: <code>["Tutorial", "Responses", "U", "", "", "", "", "Video", "https://youtu.be/abc", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: YouTube/MP4 URL</li><li>Example: <code>["Tutorial Video", "", "", "", "", "", "", "Video", "https://www.youtube.com/watch?v=XkYk2Rw6dKw", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>ImageLink</h4>
                                 <p>Input URL with preview.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Image URL", "Responses", "V", "", "", "", "", "ImageLink", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Product Photo", "Responses", "V", "", "", "", "", "ImageLink", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>VideoLink</h4>
                                 <p>Input video URL.</p>
-                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Video URL", "Responses", "W", "", "", "", "", "VideoLink", "", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Demo Video", "Responses", "W", "", "", "", "", "VideoLink", "", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>StaticText</h4>
                                 <p>Static text display.</p>
-                                <ul><li><strong>I</strong>: Text</li><li>Example: <code>["Info", "", "", "", "", "", "", "StaticText", "Fill this out", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Text</li><li>Example: <code>["Instructions", "", "", "", "", "", "", "StaticText", "Please fill out all fields.", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Table</h4>
@@ -604,13 +604,14 @@
                                 <ul>
                                     <li><strong>I</strong>: Range (e.g., "Sheet1!A1:B2")</li>
                                     <li><strong>Behavior</strong>: Renders URLs as images (Google Drive) or videos (YouTube)</li>
-                                    <li>Example: <code>["Data", "", "", "", "", "", "", "Table", "Sheet1!A1:B2", "No"]</code></li>
+                                    <li>Example: <code>["Product Catalog", "", "", "", "", "", "", "Table", "Catalog!A2:B5", "No"]</code></li>
                                     <li>
-                                        <strong>Sample Sheet1</strong>:
+                                        <strong>Sample Catalog Sheet</strong>:
                                         <table>
                                             <tr><th>A</th><th>B</th></tr>
-                                            <tr><td>Photo</td><td>https://drive.google.com/uc?id=xyz</td></tr>
-                                            <tr><td>Video</td><td>https://youtu.be/abc</td></tr>
+                                            <tr><td>Item</td><td>Media</td></tr>
+                                            <tr><td>Shirt</td><td>https://drive.google.com/uc?id=1A2B3C</td></tr>
+                                            <tr><td>Ad</td><td>https://youtu.be/XkYk2Rw6dKw</td></tr>
                                         </table>
                                     </li>
                                 </ul>
@@ -618,14 +619,14 @@
                             <div class="field-type">
                                 <h4>Container</h4>
                                 <p>Groups fields with styling.</p>
-                                <ul><li><strong>I</strong>: Inline CSS</li><li>Example: <code>["Section", "", "", "", "", "", "", "Container", "border: 1px solid #ddd;", "No"]</code></li></ul>
+                                <ul><li><strong>I</strong>: Inline CSS</li><li>Example: <code>["Section", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"]</code></li></ul>
                             </div>
                             <div class="field-type">
                                 <h4>Header</h4>
                                 <p>Styled header with HTML support.</p>
                                 <ul>
-                                    <li><strong>I</strong>: Text, CSS (e.g., "color: blue;"), or HTML (e.g., "<h2>Title</h2>")</li>
-                                    <li>Example: <code>["Header", "Responses", "A", "", "", "", "", "Header", "<h2>Welcome</h2>", "No"]</code></li>
+                                    <li><strong>I</strong>: Text, CSS, or HTML</li>
+                                    <li>Example: <code>["Form Title", "", "", "", "", "", "", "Header", "<h2>Order Form</h2>", "No"]</code></li>
                                 </ul>
                             </div>
                             <div class="field-type">
@@ -633,7 +634,7 @@
                                 <p>Styled footer with HTML support.</p>
                                 <ul>
                                     <li><strong>I</strong>: Text, CSS, or HTML</li>
-                                    <li>Example: <code>["Footer", "Responses", "B", "", "", "", "", "Footer", "<p>Thanks!</p>", "No"]</code></li>
+                                    <li>Example: <code>["Form Footer", "", "", "", "", "", "", "Footer", "<p>Thank you!</p>", "No"]</code></li>
                                 </ul>
                             </div>
                         </div>
@@ -663,6 +664,7 @@
                         <div class="step">
                             <h3>Using Forms for Contacts</h3>
                             <p>Target <code>NewContact</code> in <code>B:G</code> and add <code>newContactit</code> to <code>B6</code> to save contacts.</p>
+                            <p>Example: <code>["Email", "NewContact", "A", "", "", "", "", "Email", "", "Yes"]</code></p>
                         </div>
                     </div>
                 </div>
@@ -678,16 +680,17 @@
                 <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                     <div class="accordion-body">
                         <div class="step">
-                            <h3>Feedback Form Template</h3>
+                            <h3>Order Form Template</h3>
                             <p>Paste into <code>FormSetup!A9:J</code>, preview form:</p>
                             <table>
                                 <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
-                                <tr><td>Header</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;h2&gt;Feedback&lt;/h2&gt;</td><td>No</td></tr>
-                                <tr><td>Name</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                                <tr><td>Email</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
-                                <tr><td>Rating</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
-                                <tr><td>Comments</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
-                                <tr><td>Footer</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;p&gt;Thanks!&lt;/p&gt;</td><td>No</td></tr>
+                                <tr><td>Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;h2&gt;Order Form&lt;/h2&gt;</td><td>No</td></tr>
+                                <tr><td>Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                                <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+                                <tr><td>Product</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>T-Shirt,Hat,Shoes</td><td>Yes</td></tr>
+                                <tr><td>Quantity</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+                                <tr><td>Photo</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>ImageLink</td><td></td><td>No</td></tr>
+                                <tr><td>Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;p&gt;Thanks for ordering!&lt;/p&gt;</td><td>No</td></tr>
                             </table>
                         </div>
                     </div>
