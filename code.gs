@@ -3520,21 +3520,43 @@ function showFormBuilder() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
 }
 
-function loadFormRows() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) {
-    createFormSetupSheet();
-    setupSheet = ss.getSheetByName("FormSetup");
+
+
+
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('FormBuilder')
+      .setTitle('Form Builder');
+}
+
+function saveFormRowsStartingAtRow10(rows) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('FormSetup');
+  if (!sheet) {
+    sheet = ss.insertSheet('FormSetup');
   }
 
-  var lastRow = setupSheet.getLastRow();
-  if (lastRow < 9) return [];
+  const startRow = 10;
+  const numColumns = 10;
+  const lastRow = sheet.getLastRow();
+  const firstEmptyRow = (lastRow < startRow) ? startRow : lastRow + 1;
 
-  var range = setupSheet.getRange("A9:J" + lastRow);
-  var values = range.getValues();
+  if (rows.length > 0) {
+    const range = sheet.getRange(firstEmptyRow, 1, rows.length, numColumns);
+    range.setValues(rows);
+  }
+}
 
-  return values.map(row => ({
+function loadFormRows() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('FormSetup');
+  if (!sheet) return [];
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 10) return [];
+
+  const data = sheet.getRange(10, 1, lastRow - 9, 10).getValues();
+  return data.map(row => ({
     fieldName: row[0],
     sheet1: row[1],
     cell1: row[2],
@@ -3548,38 +3570,8 @@ function loadFormRows() {
   }));
 }
 
-function saveFormRows(rows) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) {
-    createFormSetupSheet();
-    setupSheet = ss.getSheetByName("FormSetup");
-  }
-
-  var lastRow = setupSheet.getLastRow();
-  if (lastRow >= 9) {
-    setupSheet.getRange("A9:J" + lastRow).clear();
-  }
-
-  if (rows.length > 0) {
-    var data = rows.map(row => [
-      row.fieldName,
-      row.sheet1,
-      row.cell1,
-      row.sheet2,
-      row.cell2,
-      row.sheet3,
-      row.cell3,
-      row.type,
-      row.options,
-      row.required
-    ]);
-    setupSheet.getRange("A9:J" + (9 + data.length - 1)).setValues(data);
-  }
-}
-
 
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
-function newContactit() { Logger.log("New Contact executed"); }
+function NewContact() { Logger.log("New Contact executed"); }
