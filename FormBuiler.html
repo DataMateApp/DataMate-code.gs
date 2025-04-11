@@ -1,286 +1,737 @@
-
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataMateApps - Simplify Your Data Management</title>
     <style>
-      body {
-        font-family: 'Roboto', Arial, sans-serif;
-        margin: 20px;
-        padding: 20px;
-        background: #f5f5f5;
-        color: #333;
-      }
-      h1 {
-        color: #4CAF50;
-        text-align: center;
-        margin-bottom: 20px;
-        display: none; /* Hidden initially */
-      }
-      #formBuilder {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      }
-      .row {
-        display: none; /* Hidden initially */
-        margin-bottom: 25px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background: #fafafa;
-      }
-      .row.visible {
-        display: block; /* Shown when made visible */
-      }
-      .group {
-        margin-bottom: 15px;
-      }
-      .group-header {
-        font-weight: bold;
-        color: #4CAF50;
-        margin-bottom: 10px;
-        font-size: 14px;
-        text-transform: uppercase;
-      }
-      .fields {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-      }
-      .field {
-        display: flex;
-        flex-direction: column;
-      }
-      .field input, .field select {
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        width: 100%;
-      }
-      .field select.field-type {
-        width: 100%;
-      }
-      .field label {
-        font-weight: 500;
-        color: #555;
-        margin-bottom: 4px;
-      }
-      .field .description {
-        font-size: 12px;
-        color: #777;
-        margin-top: 2px;
-      }
-      #addRow {
-        padding: 10px 20px;
-        background: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 10px;
-      }
-      #addRow:hover {
-        background: #45a049;
-      }
-      #saveRows {
-        padding: 10px 20px;
-        background: #2196F3;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 10px;
-        margin-left: 10px;
-      }
-      #saveRows:hover {
-        background: #1e88e5;
-      }
-      #message {
-        color: #4CAF50;
-        text-align: center;
-        margin-top: 10px;
-        display: none; /* Hidden initially */
-      }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 90%;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 0;
+            border-bottom: #e8491d 3px solid;
+        }
+
+            header a {
+                color: #ffffff;
+                text-decoration: none;
+                text-transform: uppercase;
+                font-size: 14px;
+                padding: 5px;
+                display: inline-block;
+            }
+
+            header h1 {
+                margin: 0;
+                font-size: 24px;
+                text-align: center;
+            }
+
+            header nav {
+                display: none;
+            }
+
+        .highlight, .current a {
+            color: #e8491d;
+            font-weight: bold;
+        }
+
+        header a:hover {
+            color: #cccccc;
+            font-weight: bold;
+        }
+
+        .showcase {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('images/datamanagement.jpg') no-repeat center center;
+            background-size: cover;
+            text-align: center;
+            color: #ffffff;
+            padding: 40px 0;
+        }
+
+            .showcase h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+            }
+
+            .showcase p {
+                font-size: 1.2em;
+                padding: 0 20px;
+            }
+
+        .features {
+            padding: 20px 0;
+            text-align: center;
+            background: #ffffff;
+        }
+
+            .features h2 {
+                color: #35424a;
+            }
+
+        .feature-box {
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .feature-btn {
+            background-color: #e8491d;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+
+        .cta {
+            background: #35424a;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+            .cta a {
+                display: inline-block;
+                background: #e8491d;
+                color: #ffffff;
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 10px 0;
+            }
+
+                .cta a:hover {
+                    background: #ffffff;
+                    color: #e8491d;
+                }
+
+        footer {
+            padding: 20px 0;
+            margin-top: 20px;
+            color: #000000;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        .menu-toggle {
+            display: block;
+            font-size: 2em;
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0;
+            margin: 10px 0 0 10px;
+        }
+
+        .mobile-nav {
+            display: none;
+            background: #35424a;
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+            .mobile-nav a {
+                display: block;
+                padding: 10px 0;
+                text-align: center;
+                border-top: 1px solid #e8491d;
+            }
+
+        @media (min-width: 768px) {
+            .container {
+                width: 80%;
+            }
+
+            header h1 {
+                font-size: 36px;
+                text-align: left;
+            }
+
+            header nav {
+                display: block;
+                text-align: right;
+            }
+
+            header a {
+                font-size: 16px;
+                padding: 10px;
+            }
+
+            .showcase h1 {
+                font-size: 3em;
+            }
+
+            .showcase p {
+                font-size: 1.5em;
+            }
+
+            .feature-box {
+                float: left;
+                width: 30%;
+            }
+
+            .menu-toggle {
+                display: none;
+            }
+
+            .mobile-nav {
+                display: none;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div id="formBuilder">
-      <h1>Form Builder</h1>
-      <div id="rows"></div>
-      <button id="addRow">Add Row</button>
-      <button id="saveRows">Save to FormSetup</button>
-      <div id="message">Rows saved successfully!</div>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>DataMateApps</h1>
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            <nav class="desktop-nav">
+                <a href="https://datamateapp.github.io/">Home</a>
+                <a href="https://datamateapp.github.io/features.html">Features</a>
+                <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
+                <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
+                <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
+                <a href="https://script.google.com/macros/s/AKfycbwSQb14udJC7nszai-kIAF3p6wKL_5aXEfkOsAL8d8e5hcOg_gZXsaNzLEKPd5UqPsr/exec">Web Apps, Add-ins and Templates</a>
+                <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
+                <a href="https://billing.stripe.com/p/login/bIY01q6q33nl1Ww4gg">Donor Portal</a>
+                <a href="https://script.google.com/macros/s/AKfycbzWZM7qyNnKKw9T3LMODI5MQXMvzTUO9YvP-QvP49KipDphi48pR5iLhad1ZN-3FFqa/exec">Reviews</a>
+                <a href="https://script.google.com/macros/s/AKfycbyYQvSrgNApdHNbvrBU7LQw8H7l7hB_233uDXrz_piebw5aZ3E0xVZIXbZpf-eFqjLP/exec">Community</a>
+                <a href="https://github.com/DataMateApp/DataMate-code.gs">Open Source</a>
+            </nav>
+            <nav class="mobile-nav">
+                <a href="https://datamateapp.github.io/">Home</a>
+                <a href="https://datamateapp.github.io/features.html">Features</a>
+                <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
+                <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
+                <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
+                <a href="https://script.google.com/macros/s/AKfycbwSQb14udJC7nszai-kIAF3p6wKL_5aXEfkOsAL8d8e5hcOg_gZXsaNzLEKPd5UqPsr/exec">Web Apps, Add-ins and Templates</a>
+                <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
+                <a href="https://billing.stripe.com/p/login/bIY01q6q33nl1Ww4gg">Donor Portal</a>
+                <a href="https://script.google.com/macros/s/AKfycbzWZM7qyNnKKw9T3LMODI5MQXMvzTUO9YvP-QvP49KipDphi48pR5iLhad1ZN-3FFqa/exec">Reviews</a>
+                <a href="https://script.google.com/macros/s/AKfycbyYQvSrgNApdHNbvrBU7LQw8H7l7hB_233uDXrz_piebw5aZ3E0xVZIXbZpf-eFqjLP/exec">Community</a>
+                <a href="https://github.com/DataMateApp/DataMate-code.gs">Open Source</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DataMate Tutorial</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+
+            .container {
+                max-width: 900px;
+                margin: auto;
+            }
+
+            h1 {
+                color: #35424a;
+                text-align: center;
+            }
+
+            h2 {
+                color: #4CAF50;
+            }
+
+            .accordion-button {
+                background-color: #ffffff;
+                color: #35424a;
+            }
+
+                .accordion-button:not(.collapsed) {
+                    background-color: #e8491d;
+                    color: white;
+                }
+
+            .step, .tip, .capabilities {
+                background: #f9f9f9;
+                padding: 15px;
+                border-left: 4px solid #4CAF50;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+
+            code {
+                background: #f1f1f1;
+                padding: 2px 5px;
+                border-radius: 3px;
+                color: #d32f2f;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+
+            th {
+                background: #4CAF50;
+                color: white;
+            }
+
+            .note {
+                color: #666;
+                font-style: italic;
+            }
+
+            footer {
+                text-align: center;
+                padding: 20px 0;
+                color: #000000;
+                background-color: #f4f4f4;
+            }
+
+            .field-type {
+                margin-left: 10px;
+                padding: 10px;
+                background: #fff;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+        </style>
     </div>
 
+    <div class="container">
+        <h1>DataMate Tutorial</h1>
+        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 10, 2025.</p>
+
+        <div class="accordion" id="tutorialAccordion">
+            <!-- Section 1: Overview -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#overview">
+                        1. Overview
+                    </button>
+                </h2>
+                <div id="overview" class="accordion-collapse collapse show" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <p><strong>DataMate</strong> is a Google Sheets add-on for streamlined data management and form creation. Key features include:</p>
+                        <div class="capabilities">
+                            <ul>
+                                <li><strong>Automated Data Entry</strong>: Organize data across multiple sheets.</li>
+                                <li><strong>Record Management</strong>: Save, update, and view records.</li>
+                                <li><strong>Custom Forms</strong>: Build forms with 27 field types, including tables with media (images/videos).</li>
+                                <li><strong>Contact Management</strong>: Import and manage Gmail/CSV contacts.</li>
+                                <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
+                            </ul>
+                        </div>
+                        <p><a href="https://www.youtube.com/embed/_cduOVxVafc" target="_blank">Watch the DataMate Overview Video</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Getting Started -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gettingStarted">
+                        2. Getting Started
+                    </button>
+                </h2>
+                <div id="gettingStarted" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Installation</h3>
+                            <p>Install DataMate from the Google Workspace Marketplace. Open a Google Sheet, and find the "DataMate" menu.</p>
+                        </div>
+                        <div class="step">
+                            <h3>Initialize Your Spreadsheet</h3>
+                            <ul>
+                                <li><strong>New Spreadsheet</strong>: Select "DataMate > FormBuilder > Preview Form" to create the <code>FormSetup</code> sheet.</li>
+                                <li><strong>Existing Spreadsheet</strong>: Ensure a <code>FormSetup</code> sheet exists or run "Preview Form" to generate it.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Data Management -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataManagement">
+                        3. Data Management
+                    </button>
+                </h2>
+                <div id="dataManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Adding Data</h3>
+                            <p>Use forms configured in <code>FormSetup</code> to input data, targeting sheets and cells defined in columns <code>B:G</code>.</p>
+                        </div>
+                        <div class="step">
+                            <h3>Managing Records</h3>
+                            <ul>
+                                <li><strong>Save</strong>: Form submissions store data in target sheets (e.g., <code>Responses</code>).</li>
+                                <li><strong>Custom Actions</strong>: List functions in <code>FormSetup!B6</code> (e.g., <code>save, newContactit</code>) to run after submission.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Form Building -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formBuilding">
+                        4. Form Building
+                    </button>
+                </h2>
+                <div id="formBuilding" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Using the FormBuilder Interface</h3>
+                            <p>The HTML FormBuilder provides a visual editor for designing forms:</p>
+                            <ol>
+                                <li><strong>Launch</strong>: Go to "DataMate > FormBuilder > Form Builder" to open a 1200x600px modal.</li>
+                                <li>
+                                    <strong>Interface</strong>:
+                                    <ul>
+                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Table, ImageLink) onto the canvas.</li>
+                                        <li><strong>Properties Panel</strong>: Edit field name, targets (sheets/cells), type, options, and required status.</li>
+                                        <li><strong>Preview</strong>: View the form layout as you build.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>Build</strong>:
+                                    <ul>
+                                        <li>Drag a "Header" for the title (e.g., "Order Form").</li>
+                                        <li>Add fields like "Email", "ImageLink", or "Table" (link to a sheet range with media).</li>
+                                        <li>Set properties (e.g., "Required: Yes", "Options: Red,Blue").</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Save</strong>: Click "Save" to update <code>FormSetup!A9:J</code>.</li>
+                                <li><strong>Test</strong>: Use "DataMate > FormBuilder > Preview Form" to see the form in action.</li>
+                            </ol>
+                            <p class="note">Manually edit <code>FormSetup</code> for advanced tweaks.</p>
+                        </div>
+
+                        <div class="step">
+                            <h3>Configure Settings</h3>
+                            <p>In <code>FormSetup</code>:</p>
+                            <ul>
+                                <li><strong>B2</strong>: Form Name (e.g., "Customer Survey").</li>
+                                <li><strong>B6</strong>: On Submit Functions (e.g., <code>save, copyInput1</code>) - Runs after submission.</li>
+                            </ul>
+                        </div>
+
+                        <div class="step">
+                            <h3>Add Fields</h3>
+                            <p>Define fields in <code>A9:J</code> (or via FormBuilder):</p>
+                            <ul>
+                                <li><strong>A</strong>: Field Name</li>
+                                <li><strong>B</strong>: Target Sheet 1</li>
+                                <li><strong>C</strong>: Target Cell/Column 1 (e.g., <code>A1</code> or <code>A</code>)</li>
+                                <li><strong>D</strong>: Target Sheet 2</li>
+                                <li><strong>E</strong>: Target Cell/Column 2</li>
+                                <li><strong>F</strong>: Target Sheet 3</li>
+                                <li><strong>G</strong>: Target Cell/Column 3</li>
+                                <li><strong>H</strong>: Field Type</li>
+                                <li><strong>I</strong>: Options (e.g., dropdown values, formulas, URLs)</li>
+                                <li><strong>J</strong>: Required (Yes/No)</li>
+                            </ul>
+                        </div>
+
+                        <div class="step">
+                            <h3>Supported Field Types</h3>
+                            <p>All 27 field types with examples:</p>
+                            <div class="field-type">
+                                <h4>Text</h4>
+                                <p>Single-line text input.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Customer Name", "Responses", "A", "", "", "", "", "Text", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Dropdown</h4>
+                                <p>Single-choice dropdown.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options or range</li><li>Example: <code>["Product Size", "Responses", "B", "", "", "", "", "Dropdown", "S,M,L,XL", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>MultiSelect</h4>
+                                <p>Multi-choice dropdown.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Interests", "Responses", "C", "", "", "", "", "MultiSelect", "Tech,Travel,Food", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Date</h4>
+                                <p>Date picker.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Order Date", "Responses", "D", "", "", "", "", "Date", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Time</h4>
+                                <p>Time picker.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Delivery Time", "Responses", "E", "", "", "", "", "Time", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Number</h4>
+                                <p>Numeric input.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Quantity", "Responses", "F", "", "", "", "", "Number", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Checkbox</h4>
+                                <p>True/false checkbox.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Rush Order", "Responses", "G", "", "", "", "", "Checkbox", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Radio</h4>
+                                <p>Single-choice radio buttons.</p>
+                                <ul><li><strong>I</strong>: Comma-separated options</li><li>Example: <code>["Payment Method", "Responses", "H", "", "", "", "", "Radio", "Cash,Card", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Textarea</h4>
+                                <p>Multi-line text.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Order Notes", "Responses", "I", "", "", "", "", "Textarea", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Email</h4>
+                                <p>Email input with validation.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Contact Email", "Responses", "J", "", "", "", "", "Email", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>StarRating</h4>
+                                <p>5-star rating.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Service Rating", "Responses", "K", "", "", "", "", "StarRating", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>RangeSlider</h4>
+                                <p>Slider for numeric range.</p>
+                                <ul><li><strong>I</strong>: "min,max,step"</li><li>Example: <code>["Satisfaction", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,10", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>FileUpload</h4>
+                                <p>File upload (max 6MB).</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Stores Google Drive link</li><li>Example: <code>["Receipt", "Responses", "M", "", "", "", "", "FileUpload", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Conditional</h4>
+                                <p>Shows based on another field’s value.</p>
+                                <ul><li><strong>I</strong>: "FieldName=Value"</li><li>Example: <code>["Details", "Responses", "N", "", "", "", "", "Conditional", "Rush Order=true", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Calculated</h4>
+                                <p>Read-only calculated value.</p>
+                                <ul><li><strong>I</strong>: "=Formula" (basic arithmetic)</li><li>Example: <code>["Total Cost", "Responses", "O", "", "", "", "", "Calculated", "=Quantity*50", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Signature</h4>
+                                <p>Canvas for drawing signatures.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Saves as PNG link</li><li>Example: <code>["Customer Signature", "Responses", "P", "", "", "", "", "Signature", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Geolocation</h4>
+                                <p>Captures latitude, longitude.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Click "Get Location"</li><li>Example: <code>["Delivery Location", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>ProgressBar</h4>
+                                <p>Static progress bar (0-100).</p>
+                                <ul><li><strong>I</strong>: Number</li><li>Example: <code>["Order Progress", "Responses", "R", "", "", "", "", "ProgressBar", "75", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Captcha</h4>
+                                <p>Fixed "3 + 5" verification.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li><strong>Behavior</strong>: Enter "8"</li><li>Example: <code>["Verification", "Responses", "S", "", "", "", "", "Captcha", "", "Yes"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Image</h4>
+                                <p>Static image display.</p>
+                                <ul><li><strong>I</strong>: URL</li><li>Example: <code>["Company Logo", "", "", "", "", "", "", "Image", "https://drive.google.com/uc?id=1A2B3C", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Video</h4>
+                                <p>Playable video.</p>
+                                <ul><li><strong>I</strong>: YouTube/MP4 URL</li><li>Example: <code>["Tutorial Video", "", "", "", "", "", "", "Video", "https://www.youtube.com/watch?v=XkYk2Rw6dKw", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>ImageLink</h4>
+                                <p>Input URL with preview.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Product Photo", "Responses", "V", "", "", "", "", "ImageLink", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>VideoLink</h4>
+                                <p>Input video URL.</p>
+                                <ul><li><strong>I</strong>: Blank</li><li>Example: <code>["Demo Video", "Responses", "W", "", "", "", "", "VideoLink", "", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>StaticText</h4>
+                                <p>Static text display.</p>
+                                <ul><li><strong>I</strong>: Text</li><li>Example: <code>["Instructions", "", "", "", "", "", "", "StaticText", "Please fill out all fields.", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Table</h4>
+                                <p>Displays a sheet range with media.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Range (e.g., "Sheet1!A1:B2")</li>
+                                    <li><strong>Behavior</strong>: Renders URLs as images (Google Drive) or videos (YouTube)</li>
+                                    <li>Example: <code>["Product Catalog", "", "", "", "", "", "", "Table", "Catalog!A2:B5", "No"]</code></li>
+                                    <li>
+                                        <strong>Sample Catalog Sheet</strong>:
+                                        <table>
+                                            <tr><th>A</th><th>B</th></tr>
+                                            <tr><td>Item</td><td>Media</td></tr>
+                                            <tr><td>Shirt</td><td>https://drive.google.com/uc?id=1A2B3C</td></tr>
+                                            <tr><td>Ad</td><td>https://youtu.be/XkYk2Rw6dKw</td></tr>
+                                        </table>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Container</h4>
+                                <p>Groups fields with styling.</p>
+                                <ul><li><strong>I</strong>: Inline CSS</li><li>Example: <code>["Section", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"]</code></li></ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Header</h4>
+                                <p>Styled header with HTML support.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Text, CSS, or HTML</li>
+                                    <li>Example: <code>["Form Title", "", "", "", "", "", "", "Header", "<h2>Order Form</h2>", "No"]</code></li>
+                                </ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Footer</h4>
+                                <p>Styled footer with HTML support.</p>
+                                <ul>
+                                    <li><strong>I</strong>: Text, CSS, or HTML</li>
+                                    <li>Example: <code>["Form Footer", "", "", "", "", "", "", "Footer", "<p>Thank you!</p>", "No"]</code></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <h3>Preview & Deploy</h3>
+                            <p>Test with "DataMate > FormBuilder > Preview Form". Deploy as a web app via "Deploy > New Deployment > Web App."</p>
+                        </div>
+
+                        <div class="step">
+                            <h3>Collect Data</h3>
+                            <p>Share the web app URL. Data saves to sheets per <code>B:G</code>. Functions in <code>B6</code> run post-submission.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Contact Management -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactManagement">
+                        5. Contact Management
+                    </button>
+                </h2>
+                <div id="contactManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Using Forms for Contacts</h3>
+                            <p>Target <code>NewContact</code> in <code>B:G</code> and add <code>newContactit</code> to <code>B6</code> to save contacts.</p>
+                            <p>Example: <code>["Email", "NewContact", "A", "", "", "", "", "Email", "", "Yes"]</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 6: Templates -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#templates">
+                        6. Templates
+                    </button>
+                </h2>
+                <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <div class="step">
+                            <h3>Order Form Template</h3>
+                            <p>Paste into <code>FormSetup!A9:J</code>, preview form:</p>
+                            <table>
+                                <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
+                                <tr><td>Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;h2&gt;Order Form&lt;/h2&gt;</td><td>No</td></tr>
+                                <tr><td>Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                                <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+                                <tr><td>Product</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>T-Shirt,Hat,Shoes</td><td>Yes</td></tr>
+                                <tr><td>Quantity</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+                                <tr><td>Photo</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>ImageLink</td><td></td><td>No</td></tr>
+                                <tr><td>Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;p&gt;Thanks for ordering!&lt;/p&gt;</td><td>No</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 7: Support -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#support">
+                        7. Support
+                    </button>
+                </h2>
+                <div id="support" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <p>Visit:</p>
+                        <ul>
+                            <li><a href="https://datamateapp.github.io/help.html">Help Page</a></li>
+                            <li><a href="mailto:datamateapp@gmail.com">Contact Us</a></li>
+                            <li><a href="https://github.com/DataMateApp/DataMate-code.gs">Open Source Code</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 DataMateApps | <a href="https://datamateapp.github.io/privacypolicy.html">Privacy Policy</a> | <a href="https://datamateapp.github.io/termsconditions.html">Terms & Conditions</a></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      const fieldTypes = [
-        "Text", "Email", "Date", "Time", "Number", "Checkbox", "Radio", "Textarea",
-        "Dropdown", "MultiSelect", "StarRating", "RangeSlider", "FileUpload",
-        "Conditional", "Calculated", "Signature", "Geolocation", "ProgressBar",
-        "Captcha", "Image", "Video", "ImageLink", "VideoLink", "StaticText",
-        "Table", "Container", "Header", "Footer"
-      ];
-
-      const examples = {
-        "Text": "e.g., John Doe",
-        "Email": "e.g., user@example.com",
-        "Date": "",
-        "Time": "",
-        "Number": "e.g., 42",
-        "Checkbox": "",
-        "Radio": "e.g., Yes,No,Maybe",
-        "Textarea": "",
-        "Dropdown": "e.g., Option1,Option2,Option3",
-        "MultiSelect": "e.g., Red,Green,Blue",
-        "StarRating": "",
-        "RangeSlider": "e.g., 0,100,5 (min,max,step)",
-        "FileUpload": "",
-        "Conditional": "e.g., Checkbox=true",
-        "Calculated": "e.g., =Number*2",
-        "Signature": "",
-        "Geolocation": "",
-        "ProgressBar": "e.g., 75",
-        "Captcha": "",
-        "Image": "e.g., https://via.placeholder.com/150",
-        "Video": "e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "ImageLink": "",
-        "VideoLink": "",
-        "StaticText": "e.g., This is static text",
-        "Table": "e.g., Sheet1!A1:B2",
-        "Container": "e.g., border: 2px dashed #4CAF50;",
-        "Header": "e.g., Sample Form",
-        "Footer": "e.g., Thank you for submitting!"
-      };
-
-      function createRow(data = {}) {
-        const row = document.createElement('div');
-        row.className = 'row visible'; // Initially visible when added
-        
-        row.innerHTML = `
-          <div class="group">
-            <div class="group-header">Field Definition</div>
-            <div class="fields">
-              <div class="field">
-                <label>Field Name</label>
-                <input type="text" placeholder="Field Name" value="${data.fieldName || ''}">
-                <span class="description">Name of the form field</span>
-              </div>
-              <div class="field">
-                <label>Field Type</label>
-                <select class="field-type">
-                  ${fieldTypes.map(type => `<option value="${type}" ${data.type === type ? 'selected' : ''}>${type}</option>`).join('')}
-                </select>
-                <span class="description">Type of input field</span>
-              </div>
-              <div class="field">
-                <label>Options</label>
-                <input type="text" id="options" placeholder="${examples[data.type || 'Text']}" value="${data.options || ''}">
-                <span class="description">Field-specific options (if applicable)</span>
-              </div>
-              <div class="field">
-                <label>Required</label>
-                <select>
-                  <option value="No" ${data.required !== 'Yes' ? 'selected' : ''}>No</option>
-                  <option value="Yes" ${data.required === 'Yes' ? 'selected' : ''}>Yes</option>
-                </select>
-                <span class="description">Is this field mandatory?</span>
-              </div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="group-header">Primary Target</div>
-            <div class="fields">
-              <div class="field">
-                <label>Target Sheet 1</label>
-                <input type="text" placeholder="Sheet 1" value="${data.sheet1 || ''}">
-                <span class="description">First target sheet name</span>
-              </div>
-              <div class="field">
-                <label>Cell/Col 1</label>
-                <input type="text" placeholder="Cell/Col 1" value="${data.cell1 || ''}">
-                <span class="description">Cell (e.g., A1) or column (e.g., A)</span>
-              </div>
-            </div>
-          </div>
-          <div class="group">
-            <div class="group-header">Additional Targets</div>
-            <div class="fields">
-              <div class="field">
-                <label>Target Sheet 2</label>
-                <input type="text" placeholder="Sheet 2" value="${data.sheet2 || ''}">
-                <span class="description">Second target sheet name (optional)</span>
-              </div>
-              <div class="field">
-                <label>Cell/Col 2</label>
-                <input type="text" placeholder="Cell/Col 2" value="${data.cell2 || ''}">
-                <span class="description">Cell (e.g., B2) or column (e.g., B)</span>
-              </div>
-              <div class="field">
-                <label>Target Sheet 3</label>
-                <input type="text" placeholder="Sheet 3" value="${data.sheet3 || ''}">
-                <span class="description">Third target sheet name (optional)</span>
-              </div>
-              <div class="field">
-                <label>Cell/Col 3</label>
-                <input type="text" placeholder="Cell/Col 3" value="${data.cell3 || ''}">
-                <span class="description">Cell (e.g., C3) or column (e.g., C)</span>
-              </div>
-            </div>
-          </div>
-        `;
-
-        const typeSelect = row.querySelector('.field-type');
-        const optionsInput = row.querySelector('#options');
-        typeSelect.onchange = () => {
-          optionsInput.placeholder = examples[typeSelect.value];
-        };
-
-        document.getElementById('rows').appendChild(row);
-      }
-
-      document.getElementById('addRow').onclick = () => createRow();
-
-      document.getElementById('saveRows').onclick = () => {
-        const rows = document.querySelectorAll('.row.visible');
-        const data = Array.from(rows).map(row => {
-          const inputs = row.querySelectorAll('input, select');
-          return {
-            fieldName: inputs[0].value,
-            sheet1: inputs[4].value,
-            cell1: inputs[5].value,
-            sheet2: inputs[6].value,
-            cell2: inputs[7].value,
-            sheet3: inputs[8].value,
-            cell3: inputs[9].value,
-            type: inputs[1].value,
-            options: inputs[2].value,
-            required: inputs[3].value
-          };
-        });
-        google.script.run
-          .withSuccessHandler(() => {
-            const message = document.getElementById('message');
-            message.style.display = 'block';
-            setTimeout(() => message.style.display = 'none', 3000);
-          })
-          .withFailureHandler(error => alert('Error saving rows: ' + error.message))
-          .saveFormRows(data);
-      };
-
-      // Load existing rows (hidden initially)
-      google.script.run
-        .withSuccessHandler(rows => rows.forEach(row => {
-          createRow(row);
-          document.querySelector('.row:last-child').classList.remove('visible'); // Hide loaded rows
-        }))
-        .loadFormRows();
+        function toggleMenu() {
+            var nav = document.querySelector('.mobile-nav');
+            if (nav.style.display === "block") {
+                nav.style.display = "none";
+            } else {
+                nav.style.display = "block";
+            }
+        }
     </script>
-  </body>
+</body>
 </html>
