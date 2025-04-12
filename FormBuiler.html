@@ -153,7 +153,7 @@
             "Dropdown", "MultiSelect", "StarRating", "RangeSlider", "FileUpload",
             "Conditional", "Calculated", "Signature", "Geolocation", "ProgressBar",
             "Captcha", "Image", "Video", "ImageLink", "VideoLink", "StaticText",
-            "Table", "Container", "Header", "Footer"
+            "Table", "Container", "Header", "Footer", "Checkout", "Hyperlink"
         ];
 
         const examples = {
@@ -184,7 +184,9 @@
             "Table": "Inventory!A2:D10",
             "Container": "border: 2px solid #4CAF50; padding: 10px;",
             "Header": "<h3 style='color: #4CAF50;'>Customer Feedback Form</h3>",
-            "Footer": "<p style='font-style: italic;'>Thank you for your input!</p>"
+            "Footer": "<p style='font-style: italic;'>Thank you for your input!</p>",
+            "Checkout": "Items!A2:B10",
+            "Hyperlink": "<a href=\"https://example.com\">Click Here</a>"
         };
 
         function createRow(data = {}) {
@@ -210,7 +212,7 @@
                         <div class="field">
                             <label>Options</label>
                             <input type="text" id="options" placeholder="Optional settings" value="${data.options || ''}">
-                            <span class="description">Field-specific options (if applicable)</span>
+                            <span class="description">Field-specific options (e.g., for Checkout: sheet range like Items!A2:B10 with Description, Price)</span>
                             <span class="example-text" data-example="${examples[data.type || 'Text']}">Copy Example: ${examples[data.type || 'Text'] || 'None'}</span>
                         </div>
                         <div class="field">
