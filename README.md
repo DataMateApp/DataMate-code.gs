@@ -36,7 +36,7 @@ DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder
 1. In the Apps Script editor, click the **+** button next to "Files" and select **HTML**.  
 2. Create `tutorial.html`:  
    - Name it `tutorial.html`.  
-   - Copy the contents from [this repository’s `tutorial.html`](https://github.com/DataMateApp/DataMate-code.gs) or use the updated version from the help file guide.  
+   - Copy the contents from [this repository’s `help.html`](https://datamateapp.github.io/help.html) or the updated version in the DataMate documentation.  
    - This displays a modal tutorial (via `showTutorial()`).  
 3. Create `FormBuilder.html`:  
    - Name it `FormBuilder.html`.  
@@ -54,8 +54,8 @@ DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder
 1. In the Apps Script editor, click **Run > showTutorial** to test permissions.  
 2. Authorize the script (grant access to Google Sheets and Drive when prompted).  
 3. Open your spreadsheet, refresh it (F5), and look for the **DataMate** menu.  
-4. Select **DataMate > FormBuilder > Preview Form** to initialize the `FormSetup` sheet with sample fields (e.g., Text, Table, Signature).  
-   - This creates a pre-configured `FormSetup` sheet starting at `A9:J` with 27 field examples.  
+4. Select **DataMate > FormBuilder > Preview Form** to initialize the `FormSetup` sheet with sample fields (e.g., Text, Checkout, Hyperlink).  
+   - This creates a pre-configured `FormSetup` sheet starting at `A9:J` with 29 field examples.  
 
 #### Step 4: Web Deployment (Optional)  
 Deploy DataMate as a web app to share forms with others:  
@@ -76,15 +76,16 @@ Deploy DataMate as a web app to share forms with others:
 
 ### Completed Features  
 - **Spreadsheet Database**: Store and organize data across sheets (e.g., `Responses`, `Input`).  
-- **FormBuilder**: Build custom forms with **27 field types**, including:  
+- **FormBuilder**: Build custom forms with **29 field types**, including:  
   - **Basic**: Text, Dropdown, Checkbox, Radio, Textarea, Email, Number, Date, Time  
   - **Advanced**: StarRating, RangeSlider, FileUpload (6MB max), Signature, Geolocation  
-  - **Dynamic**: Conditional (show/hide logic), Calculated (basic formulas like `=Number*2`)  
+  - **Dynamic**: Conditional (show/hide logic), Calculated (basic formulas like `=Number*2`), Checkout (order tables with quantities and totals), Hyperlink (clickable links)  
   - **Display**: StaticText, Table (renders sheet ranges with images/videos), Header/Footer (HTML support)  
   - **Media**: Image, Video, ImageLink, VideoLink  
   - **Utility**: ProgressBar, Captcha (fixed "3 + 5 = 8")  
   - **Layout**: Container (styled grouping)  
 - **Data Logging**: Map form inputs to sheets via `FormSetup!B:G` (up to 3 targets per field).  
+- **Email Notifications**: Send automated emails with form response details on submission (configured via `FormSetup!B8`).  
 - **UI**: Simple form preview (`previewForm()`) and visual editor (`showFormBuilder()`).  
 - **File Uploads**: Stores files in Google Drive with public links.  
 - **Custom Actions**: Run functions post-submission (e.g., `save, newContactit`) from `FormSetup!B6`.  
@@ -115,4 +116,4 @@ Every donation keeps this project thriving!
 Licensed under the **MIT License**. See [`LICENSE.txt`](https://github.com/DataMateApp/DataMate-code.gs/blob/main/LICENSE.txt) in the repository for details.  
 
 ## Credits  
-Developed by **Dan Northway**. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.  
+Developed by **Dan Northway**. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.
