@@ -338,7 +338,7 @@
 
     <div class="container">
         <h1>DataMate Tutorial</h1>
-        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 10, 2025.</p>
+        <p>Welcome to DataMate! This guide covers using DataMate for data management, form building, and contact management in Google Sheets. Current date: April 11, 2025.</p>
 
         <div class="accordion" id="tutorialAccordion">
             <!-- Section 1: Overview -->
@@ -355,9 +355,10 @@
                             <ul>
                                 <li><strong>Automated Data Entry</strong>: Organize data across multiple sheets.</li>
                                 <li><strong>Record Management</strong>: Save, update, and view records.</li>
-                                <li><strong>Custom Forms</strong>: Build forms with 27 field types, including tables with media (images/videos).</li>
+                                <li><strong>Custom Forms</strong>: Build forms with 29 field types, including tables, checkout fields, hyperlinks, and media (images/videos).</li>
                                 <li><strong>Contact Management</strong>: Import and manage Gmail/CSV contacts.</li>
                                 <li><strong>Dynamic Logs</strong>: Track up to 12 log fields per record.</li>
+                                <li><strong>Email Notifications</strong>: Send automated emails on form submission with response details.</li>
                             </ul>
                         </div>
                         <p><a href="https://www.youtube.com/embed/_cduOVxVafc" target="_blank">Watch the DataMate Overview Video</a></p>
@@ -430,7 +431,7 @@
                                 <li>
                                     <strong>Interface</strong>:
                                     <ul>
-                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Table, ImageLink) onto the canvas.</li>
+                                        <li><strong>Field Palette</strong>: Drag field types (e.g., Text, Checkout, Hyperlink, ImageLink) onto the canvas.</li>
                                         <li><strong>Properties Panel</strong>: Edit field name, targets (sheets/cells), type, options, and required status.</li>
                                         <li><strong>Preview</strong>: View the form layout as you build.</li>
                                     </ul>
@@ -439,8 +440,8 @@
                                     <strong>Build</strong>:
                                     <ul>
                                         <li>Drag a "Header" for the title (e.g., "Order Form").</li>
-                                        <li>Add fields like "Email", "ImageLink", or "Table" (link to a sheet range with media).</li>
-                                        <li>Set properties (e.g., "Required: Yes", "Options: Red,Blue").</li>
+                                        <li>Add fields like "Email", "Checkout", "Hyperlink", or "Table" (link to a sheet range).</li>
+                                        <li>Set properties (e.g., "Required: Yes", "Options: Items!A2:B10").</li>
                                     </ul>
                                 </li>
                                 <li><strong>Save</strong>: Click "Save" to update <code>FormSetup!A9:J</code>.</li>
@@ -455,6 +456,7 @@
                             <ul>
                                 <li><strong>B2</strong>: Form Name (e.g., "Customer Survey").</li>
                                 <li><strong>B6</strong>: On Submit Functions (e.g., <code>save, copyInput1</code>) - Runs after submission.</li>
+                                <li><strong>B8</strong>: Notification Email (e.g., "your-email@example.com") - Sends an email with form response details on submission.</li>
                             </ul>
                         </div>
 
@@ -470,14 +472,14 @@
                                 <li><strong>F</strong>: Target Sheet 3</li>
                                 <li><strong>G</strong>: Target Cell/Column 3</li>
                                 <li><strong>H</strong>: Field Type</li>
-                                <li><strong>I</strong>: Options (e.g., dropdown values, formulas, URLs)</li>
+                                <li><strong>I</strong>: Options (e.g., dropdown values, formulas, URLs, ranges)</li>
                                 <li><strong>J</strong>: Required (Yes/No)</li>
                             </ul>
                         </div>
 
                         <div class="step">
                             <h3>Supported Field Types</h3>
-                            <p>All 27 field types with examples:</p>
+                            <p>All 29 field types with examples:</p>
                             <div class="field-type">
                                 <h4>Text</h4>
                                 <p>Single-line text input.</p>
@@ -617,6 +619,34 @@
                                 </ul>
                             </div>
                             <div class="field-type">
+                                <h4>Checkout</h4>
+                                <p>Table for selecting items with quantities, unit prices, and totals (includes tax).</p>
+                                <ul>
+                                    <li><strong>I</strong>: Range (e.g., "Items!A2:B10") with Description and Price columns</li>
+                                    <li><strong>Behavior</strong>: Users select items, set quantities; displays subtotal, tax, and total</li>
+                                    <li><strong>Output</strong>: Saves as JSON (e.g., [{"description":"Widget","quantity":2,"unitPrice":10}])</li>
+                                    <li>Example: <code>["Order", "Responses", "A", "", "", "", "", "Checkout", "Items!A2:B10", "Yes"]</code></li>
+                                    <li>
+                                        <strong>Sample Items Sheet</strong>:
+                                        <table>
+                                            <tr><th>A</th><th>B</th></tr>
+                                            <tr><td>Description</td><td>Price</td></tr>
+                                            <tr><td>Widget</td><td>10</td></tr>
+                                            <tr><td>Gadget</td><td>20</td></tr>
+                                        </table>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="field-type">
+                                <h4>Hyperlink</h4>
+                                <p>Displays a clickable link with custom text.</p>
+                                <ul>
+                                    <li><strong>I</strong>: HTML anchor tag (e.g., <code>&lt;a href="URL"&gt;Text&lt;/a&gt;</code>)</li>
+                                    <li><strong>Behavior</strong>: Renders as a styled link; no user input</li>
+                                    <li>Example: <code>["Support", "", "", "", "", "", "", "Hyperlink", "&lt;a href=\"https://datamateapp.github.io\"&gt;Visit DataMate&lt;/a&gt;", "No"]</code></li>
+                                </ul>
+                            </div>
+                            <div class="field-type">
                                 <h4>Container</h4>
                                 <p>Groups fields with styling.</p>
                                 <ul><li><strong>I</strong>: Inline CSS</li><li>Example: <code>["Section", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"]</code></li></ul>
@@ -626,7 +656,7 @@
                                 <p>Styled header with HTML support.</p>
                                 <ul>
                                     <li><strong>I</strong>: Text, CSS, or HTML</li>
-                                    <li>Example: <code>["Form Title", "", "", "", "", "", "", "Header", "<h2>Order Form</h2>", "No"]</code></li>
+                                    <li>Example: <code>["Form Title", "", "", "", "", "", "", "Header", "&lt;h2&gt;Order Form&lt;/h2&gt;", "No"]</code></li>
                                 </ul>
                             </div>
                             <div class="field-type">
@@ -634,8 +664,7 @@
                                 <p>Styled footer with HTML support.</p>
                                 <ul>
                                     <li><strong>I</strong>: Text, CSS, or HTML</li>
-                                    <li>Example: <code>["Form Footer", "", "", "", "", "", "", "Footer", "<p>Thank you!</p>", "No"]</code></li>
-                                </ul>
+                                    <li>Example: <code>["Form Footer", "", "", "", "", "", "", "Footer", "&lt;p&gt;Thank you!&lt;/p&gt;", "No"]</code></li></ul>
                             </div>
                         </div>
 
@@ -646,7 +675,7 @@
 
                         <div class="step">
                             <h3>Collect Data</h3>
-                            <p>Share the web app URL. Data saves to sheets per <code>B:G</code>. Functions in <code>B6</code> run post-submission.</p>
+                            <p>Share the web app URL. Data saves to sheets per <code>B:G</code>. Functions in <code>B6</code> run post-submission. If <code>B8</code> is set, an email with response details is sent.</p>
                         </div>
                     </div>
                 </div>
@@ -681,15 +710,14 @@
                     <div class="accordion-body">
                         <div class="step">
                             <h3>Order Form Template</h3>
-                            <p>Paste into <code>FormSetup!A9:J</code>, preview form:</p>
+                            <p>Paste into <code>FormSetup!A9:J</code>, create an <code>Items</code> sheet with items and prices, set <code>B8</code> for notifications, then preview form:</p>
                             <table>
                                 <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
                                 <tr><td>Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;h2&gt;Order Form&lt;/h2&gt;</td><td>No</td></tr>
                                 <tr><td>Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
                                 <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
-                                <tr><td>Product</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>T-Shirt,Hat,Shoes</td><td>Yes</td></tr>
-                                <tr><td>Quantity</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
-                                <tr><td>Photo</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>ImageLink</td><td></td><td>No</td></tr>
+                                <tr><td>Order</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Items!A2:B10</td><td>Yes</td></tr>
+                                <tr><td>Support</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Hyperlink</td><td>&lt;a href="https://datamateapp.github.io"&gt;Visit DataMate&lt;/a&gt;</td><td>No</td></tr>
                                 <tr><td>Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;p&gt;Thanks for ordering!&lt;/p&gt;</td><td>No</td></tr>
                             </table>
                         </div>
