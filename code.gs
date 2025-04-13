@@ -2561,6 +2561,7 @@ function processForm(formData) {
   var fieldsRange = setupSheet.getRange("A9:J" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
 
+  // Validate required fields
   fieldsData.forEach(row => {
     var fieldName = row[0];
     var isRequired = row[9].toString().toLowerCase() === "yes";
@@ -2580,8 +2581,22 @@ function processForm(formData) {
 
     if (fieldValue === undefined) return;
 
+    // Handle file uploads and checkout fields
     if (typeof fieldValue === 'object' && fieldValue.data) {
       fieldValue = uploadFile(fieldValue);
+    } else if (row[7].toUpperCase() === "CHECKOUT" && typeof fieldValue === 'string') {
+      try {
+        var checkoutItems = JSON.parse(fieldValue);
+        if (checkoutItems.length === 0) {
+          fieldValue = "";
+        } else {
+          fieldValue = checkoutItems
+            .map(item => `${item.description}:${item.quantity}:${item.unitPrice}`)
+            .join(",");
+        }
+      } catch (e) {
+        fieldValue = "";
+      }
     }
 
     targetSheets.forEach((sheetName, index) => {
@@ -2591,12 +2606,19 @@ function processForm(formData) {
       var targetCell = targetCells[index];
       if (/^[A-Z]+[0-9]+$/.test(targetCell)) {
         sheetsData[sheetName].singleCell.push({ fieldName, targetCell, value: fieldValue });
+      } else if (/^[A-Z]+$/.test(targetCell) && row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
+        var checkoutItems = fieldValue.split(",").map(item => {
+          var [description, quantity, price] = item.split(":");
+          return [description, parseInt(quantity), parseFloat(price)];
+        });
+        sheetsData[sheetName].tableRow.push({ fieldName, column: targetCell, value: checkoutItems });
       } else if (/^[A-Z]+$/.test(targetCell)) {
         sheetsData[sheetName].tableRow.push({ fieldName, column: targetCell, value: fieldValue });
       }
     });
   });
 
+  // Write data to target sheets
   Object.keys(sheetsData).forEach(sheetName => {
     var sheet = getOrCreateSheet(ss, sheetName);
     var singleCellData = sheetsData[sheetName].singleCell;
@@ -2606,18 +2628,58 @@ function processForm(formData) {
 
     var tableRowData = sheetsData[sheetName].tableRow;
     if (tableRowData.length > 0) {
-      var lastRow = sheet.getLastRow();
-      var nextRow = lastRow >= 1 ? lastRow + 1 : 2;
-      var columns = tableRowData.map(data => data.column);
-      var rowData = new Array(Math.max(...columns.map(col => col.charCodeAt(0) - 64))).fill('');
       tableRowData.forEach(data => {
-        var colIndex = data.column.charCodeAt(0) - 65;
-        rowData[colIndex] = data.value;
+        var lastRow = sheet.getLastRow();
+        var nextRow = lastRow >= 1 ? lastRow + 1 : 2;
+        
+        if (Array.isArray(data.value) && data.fieldName && fieldsData.find(row => row[0] === data.fieldName && row[7].toUpperCase() === "CHECKOUT")) {
+          data.value.forEach(item => {
+            var colIndex = data.column.charCodeAt(0) - 65;
+            var rowData = new Array(Math.max(colIndex + 3, 1)).fill('');
+            rowData[colIndex] = item[0]; // description
+            rowData[colIndex + 1] = item[1]; // quantity
+            rowData[colIndex + 2] = item[2]; // price
+            sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+            nextRow++;
+          });
+        } else {
+          var colIndex = data.column.charCodeAt(0) - 65;
+          var rowData = new Array(Math.max(colIndex + 1, 1)).fill('');
+          rowData[colIndex] = data.value;
+          sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+        }
       });
-      sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
     }
   });
 
+  // Email notification
+  var emailRecipient = setupSheet.getRange("B8").getValue();
+  if (emailRecipient) {
+    var subject = "New Form Submission";
+    var body = "A new form submission has been received:\n\n";
+    fieldsData.forEach(row => {
+      var fieldName = row[0];
+      var fieldValue = formData[fieldName] || "(No value)";
+      if (row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
+        try {
+          fieldValue = JSON.parse(fieldValue)
+            .filter(item => item.quantity > 0)
+            .map(item => `${item.description} (Qty: ${item.quantity}, Price: ${item.unitPrice})`)
+            .join("\n") || "(No items selected)";
+        } catch (e) {
+          fieldValue = "(Invalid checkout data)";
+        }
+      }
+      body += `${fieldName}: ${fieldValue}\n`;
+    });
+    try {
+      MailApp.sendEmail(emailRecipient, subject, body);
+    } catch (e) {
+      Logger.log(`Error sending email: ${e.message}`);
+    }
+  }
+
+  // Execute on-submit functions
   var onSubmitFunctions = setupSheet.getRange("B6").getValue();
   if (onSubmitFunctions) {
     var functionNames = onSubmitFunctions.split(',').map(name => name.trim());
@@ -2656,15 +2718,18 @@ function createFormSetupSheet() {
     formSetupSheet = ss.insertSheet("FormSetup");
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
+    // Header
     formSetupSheet.getRange("A1:J1").merge();
     formSetupSheet.getRange("A1")
-      .setValue("Form Setup Dashboard")
-      .setFontSize(16)
+      .setValue("DataMate FormBuilder Form Setup Dashboard")
+      .setFontSize(18)
       .setFontWeight("bold")
       .setFontColor("#ffffff")
-      .setBackground("#4CAF50")
-      .setHorizontalAlignment("center");
+      .setBackground("#2c3e50") // Dark blue for modern look
+      .setHorizontalAlignment("center")
+      .setVerticalAlignment("middle");
 
+    // Instructions
     formSetupSheet.getRange("A2:J2").merge();
     formSetupSheet.getRange("A2")
       .setValue("Configure your form below. Add fields and targets in A9:J directly.")
@@ -2674,15 +2739,67 @@ function createFormSetupSheet() {
       .setHorizontalAlignment("center")
       .setWrap(true);
 
+      formSetupSheet.getRange("A2:J2").merge();
+    formSetupSheet.getRange("A2")
+      .setValue("Configure your form below. Add fields and targets in A9:J directly.")
+      .setFontSize(12)
+      .setFontColor("#666666")
+      .setBackground("#e8ecef")
+      .setHorizontalAlignment("center")
+      .setWrap(true);
+
+      formSetupSheet.getRange("A3:J3").merge();
+    formSetupSheet.getRange("A3")
+      .setValue("Enter comma-separated function names (e.g., NewContact, save, copyInput1, emailNotify) to run on form submission.")
+      .setFontSize(12)
+      .setFontColor("#666666")
+      .setBackground("#e8ecef")
+      .setHorizontalAlignment("center")
+      .setWrap(true);
+
+      formSetupSheet.getRange("A4:J4").merge();
+    formSetupSheet.getRange("A4")
+      .setValue("Enter the tax rate as a decimal (e.g., 0.08 for 8%) for checkout calculations.")
+      .setFontSize(12)
+      .setFontColor("#666666")
+      .setBackground("#e8ecef")
+      .setHorizontalAlignment("center")
+      .setWrap(true);
+
+      formSetupSheet.getRange("A5:J5").merge();
+    formSetupSheet.getRange("A5")
+      .setValue("Enter an email address to receive notifications for each form submission.")
+      .setFontSize(12)
+      .setFontColor("#666666")
+      .setBackground("#e8ecef")
+      .setHorizontalAlignment("center")
+      .setWrap(true);
+
+    // On Submit Functions
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
-    formSetupSheet.getRange("B6:J6").merge();
+    formSetupSheet.getRange("B6:F6").merge();
     formSetupSheet.getRange("B6")
-      .setValue("save, copyInput1, newContactit")
+      .setValue("NewContact, save, copyInput1")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
       .setHorizontalAlignment("left");
 
+    formSetupSheet.getRange("A7").setValue("Tax Rate:");
+    formSetupSheet.getRange("B7:C7").merge().setValue("0.08").setFontSize(12).setFontColor("#333333").setBackground("#ffffff");
+
+    // Email Notification
+    formSetupSheet.getRange("A8").setValue("Email Notification:");
+    formSetupSheet.getRange("B8:F8").merge();
+    formSetupSheet.getRange("B8")
+      .setValue("")
+      .setFontSize(12)
+      .setFontColor("#333333")
+      .setBackground("#ffffff")
+      .setHorizontalAlignment("left")
+      .setNote("Enter an email address to receive form submission notifications.");
+
+    // Field Headers
     formSetupSheet.getRange("A9").setValue("Form Fields");
     formSetupSheet.getRange("B9").setValue("Target Sheet 1");
     formSetupSheet.getRange("C9").setValue("Target Cell/Column 1");
@@ -2699,35 +2816,38 @@ function createFormSetupSheet() {
       .setBackground("#4CAF50")
       .setBorder(true, true, true, true, false, false);
 
+    // Sample Fields
     var sampleFields = [
-      ["Form Header", "Responses", "A", "", "", "", "", "Header", "Sample Form", "No"],
-      ["Name", "Sheet1", "A1", "Sheet2", "B2", "", "", "Text", "", "Yes"],
-      ["Email", "Responses", "A", "", "", "", "", "Email", "", "Yes"],
-      ["Date", "Input", "A1", "Records", "B1", "", "", "Date", "", "No"],
-      ["Time", "Input", "A2", "", "", "", "", "Time", "", "No"],
-      ["Number", "Input", "A3", "", "", "", "", "Number", "", "Yes"],
-      ["Checkbox", "Responses", "B", "", "", "", "", "Checkbox", "", "No"],
-      ["Radio", "Responses", "C", "", "", "", "", "Radio", "Yes,No,Maybe", "Yes"],
-      ["Textarea", "Input", "A4", "", "", "", "", "Textarea", "", "No"],
-      ["Dropdown", "Responses", "D", "", "", "", "", "Dropdown", "Option1,Option2,Option3", "Yes"],
-      ["MultiSelect", "Responses", "E", "", "", "", "", "MultiSelect", "Red,Green,Blue", "No"],
-      ["StarRating", "Responses", "F", "", "", "", "", "StarRating", "", "No"],
-      ["RangeSlider", "Input", "A5", "", "", "", "", "RangeSlider", "0,100,5", "No"],
-      ["FileUpload", "Sheet1", "A6", "", "", "", "", "FileUpload", "", "No"],
-      ["Conditional", "Input", "A7", "", "", "", "", "Conditional", "Checkbox=true", "No"],
-      ["Calculated", "Input", "A8", "", "", "", "", "Calculated", "=Number*2", "No"],
-      ["Signature", "Sheet1", "A9", "", "", "", "", "Signature", "", "No"],
-      ["Geolocation", "Sheet1", "A10", "", "", "", "", "Geolocation", "", "No"],
-      ["ProgressBar", "Input", "A11", "", "", "", "", "ProgressBar", "75", "No"],
-      ["Captcha", "Responses", "G", "", "", "", "", "Captcha", "", "Yes"],
-      ["Image", "Sheet1", "A12", "", "", "", "", "Image", "https://via.placeholder.com/150", "No"],
-      ["Video", "Sheet1", "A13", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "No"],
-      ["ImageLink", "Sheet1", "A14", "", "", "", "", "ImageLink", "", "No"],
-      ["VideoLink", "Sheet1", "A15", "", "", "", "", "VideoLink", "", "No"],
+      ["Form Header", "", "", "", "", "", "", "Header", "<h3 style='color: #4CAF50;'>Customer Feedback Form</h3>", "No"],
+      ["Name", "Responses", "A", "Sheet2", "B2", "", "", "Text", "", "Yes"],
+      ["Email", "Responses", "B", "", "", "", "", "Email", "", "Yes"],
+      ["Date", "Responses", "C", "Records", "B1", "", "", "Date", "", "No"],
+      ["Time", "Responses", "D", "", "", "", "", "Time", "", "No"],
+      ["Number", "Responses", "E", "", "", "", "", "Number", "", "Yes"],
+      ["Checkbox", "Responses", "F", "", "", "", "", "Checkbox", "", "No"],
+      ["Radio", "Responses", "G", "", "", "", "", "Radio", "Yes,No,Maybe", "Yes"],
+      ["Textarea", "Responses", "H", "", "", "", "", "Textarea", "", "No"],
+      ["Dropdown", "Responses", "I", "", "", "", "", "Dropdown", "=Sheet1!A:A", "Yes"],
+      ["MultiSelect", "Responses", "J", "", "", "", "", "MultiSelect", "Red,Green,Blue", "No"],
+      ["StarRating", "Responses", "K", "", "", "", "", "StarRating", "", "No"],
+      ["RangeSlider", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,5", "No"],
+      ["FileUpload", "Responses", "M", "", "", "", "", "FileUpload", "", "No"],
+      ["Conditional", "Responses", "N", "", "", "", "", "Conditional", "Checkbox=true", "No"],
+      ["Calculated", "Responses", "O", "", "", "", "", "Calculated", "=Number*2", "No"],
+      ["Signature", "Responses", "P", "", "", "", "", "Signature", "", "No"],
+      ["Geolocation", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"],
+      ["ProgressBar", "", "", "", "", "", "", "ProgressBar", "75", "No"],
+      ["Captcha", "Responses", "R", "", "", "", "", "Captcha", "", "Yes"],
+      ["Image", "", "", "", "", "", "", "Image", "https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj", "No"],
+      ["Video", "", "", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "No"],
+      ["ImageLink", "Responses", "S", "", "", "", "", "ImageLink", "", "No"],
+      ["VideoLink", "Responses", "T", "", "", "", "", "VideoLink", "", "No"],
       ["StaticText", "", "", "", "", "", "", "StaticText", "This is static text", "No"],
-      ["Table", "", "", "", "", "", "", "Table", "Sheet1!A1:B2", "No"],
+      ["Table", "", "", "", "", "", "", "Table", "Sheet1!A1:F10", "No"],
       ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
-      ["Form Footer", "Responses", "H", "", "", "", "", "Footer", "Thank you for submitting!", "No"]
+      ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Sheet1!A2:B10", "Yes"],
+      ["Hyperlink", "", "", "", "", "", "", "Hyperlink", "https://datamateapp.github.io/Donate%205%20per%20mo.html", "No"],
+      ["Form Footer", "", "", "", "", "", "", "Footer", "<p style='font-style: italic;'>Thank you for your input!</p>", "No"]
     ];
     if (sampleFields.length > 0) {
       formSetupSheet.getRange("A10:J" + (10 + sampleFields.length - 1)).setValues(sampleFields);
@@ -2779,7 +2899,7 @@ function generateFormHTML() {
 
   var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
-
+  var taxRate = parseFloat(setupSheet.getRange("B7").getValue()) || 0.08;
   var formName = setupSheet.getRange("B2").getValue() || "Custom";
 
   var processedFieldsData = fieldsData.map((row, index) => {
@@ -2796,7 +2916,17 @@ function generateFormHTML() {
     ].filter(t => t.sheet && t.cell);
 
     var fieldOptions = [];
-    if (["DROPDOWN", "RADIO", "MULTISELECT"].includes(fieldType.toUpperCase())) {
+    if (fieldType.toUpperCase() === "CHECKOUT" && options) {
+      try {
+        var range = ss.getRange(options);
+        fieldOptions = range.getValues().map(r => ({
+          description: String(r[0] || ""),
+          unitPrice: Number(r[1]) || 0
+        })).filter(item => item.description);
+      } catch (e) {
+        fieldOptions = [{ description: "Error: Invalid range " + options, unitPrice: 0 }];
+      }
+    } else if (["DROPDOWN", "RADIO", "MULTISELECT"].includes(fieldType.toUpperCase())) {
       if (options.startsWith("=")) {
         try {
           var range = ss.getRange(options.substring(1));
@@ -2809,31 +2939,24 @@ function generateFormHTML() {
       }
     } else if (["FILEUPLOAD", "CONDITIONAL", "CALCULATED", "STATICTEXT", "PROGRESSBAR", "CONTAINER", "HEADER", "FOOTER"].includes(fieldType.toUpperCase())) {
       fieldOptions = [options];
+    } else if (fieldType.toUpperCase() === "HYPERLINK" && options) {
+      var hrefMatch = options.match(/href=["'](.*?)["']/i);
+      fieldOptions = [options, hrefMatch ? hrefMatch[1] : options];
     } else if (fieldType.toUpperCase() === "RANGESLIDER" && options) {
       var parts = options.split(",");
       fieldOptions = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
     } else if (["IMAGE", "VIDEO"].includes(fieldType.toUpperCase()) && options) {
-      if (options.includes("drive.google.com/file/d/")) {
-        var fileIdMatch = options.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (fileIdMatch) options = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
-      } else if (options.includes("drive.google.com/uc")) {
-        var idMatch = options.match(/id=([a-zA-Z0-9_-]+)/);
-        if (idMatch) options = "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + idMatch[1];
+      if (options.includes("drive.google.com")) {
+        var fileIdMatch = options.match(/([a-zA-Z0-9_-]{20,})/);
+        if (fileIdMatch) options = "https://drive.google.com/thumbnail?id=" + fileIdMatch[1];
       }
       fieldOptions = [options];
     } else if (fieldType.toUpperCase() === "TABLE" && options) {
       try {
         var range = ss.getRange(options);
-        fieldOptions = range.getValues().map(row => row.map(cell => {
-          if (String(cell).includes("drive.google.com/file/d/")) {
-            var fileIdMatch = cell.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (fileIdMatch) return "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + fileIdMatch[1];
-          } else if (String(cell).includes("drive.google.com/uc")) {
-            var idMatch = cell.match(/id=([a-zA-Z0-9_-]+)/);
-            if (idMatch) return "https://images.weserv.nl/?url=https://drive.google.com/uc?id=" + idMatch[1];
-          }
-          return cell;
-        }));
+        fieldOptions = range.getValues().filter(row => 
+          row.some(cell => String(cell || '').trim() !== '')
+        ).map(row => row.map(cell => String(cell || '')));
       } catch (e) {
         fieldOptions = [["Error: Invalid range " + options]];
       }
@@ -2997,6 +3120,7 @@ function generateFormHTML() {
           .table-display th, .table-display td {
             padding: 10px;
             border: 1px solid #ddd;
+            text-align: left;
           }
           .table-display th {
             background: #f1f1f1;
@@ -3011,6 +3135,15 @@ function generateFormHTML() {
             width: 200px;
             height: 150px;
             border: none;
+          }
+          .hyperlink {
+            margin-left: 150px;
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 16px;
+          }
+          .hyperlink:hover {
+            text-decoration: underline;
           }
           .range-output {
             margin-left: 10px;
@@ -3090,6 +3223,56 @@ function generateFormHTML() {
             content: " *";
             color: #d32f2f;
           }
+          .checkout-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 10px 150px;
+            border: 1px solid #ddd;
+          }
+          .checkout-table th, .checkout-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+          }
+          .checkout-table th {
+            background: #e8491d;
+            color: white;
+          }
+          .checkout-table tr:nth-child(even) {
+            background: #f2f2f2;
+          }
+          .checkout-table select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .checkout-table input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .calculation-field {
+            margin-left: 150px;
+            margin-bottom: 10px;
+          }
+          .calculation-field span {
+            display: inline-block;
+            width: 100px;
+          }
+          .add-item-btn {
+            background: #2196F3;
+            margin-left: 150px;
+            margin-top: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+          }
+          .remove-item-btn {
+            background: #e74c3c;
+            padding: 6px 12px;
+            border-radius: 4px;
+          }
           ${additionalStyles.join('\n')}
         </style>
       </head>
@@ -3132,10 +3315,48 @@ function generateFormHTML() {
                   <? if (inContainer) { ?></div><? } ?>
                   <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
                   <? inContainer = true; ?>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKOUT" && processedFieldsData[i][2].length > 0) { ?>
+                  <div class="form-group" id="group-<?= processedFieldsData[i][0] ?>">
+                    <div>
+                      <table class="checkout-table" id="<?= processedFieldsData[i][0] ?>-table">
+                        <thead>
+                          <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="<?= processedFieldsData[i][0] ?>-tbody">
+                          <tr id="<?= processedFieldsData[i][0] ?>-row-0">
+                            <td>
+                              <select name="description" onchange="updateCheckoutTotals('<?= processedFieldsData[i][0] ?>')">
+                                <option value="">Select an item</option>
+                                <? for (var j = 0; j < processedFieldsData[i][2].length; j++) { ?>
+                                  <option value='<?= JSON.stringify({ description: processedFieldsData[i][2][j].description, unitPrice: processedFieldsData[i][2][j].unitPrice }) ?>'><?= processedFieldsData[i][2][j].description ?></option>
+                                <? } ?>
+                              </select>
+                            </td>
+                            <td><input type="number" name="quantity" min="0" value="0" oninput="updateCheckoutTotals('<?= processedFieldsData[i][0] ?>')"></td>
+                            <td class="unitPrice">$0.00</td>
+                            <td class="itemTotal">$0.00</td>
+                            <td><button type="button" class="remove-item-btn" onclick="removeCheckoutItem('<?= processedFieldsData[i][0] ?>', '<?= processedFieldsData[i][0] ?>-row-0')">Remove</button></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="calculation-field"><span>Subtotal:</span><span id="<?= processedFieldsData[i][0] ?>-subtotal">$0.00</span></div>
+                      <div class="calculation-field"><span>Tax (${(taxRate * 100).toFixed(2)}%):</span><span id="<?= processedFieldsData[i][0] ?>-tax">$0.00</span></div>
+                      <div class="calculation-field"><span>Total:</span><span id="<?= processedFieldsData[i][0] ?>-total">$0.00</span></div>
+                      <button type="button" class="add-item-btn" onclick="addCheckoutItem('<?= processedFieldsData[i][0] ?>')">Add Item</button>
+                      <input type="hidden" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    </div>
+                  </div>
                 <? } else { ?>
                   <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
                     <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
-                      <div class="static-text"><?= processedFieldsData[i][2][0] ?></div>
+                      <div class="static-text"><?!= processedFieldsData[i][2][0] ?></div>
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
                       <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
                       <table class="table-display">
@@ -3144,14 +3365,25 @@ function generateFormHTML() {
                           <tr>
                             <? var isHeader = row === 0; ?>
                             <? for (var col = 0; col < tableData[row].length; col++) { ?>
+                              <? var cellValue = String(tableData[row][col] || '').trim(); ?>
                               <? if (isHeader) { ?>
-                                <th><?= tableData[row][col] || '' ?></th>
+                                <th><?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?></th>
                               <? } else { ?>
                                 <td>
-                                  <? var cellValue = String(tableData[row][col] || '').trim(); ?>
                                   <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
-                                    <img src="<?= cellValue ?>" style="width: 100px; height: auto;" alt="Table Image" 
-                                         onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue ?>';">
+                                    <? 
+                                      var imgSrc = cellValue;
+                                      var fallbackSrc = cellValue;
+                                      if (cellValue.includes("drive.google.com")) {
+                                        var idMatch = cellValue.match(/([a-zA-Z0-9_-]{20,})/);
+                                        if (idMatch) {
+                                          imgSrc = "https://drive.google.com/thumbnail?id=" + idMatch[1];
+                                          fallbackSrc = "https://drive.google.com/uc?id=" + idMatch[1];
+                                        }
+                                      }
+                                    ?>
+                                    <img src="<?= imgSrc ?>" style="width: 100px; height: auto;" alt="Table Image" 
+                                         onerror="this.src='<?= fallbackSrc ?>'; if(this.complete && this.naturalHeight === 0) { this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue.replace(/'/g, "\\'") ?>'; }">
                                   <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
                                     <? 
                                       var videoId;
@@ -3164,7 +3396,7 @@ function generateFormHTML() {
                                     ?>
                                     <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
                                   <? } else { ?>
-                                    <?= cellValue ?>
+                                    <?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?>
                                   <? } ?>
                                 </td>
                               <? } ?>
@@ -3172,6 +3404,17 @@ function generateFormHTML() {
                           </tr>
                         <? } ?>
                       </table>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "HYPERLINK" && processedFieldsData[i][2][0]) { ?>
+                      <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <? if (processedFieldsData[i][2][0].match(/<a\s[^>]*href=["'][^"']*["'][^>]*>/i)) { ?>
+                        <?!= processedFieldsData[i][2][0] ?>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][1] ?>">
+                      <? } else { ?>
+                        <a href="<?= processedFieldsData[i][2][0] ?>" class="hyperlink" target="_blank"><?= processedFieldsData[i][2][0] ?></a>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } ?>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
                     <? } else { ?>
                       <label for="<?= processedFieldsData[i][0] ?>" class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
                       <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
@@ -3246,7 +3489,7 @@ function generateFormHTML() {
                         <span id="captcha-question">What is 3 + 5?</span>
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
                         <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" 
-                             onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0] ?>';">
+                             onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0].replace(/'/g, "\\'") ?>';">
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
                         <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
@@ -3258,7 +3501,7 @@ function generateFormHTML() {
                           </video>
                         <? } ?>
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
-                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?\>
                         <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Image URL" <?= processedFieldsData[i][4] ? 'required' : '' ?> oninput="previewImage(this)">
                         <img id="<?= processedFieldsData[i][0] ?>-preview" style="display: none;" alt="Preview">
                         <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
@@ -3283,7 +3526,146 @@ function generateFormHTML() {
         <script>
           <? if (processedFieldsData.length > 0) { ?>
             const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
+            const taxRate = <?!= taxRate ?>;
             let signatureCanvases = {};
+
+            function escapeHtml(text) {
+              const div = document.createElement('div');
+              div.textContent = text;
+              return div.innerHTML;
+            }
+
+            function addCheckoutItem(fieldId) {
+              const tbody = document.getElementById(fieldId + "-tbody");
+              const rowCount = tbody.getElementsByTagName("tr").length;
+              const rowId = fieldId + "-row-" + rowCount;
+              const field = processedFieldsData.find(f => f[0] === fieldId);
+
+              const row = document.createElement("tr");
+              row.id = rowId;
+
+              const selectTd = document.createElement("td");
+              const select = document.createElement("select");
+              select.name = "description";
+              select.onchange = () => updateCheckoutTotals(fieldId);
+              const defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.text = "Select an item";
+              select.appendChild(defaultOption);
+
+              field[2].forEach(item => {
+                const option = document.createElement("option");
+                option.value = JSON.stringify({ description: item.description, unitPrice: item.unitPrice });
+                option.text = escapeHtml(item.description);
+                select.appendChild(option);
+              });
+              selectTd.appendChild(select);
+
+              const quantityTd = document.createElement("td");
+              const quantityInput = document.createElement("input");
+              quantityInput.type = "number";
+              quantityInput.name = "quantity";
+              quantityInput.min = "0";
+              quantityInput.value = "0";
+              quantityInput.oninput = () => updateCheckoutTotals(fieldId);
+              quantityTd.appendChild(quantityInput);
+
+              const unitPriceTd = document.createElement("td");
+              unitPriceTd.className = "unitPrice";
+              unitPriceTd.textContent = "$0.00";
+
+              const itemTotalTd = document.createElement("td");
+              itemTotalTd.className = "itemTotal";
+              itemTotalTd.textContent = "$0.00";
+
+              const actionTd = document.createElement("td");
+              const removeButton = document.createElement("button");
+              removeButton.type = "button";
+              removeButton.className = "remove-item-btn";
+              removeButton.textContent = "Remove";
+              removeButton.onclick = () => removeCheckoutItem(fieldId, rowId);
+              actionTd.appendChild(removeButton);
+
+              row.appendChild(selectTd);
+              row.appendChild(quantityTd);
+              row.appendChild(unitPriceTd);
+              row.appendChild(itemTotalTd);
+              row.appendChild(actionTd);
+
+              tbody.appendChild(row);
+              updateCheckoutTotals(fieldId);
+            }
+
+            function removeCheckoutItem(fieldId, rowId) {
+              const row = document.getElementById(rowId);
+              if (row) row.parentNode.removeChild(row);
+              updateCheckoutTotals(fieldId);
+            }
+
+            function updateCheckoutTotals(fieldId) {
+              const tbody = document.getElementById(fieldId + "-tbody");
+              if (!tbody) return;
+              const rows = tbody.querySelectorAll("tr");
+              let subtotal = 0;
+
+              rows.forEach(row => {
+                const select = row.querySelector("select[name='description']");
+                const quantityInput = row.querySelector("input[name='quantity']");
+                const unitPriceCell = row.querySelector(".unitPrice");
+                const itemTotalCell = row.querySelector(".itemTotal");
+
+                let unitPrice = 0;
+                let description = "";
+                const quantity = parseFloat(quantityInput.value) || 0;
+
+                if (select.value) {
+                  try {
+                    const item = JSON.parse(select.value);
+                    description = item.description;
+                    unitPrice = parseFloat(item.unitPrice) || 0;
+                    unitPriceCell.textContent = "$" + unitPrice.toFixed(2); // Fixed: Update unit price immediately
+                  } catch (e) {
+                    console.error("Error parsing item:", e);
+                    unitPriceCell.textContent = "$0.00";
+                  }
+                } else {
+                  unitPriceCell.textContent = "$0.00";
+                }
+
+                const total = quantity * unitPrice;
+                subtotal += total;
+                itemTotalCell.textContent = "$" + total.toFixed(2);
+              });
+
+              const items = Array.from(rows).map(row => {
+                const select = row.querySelector("select[name='description']");
+                const quantityInput = row.querySelector("input[name='quantity']");
+                const value = select.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                let description = "";
+                let unitPrice = 0;
+
+                if (value) {
+                  try {
+                    const item = JSON.parse(value);
+                    description = item.description;
+                    unitPrice = parseFloat(item.unitPrice) || 0;
+                  } catch (e) {
+                    console.error("Error parsing item:", e);
+                  }
+                }
+
+                return { description, quantity, unitPrice };
+              }).filter(item => item.quantity > 0 && item.description);
+
+              const tax = subtotal * taxRate;
+              const total = subtotal + tax;
+
+              document.getElementById(fieldId + "-subtotal").textContent = "$" + subtotal.toFixed(2);
+              document.getElementById(fieldId + "-tax").textContent = "$" + tax.toFixed(2);
+              document.getElementById(fieldId + "-total").textContent = "$" + total.toFixed(2);
+              document.getElementById(fieldId).value = JSON.stringify(items);
+            }
 
             function handleSubmit(event) {
               event.preventDefault();
@@ -3335,12 +3717,21 @@ function generateFormHTML() {
                 } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
                   value = signatureCanvases[name].toDataURL().split(',')[1];
                   dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
+                } else if (fieldData && fieldData[1].toUpperCase() === 'CHECKOUT') {
+                  value = input.value;
+                  if (isRequired && (!value || value === '[]')) {
+                    errorSpan.textContent = 'Please add at least one item with a quantity greater than 0';
+                    isValid = false;
+                  } else {
+                    errorSpan.textContent = '';
+                    dataToSend[name] = value;
+                  }
                 } else {
                   value = input.value;
                   dataToSend[name] = value;
                 }
 
-                if (isRequired && (!value || value === '')) {
+                if (fieldData && fieldData[1].toUpperCase() !== 'CHECKOUT' && isRequired && (!value || value === '')) {
                   errorSpan.textContent = 'This field is required';
                   isValid = false;
                 } else if (input.type === 'number' && value && isNaN(value)) {
@@ -3352,7 +3743,7 @@ function generateFormHTML() {
                 } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
                   errorSpan.textContent = 'Incorrect answer. Please enter 8.';
                   isValid = false;
-                } else {
+                } else if (fieldData && fieldData[1].toUpperCase() !== 'CHECKOUT') {
                   errorSpan.textContent = '';
                 }
               });
@@ -3382,6 +3773,14 @@ function generateFormHTML() {
                   .withSuccessHandler(() => {
                     form.reset();
                     resetSignatures();
+                    processedFieldsData.forEach(field => {
+                      if (field[1].toUpperCase() === "CHECKOUT") {
+                        const tbody = document.getElementById(field[0] + "-tbody");
+                        tbody.innerHTML = "";
+                        addCheckoutItem(field[0]);
+                        updateCheckoutTotals(field[0]);
+                      }
+                    });
                     showMessage();
                     submitButton.disabled = false;
                     submitButton.textContent = 'Submit';
@@ -3452,36 +3851,42 @@ function generateFormHTML() {
               if (field[1].toUpperCase() === "RANGESLIDER") {
                 const slider = document.getElementById(field[0]);
                 const output = document.getElementById(field[0] + '-output');
-                slider.oninput = () => output.textContent = slider.value;
+                if (slider && output) {
+                  slider.oninput = () => output.textContent = slider.value;
+                }
               } else if (field[1].toUpperCase() === "SIGNATURE") {
                 const canvas = document.getElementById(field[0]);
-                const ctx = canvas.getContext('2d');
-                let drawing = false;
-                signatureCanvases[field[0]] = canvas;
+                if (canvas) {
+                  const ctx = canvas.getContext('2d');
+                  let drawing = false;
+                  signatureCanvases[field[0]] = canvas;
 
-                canvas.onmousedown = e => {
-                  drawing = true;
-                  ctx.beginPath();
-                  ctx.moveTo(e.offsetX, e.offsetY);
-                };
-                canvas.onmousemove = e => {
-                  if (drawing) {
-                    ctx.lineTo(e.offsetX, e.offsetY);
-                    ctx.stroke();
-                  }
-                };
-                canvas.onmouseup = () => drawing = false;
-                canvas.onmouseleave = () => drawing = false;
+                  canvas.onmousedown = e => {
+                    drawing = true;
+                    ctx.beginPath();
+                    ctx.moveTo(e.offsetX, e.offsetY);
+                  };
+                  canvas.onmousemove = e => {
+                    if (drawing) {
+                      ctx.lineTo(e.offsetX, e.offsetY);
+                      ctx.stroke();
+                    }
+                  };
+                  canvas.onmouseup = () => drawing = false;
+                  canvas.onmouseleave = () => drawing = false;
+                }
               } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
                 const [triggerField, triggerValue] = field[2][0].split('=');
                 const triggerInput = document.getElementById(triggerField);
                 const conditionalGroup = document.getElementById('group-' + field[0]);
-                if (triggerInput) {
+                if (triggerInput && conditionalGroup) {
                   triggerInput.onchange = () => {
                     const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
                     conditionalGroup.style.display = show ? 'flex' : 'none';
                   };
                 }
+              } else if (field[1].toUpperCase() === "CHECKOUT") {
+                updateCheckoutTotals(field[0]);
               }
             });
 
@@ -3499,13 +3904,14 @@ function generateFormHTML() {
 
   template.formName = formName;
   template.processedFieldsData = processedFieldsData;
+  template.taxRate = taxRate;
   template.additionalStyles = additionalStyles;
   return template.evaluate().setTitle(formName || "Form Preview");
 }
 
 function previewForm() {
   var html = generateFormHTML();
-  html.setWidth(1200).setHeight(600); // Set the size here
+  html.setWidth(1200).setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(html, html.getTitle());
 }
 
@@ -3520,43 +3926,21 @@ function showFormBuilder() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
 }
 
-
-
-
-
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('FormBuilder')
-      .setTitle('Form Builder');
-}
-
-function saveFormRowsStartingAtRow10(rows) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('FormSetup');
-  if (!sheet) {
-    sheet = ss.insertSheet('FormSetup');
-  }
-
-  const startRow = 10;
-  const numColumns = 10;
-  const lastRow = sheet.getLastRow();
-  const firstEmptyRow = (lastRow < startRow) ? startRow : lastRow + 1;
-
-  if (rows.length > 0) {
-    const range = sheet.getRange(firstEmptyRow, 1, rows.length, numColumns);
-    range.setValues(rows);
-  }
-}
-
 function loadFormRows() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('FormSetup');
-  if (!sheet) return [];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 10) return [];
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow < 9) return [];
 
-  const data = sheet.getRange(10, 1, lastRow - 9, 10).getValues();
-  return data.map(row => ({
+  var range = setupSheet.getRange("A9:J" + lastRow);
+  var values = range.getValues();
+
+  return values.map(row => ({
     fieldName: row[0],
     sheet1: row[1],
     cell1: row[2],
@@ -3570,8 +3954,80 @@ function loadFormRows() {
   }));
 }
 
+function saveFormRows(rows) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow >= 9) {
+    setupSheet.getRange("A9:J" + lastRow).clear();
+  }
+
+  if (rows.length > 0) {
+    var data = rows.map(row => [
+      row.fieldName,
+      row.sheet1,
+      row.cell1,
+      row.sheet2,
+      row.cell2,
+      row.sheet3,
+      row.cell3,
+      row.type,
+      row.options,
+      row.required
+    ]);
+    setupSheet.getRange("A9:J" + (9 + data.length - 1)).setValues(data);
+  }
+}
+
+function saveToResponses(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+  Logger.log("Saving to Responses: " + JSON.stringify(data));
+
+  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var fieldType = row[7] || "Text";
+    var targetSheetName = row[1];
+    var targetColumn = row[2];
+    var fieldValue = data[fieldName];
+
+    if (fieldValue && fieldType.toUpperCase() === "CHECKOUT" && targetSheetName && targetColumn) {
+      try {
+        var items = JSON.parse(fieldValue);
+        if (items.length === 0) return;
+
+        var checkoutData = items.map(item => [item.description, item.quantity]);
+        var targetSheet = getOrCreateSheet(ss, targetSheetName);
+        var startColumn = columnToNumber(targetColumn);
+        var lastRow = targetSheet.getLastRow();
+        var nextRow = lastRow >= 1 ? lastRow + 1 : 1;
+        targetSheet.getRange(nextRow, startColumn, checkoutData.length, 2).setValues(checkoutData);
+        
+        Logger.log(`Data appended to ${targetSheetName} at ${targetColumn}${nextRow}:${String.fromCharCode(64 + startColumn + 1)}${nextRow + checkoutData.length - 1}: ` + JSON.stringify(checkoutData));
+      } catch (e) {
+        Logger.log(`Error processing Checkout field ${fieldName}: ${e.message}`);
+      }
+    }
+  });
+}
+
+function columnToNumber(column) {
+  return column.toUpperCase().charCodeAt(0) - 64;
+}
+
 
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
 function NewContact() { Logger.log("New Contact executed"); }
+function emailNotify() { Logger.log("Notification executed"); }
