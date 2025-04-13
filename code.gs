@@ -2686,7 +2686,7 @@ function processForm(formData) {
     var functionMap = {
       "save": save,
       "copyInput1": copyInput1,
-      "newContactit": newContactit
+      "NewContact": NewContact
     };
 
     functionNames.forEach(funcName => {
