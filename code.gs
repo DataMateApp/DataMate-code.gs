@@ -2628,10 +2628,11 @@ function processForm(formData) {
 
     var tableRowData = sheetsData[sheetName].tableRow;
     if (tableRowData.length > 0) {
+      // Find the last row with data across all relevant columns
+      var lastRow = Math.max(1, sheet.getLastRow());
+      var nextRow = lastRow >= 1 ? lastRow + 1 : 2;
+
       tableRowData.forEach(data => {
-        var lastRow = sheet.getLastRow();
-        var nextRow = lastRow >= 1 ? lastRow + 1 : 2;
-        
         if (Array.isArray(data.value) && data.fieldName && fieldsData.find(row => row[0] === data.fieldName && row[7].toUpperCase() === "CHECKOUT")) {
           data.value.forEach(item => {
             var colIndex = data.column.charCodeAt(0) - 65;
@@ -2643,10 +2644,9 @@ function processForm(formData) {
             nextRow++;
           });
         } else {
-          var colIndex = data.column.charCodeAt(0) - 65;
-          var rowData = new Array(Math.max(colIndex + 1, 1)).fill('');
-          rowData[colIndex] = data.value;
-          sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+          var colIndex = columnToNumber(data.column);
+          var targetRange = sheet.getRange(nextRow, colIndex, 1, 1);
+          targetRange.setValue(data.value);
         }
       });
     }
