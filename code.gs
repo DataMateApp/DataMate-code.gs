@@ -2719,79 +2719,69 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
 
     // Header
-    formSetupSheet.getRange("A1:J1").merge();
-    formSetupSheet.getRange("A1")
+    formSetupSheet.getRange("A1:J1").merge()
       .setValue("DataMate FormBuilder Form Setup Dashboard")
       .setFontSize(18)
       .setFontWeight("bold")
       .setFontColor("#ffffff")
-      .setBackground("#2c3e50") // Dark blue for modern look
+      .setBackground("#2c3e50")
       .setHorizontalAlignment("center")
       .setVerticalAlignment("middle");
 
     // Instructions
-    formSetupSheet.getRange("A2:J2").merge();
-    formSetupSheet.getRange("A2")
-      .setValue("Configure your form below. Add fields and targets in A9:J directly.")
-      .setFontSize(12)
-      .setFontColor("#666666")
-      .setBackground("#e0e0e0")
-      .setHorizontalAlignment("center")
-      .setWrap(true);
+    const instructions = [
+      {
+        range: "A2:J2",
+        value: "Configure your form below. Add fields and targets in A9:J directly.",
+        background: "#e0e0e0"
+      },
+      {
+        range: "A3:J3",
+        value: "Enter comma-separated function names (e.g., newContact, save, copyInput1, emailNotify) to run on form submission.",
+        background: "#e8ecef"
+      },
+      {
+        range: "A4:J4",
+        value: "Enter the tax rate as a decimal (e.g., 0.08 for 8%) for checkout calculations.",
+        background: "#e8ecef"
+      },
+      {
+        range: "A5:J5",
+        value: "Enter an email address to receive notifications for each form submission.",
+        background: "#e8ecef"
+      }
+    ];
 
-      formSetupSheet.getRange("A2:J2").merge();
-    formSetupSheet.getRange("A2")
-      .setValue("Configure your form below. Add fields and targets in A9:J directly.")
-      .setFontSize(12)
-      .setFontColor("#666666")
-      .setBackground("#e8ecef")
-      .setHorizontalAlignment("center")
-      .setWrap(true);
-
-      formSetupSheet.getRange("A3:J3").merge();
-    formSetupSheet.getRange("A3")
-      .setValue("Enter comma-separated function names (e.g., newContact, save, copyInput1, emailNotify) to run on form submission.")
-      .setFontSize(12)
-      .setFontColor("#666666")
-      .setBackground("#e8ecef")
-      .setHorizontalAlignment("center")
-      .setWrap(true);
-
-      formSetupSheet.getRange("A4:J4").merge();
-    formSetupSheet.getRange("A4")
-      .setValue("Enter the tax rate as a decimal (e.g., 0.08 for 8%) for checkout calculations.")
-      .setFontSize(12)
-      .setFontColor("#666666")
-      .setBackground("#e8ecef")
-      .setHorizontalAlignment("center")
-      .setWrap(true);
-
-      formSetupSheet.getRange("A5:J5").merge();
-    formSetupSheet.getRange("A5")
-      .setValue("Enter an email address to receive notifications for each form submission.")
-      .setFontSize(12)
-      .setFontColor("#666666")
-      .setBackground("#e8ecef")
-      .setHorizontalAlignment("center")
-      .setWrap(true);
+    instructions.forEach(inst => {
+      formSetupSheet.getRange(inst.range).merge()
+        .setValue(inst.value)
+        .setFontSize(12)
+        .setFontColor("#666666")
+        .setBackground(inst.background)
+        .setHorizontalAlignment("center")
+        .setWrap(true);
+    });
 
     // On Submit Functions
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
-    formSetupSheet.getRange("B6:F6").merge();
-    formSetupSheet.getRange("B6")
+    formSetupSheet.getRange("B6:F6").merge()
       .setValue("newContact, save, copyInput1")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
       .setHorizontalAlignment("left");
 
+    // Tax Rate
     formSetupSheet.getRange("A7").setValue("Tax Rate:");
-    formSetupSheet.getRange("B7:C7").merge().setValue("0.08").setFontSize(12).setFontColor("#333333").setBackground("#ffffff");
+    formSetupSheet.getRange("B7:C7").merge()
+      .setValue("0.08")
+      .setFontSize(12)
+      .setFontColor("#333333")
+      .setBackground("#ffffff");
 
     // Email Notification
     formSetupSheet.getRange("A8").setValue("Email Notification:");
-    formSetupSheet.getRange("B8:F8").merge();
-    formSetupSheet.getRange("B8")
+    formSetupSheet.getRange("B8:F8").merge()
       .setValue("")
       .setFontSize(12)
       .setFontColor("#333333")
@@ -2800,25 +2790,38 @@ function createFormSetupSheet() {
       .setNote("Enter an email address to receive form submission notifications.");
 
     // Field Headers
-    formSetupSheet.getRange("A9").setValue("Form Fields");
-    formSetupSheet.getRange("B9").setValue("Target Sheet 1");
-    formSetupSheet.getRange("C9").setValue("Target Cell/Column 1");
-    formSetupSheet.getRange("D9").setValue("Target Sheet 2");
-    formSetupSheet.getRange("E9").setValue("Target Cell/Column 2");
-    formSetupSheet.getRange("F9").setValue("Target Sheet 3");
-    formSetupSheet.getRange("G9").setValue("Target Cell/Column 3");
-    formSetupSheet.getRange("H9").setValue("Field Type");
-    formSetupSheet.getRange("I9").setValue("Options");
-    formSetupSheet.getRange("J9").setValue("Required");
-    formSetupSheet.getRange("A9:J9")
+    const headers = [
+      "Form Fields", "Target Sheet 1", "Target Cell/Column 1",
+      "Target Sheet 2", "Target Cell/Column 2", "Target Sheet 3",
+      "Target Cell/Column 3", "Field Type", "Options", "Required"
+    ];
+    formSetupSheet.getRange("A9:J9").setValues([headers])
       .setFontWeight("bold")
       .setFontColor("#ffffff")
       .setBackground("#4CAF50")
       .setBorder(true, true, true, true, false, false);
 
-    // Sample Fields
+    // Sample Fields (unchanged, just confirming it's correct)
     var sampleFields = [
-      ["Form Header", "", "", "", "", "", "", "Header", "<h3 style='color: #4CAF50;'>Customer Feedback Form</h3>", "No"],
+      ["Form Header", "", "", "", "", "", "", "Header", `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>My Custom Form</title>
+    <style>
+        .header { background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px; }
+        .footer { background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px; }
+        h2 { font-size: 28px; margin-bottom: 10px; }
+        p { color: #ffffff; font-style: italic; }
+        .highlight { background-color: yellow; padding: 5px; border-radius: 3px; color: black; }
+    </style>
+</head>
+<body>
+    <h2>Welcome</h2>
+    <p>to <b>My Custom Form</b></p>
+    <span class="highlight">Test HTML</span>
+</body>
+</html>`, "No"],
       ["Name", "Responses", "A", "Sheet2", "B2", "", "", "Text", "", "Yes"],
       ["Email", "Responses", "B", "", "", "", "", "Email", "", "Yes"],
       ["Date", "Responses", "C", "Records", "B1", "", "", "Date", "", "No"],
@@ -2849,24 +2852,18 @@ function createFormSetupSheet() {
       ["Hyperlink", "", "", "", "", "", "", "Hyperlink", "https://datamateapp.github.io/Donate%205%20per%20mo.html", "No"],
       ["Form Footer", "", "", "", "", "", "", "Footer", "<p style='font-style: italic;'>Thank you for your input!</p>", "No"]
     ];
+
     if (sampleFields.length > 0) {
-      formSetupSheet.getRange("A10:J" + (10 + sampleFields.length - 1)).setValues(sampleFields);
-      formSetupSheet.getRange("A10:J" + (10 + sampleFields.length - 1))
+      const lastRow = 10 + sampleFields.length - 1;
+      formSetupSheet.getRange(`A10:J${lastRow}`).setValues(sampleFields)
         .setBackground("#ffffff")
         .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
     }
 
+    // Formatting
     formSetupSheet.setFrozenRows(9);
-    formSetupSheet.setColumnWidth(1, 150);
-    formSetupSheet.setColumnWidth(2, 100);
-    formSetupSheet.setColumnWidth(3, 100);
-    formSetupSheet.setColumnWidth(4, 100);
-    formSetupSheet.setColumnWidth(5, 100);
-    formSetupSheet.setColumnWidth(6, 100);
-    formSetupSheet.setColumnWidth(7, 100);
-    formSetupSheet.setColumnWidth(8, 100);
-    formSetupSheet.setColumnWidth(9, 150);
-    formSetupSheet.setColumnWidth(10, 80);
+    const columnWidths = [150, 100, 100, 100, 100, 100, 100, 100, 150, 80];
+    columnWidths.forEach((width, index) => formSetupSheet.setColumnWidth(index + 1, width));
   }
   return formSetupSheet;
 }
