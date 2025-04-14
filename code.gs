@@ -2750,7 +2750,7 @@ function createFormSetupSheet() {
 
       formSetupSheet.getRange("A3:J3").merge();
     formSetupSheet.getRange("A3")
-      .setValue("Enter comma-separated function names (e.g., NewContact, save, copyInput1, emailNotify) to run on form submission.")
+      .setValue("Enter comma-separated function names (e.g., newContact, save, copyInput1, emailNotify) to run on form submission.")
       .setFontSize(12)
       .setFontColor("#666666")
       .setBackground("#e8ecef")
@@ -2779,7 +2779,7 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
     formSetupSheet.getRange("B6:F6").merge();
     formSetupSheet.getRange("B6")
-      .setValue("NewContact, save, copyInput1")
+      .setValue("newContact, save, copyInput1")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
@@ -3492,15 +3492,33 @@ function generateFormHTML() {
                              onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0].replace(/'/g, "\\'") ?>';">
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
-                        <? if (processedFieldsData[i][2][0].includes("youtu.be") || processedFieldsData[i][2][0].includes("youtube.com")) { ?>
-                          <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= processedFieldsData[i][2][0].split('/').pop().split('?')[0] ?>" frameborder="0" allowfullscreen></iframe>
-                        <? } else { ?>
-                          <video controls id="<?= processedFieldsData[i][0] ?>">
-                            <source src="<?= processedFieldsData[i][2][0] ?>" type="video/mp4">
-                            Your browser does not support the video tag.
-                          </video>
-                        <? } ?>
-                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+  <? 
+    var videoUrl = processedFieldsData[i][2][0];
+    var videoId = '';
+    if (videoUrl.includes("youtu.be") || videoUrl.includes("youtube.com")) {
+      if (videoUrl.includes("youtu.be")) {
+        videoId = videoUrl.split('/').pop().split('?')[0];
+      } else if (videoUrl.includes("youtube.com")) {
+        var match = videoUrl.match(/[?&]v=([^&]+)/);
+        if (match) {
+          videoId = match[1];
+        } else if (videoUrl.includes("/embed/")) {
+          videoId = videoUrl.split('/embed/')[1].split('?')[0];
+        }
+      }
+    }
+  ?>
+  <? if (videoId) { ?>
+    <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+  <? } else if (!videoUrl.includes("youtu")) { ?>
+    <video controls id="<?= processedFieldsData[i][0] ?>">
+      <source src="<?= videoUrl ?>" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  <? } else { ?>
+    <span class="error" id="<?= processedFieldsData[i][0] ?>-error">Invalid YouTube URL</span>
+  <? } ?>
+  <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= videoUrl ?>">
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?\>
                         <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Image URL" <?= processedFieldsData[i][4] ? 'required' : '' ?> oninput="previewImage(this)">
                         <img id="<?= processedFieldsData[i][0] ?>-preview" style="display: none;" alt="Preview">
@@ -4029,5 +4047,5 @@ function columnToNumber(column) {
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
-function NewContact() { Logger.log("New Contact executed"); }
+function newContact() { Logger.log("New Contact executed"); }
 function emailNotify() { Logger.log("Notification executed"); }
