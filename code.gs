@@ -2809,16 +2809,49 @@ function createFormSetupSheet() {
     <meta charset="UTF-8">
     <title>My Custom Form</title>
     <style>
-        .header { background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px; }
-        .footer { background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px; }
-        h2 { font-size: 28px; margin-bottom: 10px; }
-        p { color: #ffffff; font-style: italic; }
-        .highlight { background-color: yellow; padding: 5px; border-radius: 3px; color: black; }
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #ffffff;
+            font-style: italic;
+        }
+
+        a {
+            color: yellow; /* Sets link color to yellow */
+        }
+
+        .highlight {
+            background-color: yellow;
+            padding: 5px;
+            border-radius: 3px;
+            color: black;
+        }
     </style>
 </head>
 <body>
     <h2>Welcome</h2>
     <p>to <b>My Custom Form</b></p>
+    <h2>Master Your Data with Ease</h2>
+    <p>Transform your spreadsheets into powerful data management tools with DataMateApps.</p>
+    <p>This demonstrates how custom HTML can be used in a form header.</p>
+    <p><a href="https://github.com/DataMateApp/DataMate-code.gs" target="_blank">Open Source</a></p>
     <span class="highlight">Test HTML</span>
 </body>
 </html>`, "No"],
