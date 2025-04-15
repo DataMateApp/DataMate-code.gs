@@ -4074,7 +4074,7 @@ function columnToNumber(column) {
   return column.toUpperCase().charCodeAt(0) - 64;
 }
 
-}
+
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
