@@ -3,37 +3,37 @@ function onInstall() {
 }
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu("DataMate")
-    .addItem("Save Record", "save")
-    .addItem("Reset Input", "copyInput1")
-    .addItem("Reset View/Print", "view")
-    .addItem("New Dataset", "newfile")
+  const menu = ui.createMenu("🌟 DataMate 🌟")
+    .addItem("💾 Save Record", "save")
+    .addItem("🔄 Reset Input", "copyInput1")
+    .addItem("👁️ Reset View/Print", "view")
+    .addItem("📄 New Dataset", "newfile")
     .addSeparator()
-    .addItem("➡ Start with a Template ⬅", "doNothing")
+    .addItem("🚀 Start with a Template 🚀", "doNothing")
     .addSubMenu(
-      ui.createMenu("Templates")
-        .addItem("Inventory", "setup")
-        .addItem("Update Inventory", "updateInventory")
-        .addItem("Weekly Timesheets", "setupTS")
-        .addItem("Update Cost Codes", "copyToCodeTotals")
-        .addItem("Purchase Order", "setupPO")
+      ui.createMenu("📋 Templates")
+        .addItem("📦 Inventory", "setup")
+        .addItem("🔧 Update Inventory", "updateInventory")
+        .addItem("⏰ Weekly Timesheets", "setupTS")
+        .addItem("💸 Update Cost Codes", "copyToCodeTotals")
+        .addItem("🛒 Purchase Order", "setupPO")
     )
     .addSeparator()
     .addSubMenu(
-      ui.createMenu("FormBuilder")
-        .addItem("Preview Form", "previewForm")
-        .addItem("Form Builder", "showFormBuilder")
+      ui.createMenu("📝 FormBuilder")
+        .addItem("👀 Preview Form", "previewForm")
+        .addItem("🛠️ Form Builder", "showFormBuilder")
     )
     .addSubMenu(
-      ui.createMenu("AddressBlock")
-        .addItem("Add Contact Sheets", "contacts")
-        .addItem("Import Gmail™ Contacts", "showUploadDialog")
-        .addItem("New Contact", "newcontact")
-        .addItem("Edit Name", "EditAddressSheet")
-        .addItem("Edit Company", "EditAddressSheet1")
+      ui.createMenu("📇 AddressBlock")
+        .addItem("📋 Add Contact Sheets", "contacts")
+        .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
+        .addItem("➕ New Contact", "newcontact")
+        .addItem("✏️ Edit Name", "EditAddressSheet")
+        .addItem("🏢 Edit Company", "EditAddressSheet1")
     )
     .addSeparator()
-    .addItem("Show Tutorial", "showTutorial");
+    .addItem("🎓 Show Tutorial", "showTutorial");
 
   menu.addToUi();
 }
