@@ -2686,7 +2686,8 @@ function processForm(formData) {
     var functionMap = {
       "save": save,
       "copyInput1": copyInput1,
-      "NewContact": NewContact
+      "newcontact": newcontact,
+      "updateInventory": updateInventory
     };
 
     functionNames.forEach(funcName => {
@@ -2737,7 +2738,7 @@ function createFormSetupSheet() {
       },
       {
         range: "A3:J3",
-        value: "Enter comma-separated function names (e.g., newContact, save, copyInput1, emailNotify) to run on form submission.",
+        value: "Enter comma-separated function names (e.g., newcontact, save, copyInput1, updateInventory) to run on form submission.",
         background: "#e8ecef"
       },
       {
@@ -2765,7 +2766,7 @@ function createFormSetupSheet() {
     // On Submit Functions
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
     formSetupSheet.getRange("B6:F6").merge()
-      .setValue("newContact, save, copyInput1")
+      .setValue("newcontact, save, updateInventory, copyInput1")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
@@ -4073,9 +4074,9 @@ function columnToNumber(column) {
   return column.toUpperCase().charCodeAt(0) - 64;
 }
 
-
+}
 
 function save() { Logger.log("Save Record executed"); }
 function copyInput1() { Logger.log("Reset Input executed"); }
-function newContact() { Logger.log("New Contact executed"); }
-function emailNotify() { Logger.log("Notification executed"); }
+function newcontact() { Logger.log("New Contact executed"); }
+function updateInventory() { Logger.log("Inventory Updated"); }
