@@ -3661,7 +3661,7 @@ function checkout() {
   ordersSheet.getRange("A1:C12").clear();
 
   // Reapply formulas (if needed)
-  inputSheet.getRange("B11").setDataValidation(null);
+
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 }
