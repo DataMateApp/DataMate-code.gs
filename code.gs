@@ -1656,7 +1656,7 @@ function cleanupIT() {
     ["E1", "=C32"], ["E2", "=D32"], ["F1", "=H37"], ["F2", "=J37"],
     ["G1", "=A23"], ["G2", "=B23"], ["H1", "Log 8"],
     ["I1", "Log 9"], ["J1", "Log 10"], ["K1", "Log 11"], ["L1", "Log 12"],
-    ["M1", "Date Paid"], ["N1", "Amount"], ["O1", "Date Shipped 3"]
+    ["M1", "Date Paid"], ["N1", "Amount"], ["O1", "Date Shipped"]
   ];
 
   mappings.forEach(([cell, value]) => {
@@ -1903,16 +1903,16 @@ function createInventoryTemplate() {
   sheet.getRange('D1').setValue('Category').setFontWeight('bold');
   sheet.getRange('E1').setValue('Supplier').setFontWeight('bold');
   sheet.getRange('F1').setValue('Image').setFontWeight('bold');
-  sheet.getRange('G1').setValue('Image').setFontWeight('bold');
+  sheet.getRange('G1').setValue('Video').setFontWeight('bold');
 
   // Set column widths for better readability
   sheet.setColumnWidths(1, 5, 150);
 
   // Sample data
   var sampleData = [
-    ['Item 1', 10.00, 100, 'Category 1', 'Supplier A', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
-    ['Item 2', 15.00, 200, 'Category 2', 'Supplier B', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
-    ['Item 3', 20.00, 150, 'Category 3', 'Supplier C', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj']
+    ['Item 1', 10.00, 100, 'Category 1', 'Supplier A', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+    ['Item 2', 15.00, 200, 'Category 2', 'Supplier B', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+    ['Item 3', 20.00, 150, 'Category 3', 'Supplier C', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ']
   ];
 
   // Populate the sheet with sample data
@@ -2281,7 +2281,7 @@ function createFormSetupSheet() {
       },
       {
         range: "A3:J3",
-        value: "Enter comma-separated function names (e.g., newcontact, save, copyInput1, updateInventory) to run on form submission.",
+        value: "Enter comma-separated function names (e.g., checkout, newcontact, save, copyInput1) to run on form submission.",
         background: "#e8ecef"
       },
       {
@@ -2309,7 +2309,7 @@ function createFormSetupSheet() {
     // On Submit Functions
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
     formSetupSheet.getRange("B6:F6").merge()
-      .setValue("newcontact, save, updateInventory, copyInput1")
+      .setValue("checkout")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
