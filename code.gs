@@ -702,7 +702,7 @@ function save() {
   viewPrintSheet.getRange("B1:L1").merge();
 
   // Add the hyperlink with the display text
-  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://script.google.com/macros/s/AKfycbxKwP8r_5SQTPGFAme4DlALF267dj8DwCUAd_A8EihGKhc60p-9Bh5VC0NXkdw0nagb/exec", "Web Apps and Templates. All Web Apps and Templates are free of charge.")');
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://github.com/DataMateApp/DataMate-code.gs", "Opensource")');
 
   // Set the font style and color for the hyperlink
   const cell = viewPrintSheet.getRange("B1");
@@ -875,13 +875,7 @@ function contacts() {
     newContactSheet.getRange("B1:B22").setBackground("#D9EAD3");
     newContactSheet.getRange("A:A").setFontWeight("bold");
     newContactSheet.getRange("B23").setValue("Enter information and select New Contact.");
-     newContactSheet.getRange("F3:I3").activate();
-  newContactSheet.setCurrentCell(newContactSheet.getRange("F3"));
-  newContactSheet.getActiveRange().merge();
-  newContactSheet
-    .getRange("F3")
-    .setFormula('=HYPERLINK("https://workspace.google.com/marketplace/app/addressblock/786018916601?pann=b", "To import contacts: Install AddressBlock")');
-  newContactSheet.getRange("F3:I3").activate();
+    
   newContactSheet
     .getActiveRangeList()
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
