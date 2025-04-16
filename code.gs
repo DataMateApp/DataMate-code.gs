@@ -166,10 +166,10 @@ function copyInput1() {
   // Select cell C4 in the target sheet
   targetSheet.activate();
   targetSheet.getRange("C4").activate();
-  
-  // Show a message box to notify the user
-  SpreadsheetApp.getUi().alert("Sheet copied from 'Sheet1' to 'Input' successfully.");
+
 }
+
+
 function copyInput2() {
 var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sourceSheet = ss.getSheetByName("Sheet1");
@@ -717,7 +717,6 @@ function save() {
   cell.setHorizontalAlignment("center");
   cell.setVerticalAlignment("middle");
 
-SpreadsheetApp.getUi().alert("Record saved successfully. Please support DataMate and help us grow!");
 }
 
 
@@ -1636,8 +1635,8 @@ function createPurchaseOrderTemplate() {
 }
 
 function setup() {
-  newfileit();
-  contactsit();
+  newfile();
+  contacts();
   createInventoryTemplate();
   createInvoiceTemplate();
   createReceiptTemplate();
@@ -1708,7 +1707,7 @@ function createInvoiceTemplate() {
 
   // Populate formulas for items in the invoice
   for (var row = 19; row <= 28; row++) {
-    sheet.getRange('C' + row).setFormula(`=IFERROR(VLOOKUP(A${row},Inventory!$A$2:$CL$9341,3,FALSE), 0)`).setFontSize(10);
+    sheet.getRange('C' + row).setFormula(`=IFERROR(VLOOKUP(A${row},Inventory!$A$2:$CL$9341,2,FALSE), 0)`).setFontSize(10);
     sheet.getRange('D' + row).setFormula(`=IFERROR($B${row}*$C${row},0)`).setFontSize(10);
   }
 
@@ -1877,20 +1876,21 @@ function createInventoryTemplate() {
 
   // Set up the header row
   sheet.getRange('A1').setValue('Item Description').setFontWeight('bold');
-  sheet.getRange('B1').setValue('Quantity in Stock').setFontWeight('bold');
-  sheet.getRange('C1').setValue('Unit Price').setFontWeight('bold');
+  sheet.getRange('B1').setValue('Unit Price').setFontWeight('bold');;
+  sheet.getRange('C1').setValue('Quantity in Stock').setFontWeight('bold');
   sheet.getRange('D1').setValue('Category').setFontWeight('bold');
   sheet.getRange('E1').setValue('Supplier').setFontWeight('bold');
   sheet.getRange('F1').setValue('Image').setFontWeight('bold');
+  sheet.getRange('G1').setValue('Image').setFontWeight('bold');
 
   // Set column widths for better readability
   sheet.setColumnWidths(1, 5, 150);
 
   // Sample data
   var sampleData = [
-    ['Item 1', 100, 10.00, 'Category 1', 'Supplier A', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
-    ['Item 2', 200, 15.00, 'Category 2', 'Supplier B', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
-    ['Item 3', 150, 20.00, 'Category 3', 'Supplier C', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj']
+    ['Item 1', 10.00, 100, 'Category 1', 'Supplier A', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
+    ['Item 2', 15.00, 200, 'Category 2', 'Supplier B', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj'],
+    ['Item 3', 20.00, 150, 'Category 3', 'Supplier C', 'https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj']
   ];
 
   // Populate the sheet with sample data
@@ -2004,8 +2004,8 @@ try {
 }
 
 
-  copyInput1it()
-  viewit()
+  copyInput1()
+  view()
 
   SpreadsheetApp.getUi().alert("Inventory Template created successfully. Please support DataMateApps and help us grow!");
   } catch (e) {
@@ -2014,490 +2014,11 @@ try {
 }
 
 
-function newfileit() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  const sheetNames = [
-    "Input",
-    "View_Print",
-    "Log",
-    "Update",
-    "Data",
-  ];
-
-  sheetNames.forEach((sheetName) => {
-    const sheet = ss.getSheetByName(sheetName);
-
-    if (!sheet) {
-      // Insert a new sheet with the specified name
-      ss.insertSheet(sheetName);
-    }
-  });
-  const inputSheet = ss.getSheetByName("Input");
-  const dataSheet = ss.getSheetByName("Data");
-  const viewPrintSheet = ss.getSheetByName("View_Print");
-  const updateSheet = ss.getSheetByName("Update");
-  const logSheet = ss.getSheetByName("Log");
-
-  inputSheet.getRange("A1:Q1").activate();
-  inputSheet.getActiveRangeList().setBackground("#a4c2f4");
-  inputSheet.getRange("P2:Q2").activate();
-  inputSheet.getActiveRangeList().setBackground("#a4c2f4");
-  inputSheet.getRange("A1").activate();
-  inputSheet.getCurrentCell().setValue("=A11");
-  inputSheet.getRange("A2").activate();
-  inputSheet.getCurrentCell().setValue("=B11");
-  inputSheet.getRange("B1").activate();
-  inputSheet.getCurrentCell().setValue("=D12");
-  inputSheet.getRange("B2").activate();
-  inputSheet.getCurrentCell().setValue("=D13");
-  inputSheet.getRange("C1").activate();
-  inputSheet.getCurrentCell().setValue("=A12");
-  inputSheet.getRange("C2").activate();
-  inputSheet.getCurrentCell().setValue("=A13");
-  inputSheet.getRange("D1").activate();
-  inputSheet.getCurrentCell().setValue("=C34");
-  inputSheet.getRange("D2").activate();
-  inputSheet.getCurrentCell().setValue("=D34");
-  inputSheet.getRange("E1").activate();
-  inputSheet.getCurrentCell().setValue("=C32");
-  inputSheet.getRange("E2").activate();
-  inputSheet.getCurrentCell().setValue("=D32");
-  inputSheet.getRange("F1").activate();
-  inputSheet.getCurrentCell().setValue("Log 6");
-  inputSheet.getRange("G1").activate();
-  inputSheet.getCurrentCell().setValue("Log 7");
-  inputSheet.getRange("H1").activate();
-  inputSheet.getCurrentCell().setValue("Log 8");
-  inputSheet.getRange("I1").activate();
-  inputSheet.getCurrentCell().setValue("Log 9");
-  inputSheet.getRange("J1").activate();
-  inputSheet.getCurrentCell().setValue("Log 10");
-  inputSheet.getRange("K1").activate();
-  inputSheet.getCurrentCell().setValue("Log 11");
-  inputSheet.getRange("L1").activate();
-  inputSheet.getCurrentCell().setValue("Log 12");
-  inputSheet.getRange("M1").activate();
-  inputSheet.getCurrentCell().setValue("Date Paid");
-  inputSheet.getRange("N1").activate();
-  inputSheet.getCurrentCell().setValue("Amount");
-  inputSheet.getRange("O1").activate();
-  inputSheet.getCurrentCell().setValue("Date Shipped");
-  inputSheet.getRange("P1:Q2").merge();
-  inputSheet.getRange("P1").setFormula('=HYPERLINK("https://datamateapp.github.io/help.html", "Help")');
-  const cell = inputSheet.getRange("P1");
-  cell.setFontWeight("bold");
-  cell.setFontSize(16);
-  cell.setFontColor("#FF0000");
-  cell.setHorizontalAlignment("center");
-  cell.setVerticalAlignment("middle");
-
-  inputSheet.getRange("A3:Q48").activate();
-  inputSheet.setCurrentCell(inputSheet.getRange("Q48"));
-  inputSheet
-    .getActiveRangeList()
-    .setBorder(false, false, false, false, false, false)
-    .setBorder(
-      true,
-      true,
-      true,
-      true,
-      null,
-      null,
-      "#000000",
-      SpreadsheetApp.BorderStyle.SOLID
-    );
-  inputSheet.getRange("A1:O2").activate();
-  inputSheet.setCurrentCell(inputSheet.getRange("O1"));
-  inputSheet
-    .getActiveRangeList()
-    .setBorder(
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      "#000000",
-      SpreadsheetApp.BorderStyle.SOLID
-    );
 
 
-  viewPrintSheet.getRange("A1").activate();
-  viewPrintSheet.getRange("A1:Q1").activate();
-  viewPrintSheet.getActiveRangeList().setBackground("#a4c2f4");
-  viewPrintSheet.getRange("A2").activate();
-  viewPrintSheet.getActiveRangeList().setBackground("#a4c2f4");
-  viewPrintSheet.getRange("P2:Q2").activate();
-  viewPrintSheet.getActiveRangeList().setBackground("#a4c2f4");
-
-  viewPrintSheet.getRange("M1").setFormula("=Input!M1");
-  viewPrintSheet.getRange("N1").setFormula("=Input!N1");
-  viewPrintSheet.getRange("O1").setFormula("=Input!O1");
-
-  viewPrintSheet.getRange('A3:Q48').activate();
-viewPrintSheet.setCurrentCell(viewPrintSheet.getRange('Q48'));
-viewPrintSheet.getActiveRangeList().setBorder(false, false, false, false, false, false)
-  .setBorder(false, true, true, true, null, null, '#000000', SpreadsheetApp.BorderStyle.SOLID); // Top border is set to 'false'
-viewPrintSheet.setHiddenGridlines(true);
-
-  viewPrintSheet.getRange("B2:L2").activate();
-  viewPrintSheet.setCurrentCell(viewPrintSheet.getRange("L2"));
-  viewPrintSheet.getActiveRange().mergeAcross();
-  viewPrintSheet
-    .getRange("B2:L2")
-    .setDataValidation(
-      SpreadsheetApp.newDataValidation()
-        .setAllowInvalid(false)
-        .requireValueInRange(viewPrintSheet.getRange("Data!$A:$A"), true)
-        .build()
-    );
-  viewPrintSheet.getRange("B2:L2").activate();
-  viewPrintSheet.getActiveRangeList().setBackground("#d9ead3");
-
-  logSheet.getRange("A2").activate();
-  logSheet.getCurrentCell().setValue("Orders Log");
-  logSheet
-    .getActiveRangeList()
-    .setFontSize(11)
-    .setFontSize(14)
-    .setFontWeight("bold");
-  logSheet.getRange("A3").activate();
-  logSheet.getCurrentCell().setValue("Date");
-  logSheet.getRange("B3").activate();
-  logSheet.getCurrentCell().setFormula("=TODAY()");
-  logSheet.getRange("A9:O10").activate();
-  logSheet.getRange("A9:O10").createFilter();
-
-  updateSheet
-    .getRangeList([
-      "A:A",
-      "E:E",
-      "F:F",
-      "G:G",
-      "H:H",
-      "I:I",
-      "J:J",
-      "K:K",
-      "L:L",
-      "M:M",
-      "N:N",
-      "O:O",
-      "P:P",
-      "Q:Q",
-    ])
-    .activate()
-    .setBackground("#f3f3f3");
-  updateSheet.getRange("A1:L1").activate();
-  updateSheet.setCurrentCell(updateSheet.getRange("L1"));
-  updateSheet
-    .getActiveRangeList()
-    .setBorder(
-      null,
-      null,
-      true,
-      null,
-      null,
-      null,
-      "#000000",
-      SpreadsheetApp.BorderStyle.SOLID
-    );
-
-  updateSheet.getRange("B1").setFormula("=View_Print!M1");
-  updateSheet.getRange("C1").setFormula("=View_Print!N1");
-  updateSheet.getRange("D1").setFormula("=View_Print!O1");
-  updateSheet.getRange("E1").setFormula("=Input!A1");
-  updateSheet.getRange("F1").setFormula("=Input!B1");
-  updateSheet.getRange("G1").setFormula("=Input!C1");
-  updateSheet.getRange("H1").setFormula("=Input!D1");
-  updateSheet.getRange("I1").setFormula("=Input!E1");
-  updateSheet.getRange("J1").setFormula("=Input!F1");
-  updateSheet.getRange("K1").setFormula("=Input!G1");
-  updateSheet.getRange("L1").setFormula("=Input!H1");
-  updateSheet.getRange("M1").setFormula("=Input!I1");
-  updateSheet.getRange("N1").setFormula("=Input!J1");
-  updateSheet.getRange("O1").setFormula("=Input!K1");
-  updateSheet.getRange("P1").setFormula("=Input!L1");
-
-  const lastColumn = dataSheet.getMaxColumns();
-  const columnsToAdd = 800; // Number of columns from the last column to AFC
-
-  dataSheet.insertColumnsAfter(lastColumn, columnsToAdd);
-  const lastRow = dataSheet.getMaxRows();
-  const rowsToAdd = 10000;
-
-  dataSheet.insertRowsAfter(lastRow, rowsToAdd);
-  dataSheet.getRange("S1").activate();
-  dataSheet.getRange("S1").setFormula("=Input!A1");
-  dataSheet.getRange("T1").activate();
-  dataSheet.getRange("T1").setFormula("=Input!B1");
-  dataSheet.getRange("U1").activate();
-  dataSheet.getRange("U1").setFormula("=Input!C1");
-  dataSheet.getRange("V1").activate();
-  dataSheet.getRange("V1").setFormula("=Input!D1");
-  dataSheet.getRange("W1").activate();
-  dataSheet.getRange("W1").setFormula("=Input!E1");
-  dataSheet.getRange("X1").activate();
-  dataSheet.getRange("X1").setFormula("=Input!F1");
-  dataSheet.getRange("Y1").activate();
-  dataSheet.getRange("Y1").setFormula("=Input!G1");
-  dataSheet.getRange("Z1").activate();
-  dataSheet.getRange("Z1").setFormula("=Input!H1");
-  dataSheet.getRange("AA1").activate();
-  dataSheet.getRange("AA1").setFormula("=Input!I1");
-  dataSheet.getRange("AB1").activate();
-  dataSheet.getRange("AB1").setFormula("=Input!J1");
-  dataSheet.getRange("AC1").activate();
-  dataSheet.getRange("AC1").setFormula("=Input!K1");
-  dataSheet.getRange("AD1").activate();
-  dataSheet.getRange("AD1").setFormula("=Input!L1");
-  dataSheet.getRange("AE1").activate();
-  dataSheet.getRange("AE1").setFormula("=Input!M1");
-  dataSheet.getRange("AF1").activate();
-  dataSheet.getRange("AF1").setFormula("=Input!N1");
-  dataSheet.getRange("AG1").activate();
-  dataSheet.getRange("AG1").setFormula("=Input!O1");
-
-}
-
-function copyInput1it() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sourceSheet = ss.getSheetByName("Sheet1");
-  var targetSheet = ss.getSheetByName("Input");
-  
-  // Define the range to copy
-  var copyRange = sourceSheet.getRange("A3:Q48");
-  var targetRange = targetSheet.getRange("A3:Q48");
-  
-  // Copy everything from source to target
-  copyRange.copyTo(targetRange); // This will copy values, formats, and formulas
-  
-  // Copy column widths
-  var sourceColWidths = [];
-  var lastColumnSource = sourceSheet.getLastColumn();
-  var lastColumnTarget = targetSheet.getLastColumn();
-  
-  // Ensure we only consider columns up to the last column in both sheets
-  var columnsToCopy = Math.min(lastColumnSource, lastColumnTarget, 17); // A to Q = 17 columns
-  
-  for (var i = 1; i <= columnsToCopy; i++) {
-    sourceColWidths.push(sourceSheet.getColumnWidth(i));
-  }
-  
-  // Set column widths in target sheet, but only for existing columns
-  for (var j = 1; j <= columnsToCopy; j++) {
-    targetSheet.setColumnWidth(j, sourceColWidths[j - 1]);
-  }
-}
-
-function copyInput2it() {
-var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sourceSheet = ss.getSheetByName("Sheet1");
-  var targetSheet = ss.getSheetByName("View_Print");
-  
-  // Define the range to copy
-  var copyRange = sourceSheet.getRange("A3:Q48");
-  var targetRange = targetSheet.getRange("A3:Q48");
-  
-  // Copy everything from source to target
-  copyRange.copyTo(targetRange); // This will copy values, formats, and formulas
-  
-  // Copy column widths
-  var sourceColWidths = [];
-  var lastColumnSource = sourceSheet.getLastColumn();
-  var lastColumnTarget = targetSheet.getLastColumn();
-  
-  // Ensure we only consider columns up to the last column in both sheets
-  var columnsToCopy = Math.min(lastColumnSource, lastColumnTarget, 17); // A to Q = 17 columns
-  
-  for (var i = 1; i <= columnsToCopy; i++) {
-    sourceColWidths.push(sourceSheet.getColumnWidth(i));
-  }
-  
-  // Set column widths in target sheet, but only for existing columns
-  for (var j = 1; j <= columnsToCopy; j++) {
-    targetSheet.setColumnWidth(j, sourceColWidths[j - 1]);
-  }
- }
-
-function viewit() {
-  
-  copyInput2it(); 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const wsViewPrint = ss.getSheetByName("View_Print");
-  const wsUpdate = ss.getSheetByName("Update");
-  const wsData = ss.getSheetByName("Data");
-
-  // Update specific formulas in View_Print
-  wsViewPrint.getRange("A1").setFormula("=View_Print!B2");
-  wsViewPrint.getRange("M2").setFormula("=VLOOKUP(A1,Update!$A$1:$P$10000,2,FALSE)");
-  wsViewPrint.getRange("N2").setFormula("=VLOOKUP(A1,Update!$A$1:$P$10000,3,FALSE)");
-  wsViewPrint.getRange("O2").setFormula("=VLOOKUP(A1,Update!$A$1:$P$10000,4,FALSE)");
-
-  // Add dynamic VLOOKUP formulas for other cells
-  for (let i = 3; i <= 48; i++) {
-    for (let j = 1; j <= 17; j++) {
-      const formula = `=VLOOKUP(A1,Data!$A$1:$DZU$10000,${801 + (i - 48) * 17 + (j - 1)},FALSE)`;
-      wsViewPrint.getRange(i, j).setFormula(formula);
-    }
-  }
 
 
-}
 
-function contactsit() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetNames = ["contacts", "Address", "NewContact"];
-    const sheets = ss.getSheets();
-    const wsSheet1 = ss.getSheetByName("Sheet1");
-
-    // Add missing sheets
-    sheetNames.forEach(name => {
-      if (!sheets.some(sheet => sheet.getName() === name)) {
-        ss.insertSheet(name);
-      }
-    });
-
-    const contactsSheet = ss.getSheetByName("contacts");
-    const addressSheet = ss.getSheetByName("Address");
-    const newContactSheet = ss.getSheetByName("NewContact");
-
-    if (!contactsSheet || !addressSheet || !newContactSheet) {
-      throw new Error("One or more required sheets are missing.");
-    }
-
-    // Setup Contacts sheet
-    contactsSheet.activate();
-    const lastColumn = contactsSheet.getMaxColumns();
-    const columnsToAdd = 80; // Number of columns from the last column to AFC
-    contactsSheet.insertColumnsAfter(lastColumn, columnsToAdd);
-
-    const lastRow = contactsSheet.getMaxRows();
-    const rowsToAdd = 2000;
-    contactsSheet.insertRowsAfter(lastRow, rowsToAdd);
-
-    // Add headers and formatting
-    contactsSheet.getRange("A1").setFormula('=B1 & " " & C1 & " " & D1');
-    contactsSheet.getRange("B1:E1").setValues([["First Name", "Middle Name", "Last Name", "Title"]]);
-    contactsSheet.getRange("B1").setBackground("#D9EAD3");
-    contactsSheet.getRange("P1").setValue("E-mail Address");
-    contactsSheet.getRange("T1").setValue("Home Phone");
-    contactsSheet.getRange("V1").setValue("Mobile Phone");
-    contactsSheet.getRange("Z1").setValue("Home Street");
-    contactsSheet.getRange("AD1").setValue("Home City");
-    contactsSheet.getRange("AE1").setValue("Home State");
-    contactsSheet.getRange("AF1").setValue("Home Postal Code");
-    contactsSheet.getRange("AN1").setValue("Business Phone");
-    contactsSheet.getRange("AP1").setValue("Business Fax");
-    contactsSheet.getRange("AR1").setValue("Company");
-    contactsSheet.getRange("AZ1").setValue("Business Street");
-    contactsSheet.getRange("BD1").setValue("Business City");
-    contactsSheet.getRange("BE1").setValue("Business State");
-    contactsSheet.getRange("BF1").setValue("Business Postal Code");
-    contactsSheet.getRange("BK1").setValue("Other Street");
-    contactsSheet.getRange("BO1").setValue("Other City");
-    contactsSheet.getRange("BP1").setValue("Other State");
-    contactsSheet.getRange("BQ1").setValue("Other Postal Code");
-    contactsSheet.getRange("A1:CL2000").createFilter();
-
-    // Setup Address sheet
-    addressSheet.activate();
-    addressSheet.getRange("B1:D1").merge();
-    addressSheet.getRange("B1:D1").setBackground("#D9EAD3");
-   // Define the validation range
-  const validationRange = addressSheet.getRange("B1:D1");
-  const sourceRange = contactsSheet.getRange("A:A"); // Source data for validation
-
-  // Build and apply the data validation rule
-  const rule = SpreadsheetApp.newDataValidation()
-    .requireValueInRange(sourceRange, true) // True for strict validation
-    .setAllowInvalid(false) // Prevent invalid values
-    .build();
-  validationRange.setDataValidation(rule); // Apply the rule
-
-  addressSheet.getRange("B2").setFormula("=VLOOKUP(B1, contacts!A:CJ, 44, FALSE)");
-  addressSheet.getRange("B3").setFormula("=VLOOKUP(B1, contacts!A:CJ, 52, FALSE)");
-  addressSheet.getRange("B4").setFormula('=VLOOKUP(B1, contacts!A:CJ, 56, FALSE) & ", " & VLOOKUP(B1, contacts!A:CJ, 57, FALSE) & "   " & VLOOKUP(B1, contacts!A:CJ, 58, FALSE)');
-  addressSheet.getRange("B5").setFormula('=HYPERLINK(VLOOKUP(B1, contacts!A:CJ, 16, FALSE))');
-  addressSheet.getRange("B6").setFormula('=VLOOKUP(B1, contacts!A:CJ, 40, FALSE)');
-  addressSheet.getRange("B7").setFormula('=VLOOKUP(B1, contacts!A:CJ, 42, FALSE)');
-  addressSheet.getRange("B8").setFormula("=VLOOKUP(B1, contacts!A:CJ, 26, FALSE)");
-  addressSheet.getRange("B9").setFormula('=VLOOKUP(B1, contacts!A:CJ, 30, FALSE) & ", " & VLOOKUP(B1, contacts!A:CJ, 31, FALSE) & "   " & VLOOKUP(B1, contacts!A:CJ, 32, FALSE)');
-  addressSheet.getRange("B10").setFormula("=VLOOKUP(B1, contacts!A:CJ, 63, FALSE)");
-  addressSheet.getRange("B11").setFormula('=VLOOKUP(B1, contacts!A:CJ, 67, FALSE) & ", " & VLOOKUP(B1, contacts!A:CJ, 68, FALSE) & "   " & VLOOKUP(B1, contacts!A:CJ, 69, FALSE)');
-  addressSheet.getRange("B12").setFormula("=VLOOKUP(B1, contacts!A:CJ, 5, FALSE)");
-  addressSheet.getRange("B13").setFormula("=VLOOKUP(B1, contacts!A:CJ, 20, FALSE)");
-  addressSheet.getRange("B14").setFormula("=VLOOKUP(B1, contacts!A:CJ, 22, FALSE)");
-
-
-    addressSheet.getRange("A1:A14").setFontWeight("bold");
-    addressSheet.getRange("E1").setValue("Target Cell on Sheet1").setFontColor("red");
-    addressSheet.getRange("F1").setBackground("#D9EAD3");
-    addressSheet.getRange("E1:E14").setFontWeight("bold");
-
-    // Add formulas to Address sheet
-    const formulasA = [
-      "=contacts!A1", "=contacts!AR1", "=contacts!AZ1", "=contacts!BD1",
-      "=contacts!P1", "=contacts!AN1", "=contacts!AP1", "=contacts!Z1",
-      "=contacts!AD1", "=contacts!BK1", "=contacts!BO1", "=contacts!E1",
-      "=contacts!T1", "=contacts!V1"
-    ];
-    formulasA.forEach((formula, index) => {
-      addressSheet.getRange(`A${index + 1}`).setFormula(formula);
-    });
-
-    const formulasE = formulasA.slice(1);
-    formulasE.forEach((formula, index) => {
-      addressSheet.getRange(`E${index + 2}`).setFormula(formula);
-    });
-
-    addressSheet.getRange("F15").setValue("Vlookup by Name");
-    addressSheet.getRange("G15").setValue("Xlookup by Company");
-    addressSheet.setColumnWidth(1, 200);
-    addressSheet.setColumnWidth(5, 200);
-    addressSheet.setColumnWidth(6, 200);
-    addressSheet.setColumnWidth(7, 200);
-
-    // Setup NewContact sheet
-    const formulasNewContact = [
-      "=contacts!B1", "=contacts!C1", "=contacts!D1", "=contacts!AR1",
-      "=contacts!AZ1", "=contacts!BD1", "=contacts!BE1", "=contacts!BF1",
-      "=contacts!P1", "=contacts!AN1", "=contacts!AP1", "=contacts!Z1",
-      "=contacts!AD1", "=contacts!AE1", "=contacts!AF1", "=contacts!BK1",
-      "=contacts!BO1", "=contacts!BP1", "=contacts!BQ1", "=contacts!E1",
-      "=contacts!T1", "=contacts!V1"
-    ];
-    formulasNewContact.forEach((formula, index) => {
-      newContactSheet.getRange(`A${index + 1}`).setFormula(formula);
-    });
-    newContactSheet.getRange("B1:B22").setBackground("#D9EAD3");
-    newContactSheet.getRange("A:A").setFontWeight("bold");
-    newContactSheet.getRange("B23").setValue("Enter information and select New Contact.");
-     newContactSheet.getRange("F3:I3").activate();
-  newContactSheet.setCurrentCell(newContactSheet.getRange("F3"));
-  newContactSheet.getActiveRange().merge();
-  newContactSheet
-    .getRange("F3")
-    .setFormula('=HYPERLINK("https://workspace.google.com/marketplace/app/addressblock/786018916601?pann=b", "To import contacts: Install AddressBlock")');
-  newContactSheet.getRange("F3:I3").activate();
-  newContactSheet
-    .getActiveRangeList()
-    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-    .setVerticalAlignment("top")
-    .setFontSize(14)
-    .setFontWeight("bold");
-
-    newContactSheet.setColumnWidth(1, 200);
-    newContactSheet.setColumnWidth(2, 200);
-
-    // Hide gridlines in all sheets
-    sheets.forEach(sheet => sheet.setHiddenGridlines(true));
-  } catch (error) {
-    Logger.log("Error in contactsit: " + error.message);
-    SpreadsheetApp.getUi().alert("An error occurred: " + error.message);
-  }
-}
 
 function updateInventory() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -2518,16 +2039,16 @@ function updateInventory() {
     var quantitySold = invoiceData[i][1];
 
     if (itemDescription && quantitySold) {
-      // Get inventory data
-      var inventoryData = inventorySheet.getRange('A2:B' + inventorySheet.getLastRow()).getValues();
+      // Get inventory data (updated to include column C)
+      var inventoryData = inventorySheet.getRange('A2:C' + inventorySheet.getLastRow()).getValues();
 
       for (var j = 0; j < inventoryData.length; j++) {
         if (inventoryData[j][0] == itemDescription) {
-          var currentStock = inventoryData[j][1];
+          var currentStock = inventoryData[j][2]; // Changed from [1] to [2] for column C
 
           if (typeof currentStock === 'number' && currentStock >= quantitySold) {
-            // Update inventory stock
-            inventorySheet.getRange('B' + (j + 2)).setValue(currentStock - quantitySold);
+            // Update inventory stock in column C
+            inventorySheet.getRange('C' + (j + 2)).setValue(currentStock - quantitySold);
           } else {
             Logger.log('Insufficient stock for item: ' + itemDescription);
           }
@@ -4074,9 +3595,54 @@ function columnToNumber(column) {
   return column.toUpperCase().charCodeAt(0) - 64;
 }
 
+function checkout() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const ordersSheet = ss.getSheetByName("Orders");
+
+  // Set formulas for A21:A30
+  inputSheet.getRange("A21").setFormula("=Orders!A2");
+  inputSheet.getRange("A22").setFormula("=Orders!A3");
+  inputSheet.getRange("A23").setFormula("=Orders!A4");
+  inputSheet.getRange("A24").setFormula("=Orders!A5");
+  inputSheet.getRange("A25").setFormula("=Orders!A6");
+  inputSheet.getRange("A26").setFormula("=Orders!A7");
+  inputSheet.getRange("A27").setFormula("=Orders!A8");
+  inputSheet.getRange("A28").setFormula("=Orders!A9");
+  inputSheet.getRange("A29").setFormula("=Orders!A10");
+  inputSheet.getRange("A30").setFormula("=Orders!A11"); 
+
+  // Set formulas for B21:B30
+  inputSheet.getRange("B21").setFormula("=Orders!B2");
+  inputSheet.getRange("B22").setFormula("=Orders!B3");
+  inputSheet.getRange("B23").setFormula("=Orders!B4");
+  inputSheet.getRange("B24").setFormula("=Orders!B5");
+  inputSheet.getRange("B25").setFormula("=Orders!B6");
+  inputSheet.getRange("B26").setFormula("=Orders!B7");
+  inputSheet.getRange("B27").setFormula("=Orders!B8");
+  inputSheet.getRange("B28").setFormula("=Orders!B9");
+  inputSheet.getRange("B29").setFormula("=Orders!B10");
+  inputSheet.getRange("B30").setFormula("=Orders!B11");
+
+  // Set other formulas
+  inputSheet.getRange("B11").setDataValidation(null);
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+
+  // Call other functions
+  newcontact();
+  save();
+  updateInventory();
+  copyInput1();
+
+  // Clear the Orders sheet range A1:C12
+  ordersSheet.getRange("A1:C12").clear();
+
+  // Reapply formulas (if needed)
+  inputSheet.getRange("B11").setDataValidation(null);
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+}
 
 
-function save() { Logger.log("Save Record executed"); }
-function copyInput1() { Logger.log("Reset Input executed"); }
-function newcontact() { Logger.log("New Contact executed"); }
-function updateInventory() { Logger.log("Inventory Updated"); }
+
