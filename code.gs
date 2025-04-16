@@ -1641,7 +1641,29 @@ function setup() {
   createInvoiceTemplate();
   createReceiptTemplate();
   createPackingSlipTemplate();
+  cleanupIT();
   
+}
+
+function cleanupIT() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const logSheet = ss.getSheetByName("Log");
+
+  const mappings = [
+    ["A1", "=A11"], ["A2", "=B11"], ["B1", "=D12"], ["B2", "=D13"],
+    ["C1", "=A12"], ["C2", "=A13"], ["D1", "=C34"], ["D2", "=D34"],
+    ["E1", "=C32"], ["E2", "=D32"], ["F1", "=H37"], ["F2", "=J37"],
+    ["G1", "=A23"], ["G2", "=B23"], ["H1", "Log 8"],
+    ["I1", "Log 9"], ["J1", "Log 10"], ["K1", "Log 11"], ["L1", "Log 12"],
+    ["M1", "Date Paid"], ["N1", "Amount"], ["O1", "Date Shipped 3"]
+  ];
+
+  mappings.forEach(([cell, value]) => {
+    inputSheet.getRange(cell).setValue(value);
+  });
+
+  logSheet.getRange("A2").setValue("Order Log");
 }
 
 function createInvoiceTemplate() {
