@@ -2686,7 +2686,7 @@ function generateFormHTML() {
           }
           .table-display {
             width: 100%;
-            margin: 0 0 20px 150px;
+            margin: 0 0 20px 0;
             border-collapse: collapse;
             background: #fff;
             border: 1px solid #ddd;
@@ -2800,7 +2800,7 @@ function generateFormHTML() {
           .checkout-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0 10px 150px;
+            margin: 10px 0 10px 0;
             border: 1px solid #ddd;
           }
           .checkout-table th, .checkout-table td {
