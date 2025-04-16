@@ -3,7 +3,7 @@ function onInstall() {
 }
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu("🌟 DataMate 🌟")
+  const menu = ui.createMenu("DataMate 🌐")
     .addItem("💾 Save Record", "save")
     .addItem("🔄 Reset Input", "copyInput1")
     .addItem("👁️ Reset View/Print", "view")
