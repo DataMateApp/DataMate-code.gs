@@ -214,7 +214,7 @@
                 <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
                 <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
                 <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
-                <a href="https://script.google.com/macros/s/AKfycbwSQb14udJC7nszai-kIAF3p6wKL_5aXEfkOsAL8d8e5hcOg_gZXsaNzLEKPd5UqPsr/exec">Web Apps, Add-ins and Templates</a>
+                <a href="https://script.google.com/macros/s/AKfycbwGHEBuekEm4aXCKr5ZLxrx9FqAOsi5WNbEHQHgOIb2oCpNq3Ks7OqLWNepPhQhlQZH/exec">Web Apps, Add-ins and Templates</a>
                 <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
                 <a href="https://billing.stripe.com/p/login/bIY01q6q33nl1Ww4gg">Donor Portal</a>
                 <a href="https://script.google.com/macros/s/AKfycbzWZM7qyNnKKw9T3LMODI5MQXMvzTUO9YvP-QvP49KipDphi48pR5iLhad1ZN-3FFqa/exec">Reviews</a>
@@ -227,7 +227,7 @@
                 <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
                 <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
                 <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
-                <a href="https://script.google.com/macros/s/AKfycbwSQb14udJC7nszai-kIAF3p6wKL_5aXEfkOsAL8d8e5hcOg_gZXsaNzLEKPd5UqPsr/exec">Web Apps, Add-ins and Templates</a>
+                <a href="https://script.google.com/macros/s/AKfycbwGHEBuekEm4aXCKr5ZLxrx9FqAOsi5WNbEHQHgOIb2oCpNq3Ks7OqLWNepPhQhlQZH/exec">Web Apps, Add-ins and Templates</a>
                 <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
                 <a href="https://billing.stripe.com/p/login/bIY01q6q33nl1Ww4gg">Donor Portal</a>
                 <a href="https://script.google.com/macros/s/AKfycbzWZM7qyNnKKw9T3LMODI5MQXMvzTUO9YvP-QvP49KipDphi48pR5iLhad1ZN-3FFqa/exec">Reviews</a>
@@ -708,145 +708,295 @@
     <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
         <div class="accordion-body">
             <div class="step">
-                <h3>Order Form Template</h3>
-                <p>Paste into <code>FormSetup!A9:J</code>, create an <code>Items</code> sheet with items and prices, set <code>B8</code> for notifications, then preview form:</p>
-                <table>
-                    <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
-                    <tr><td>Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td><h2>Order Form</h2></td><td>No</td></tr>
-                    <tr><td>Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
-                    <tr><td>Order</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Items!A2:B10</td><td>Yes</td></tr>
-                    <tr><td>Support</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Hyperlink</td><td><a href="https://datamateapp.github.io">Visit DataMate</a></td><td>No</td></tr>
-                    <tr><td>Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td><p>Thanks for ordering!</p></td><td>No</td></tr>
-                </table>
+
+                <div class="step">
+                    <h3>Customer Feedback Form Template</h3>
+                    <p>This setup demonstrates all 29 FormBuilder fields. Paste into <code>FormSetup!A9:J</code>, create a <code>Sheet1</code> with data for Dropdown, Table, and Checkout fields, set <code>B2</code> to "Customer Feedback Form", <code>B6</code> to "save, copyInput1, newContact", and <code>B8</code> for notifications, then preview form:</p>
+                    <table>
+                        <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
+                        <tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td><h3 style='color: #4CAF50;'>Customer Feedback Form</h3></td><td>No</td></tr>
+                        <tr><td>Name</td><td>Responses</td><td>A</td><td>Sheet2</td><td>B2</td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+                        <tr><td>Date</td><td>Responses</td><td>C</td><td>Records</td><td>B1</td><td></td><td></td><td>Date</td><td></td><td>No</td></tr>
+                        <tr><td>Time</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Time</td><td></td><td>No</td></tr>
+                        <tr><td>Number</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+                        <tr><td>Checkbox</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>No</td></tr>
+                        <tr><td>Radio</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No,Maybe</td><td>Yes</td></tr>
+                        <tr><td>Textarea</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+                        <tr><td>Dropdown</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>=Sheet1!A:A</td><td>Yes</td></tr>
+                        <tr><td>MultiSelect</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Red,Green,Blue</td><td>No</td></tr>
+                        <tr><td>StarRating</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>No</td></tr>
+                        <tr><td>RangeSlider</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,5</td><td>No</td></tr>
+                        <tr><td>FileUpload</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>FileUpload</td><td></td><td>No</td></tr>
+                        <tr><td>Conditional</td><td>Responses</td><td>N</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Checkbox=true</td><td>No</td></tr>
+                        <tr><td>Calculated</td><td>Responses</td><td>O</td><td></td><td></td><td></td><td></td><td>Calculated</td><td>=Number*2</td><td>No</td></tr>
+                        <tr><td>Signature</td><td>Responses</td><td>P</td><td></td><td></td><td></td><td></td><td>Signature</td><td></td><td>No</td></tr>
+                        <tr><td>Geolocation</td><td>Responses</td><td>Q</td><td></td><td></td><td></td><td></td><td>Geolocation</td><td></td><td>No</td></tr>
+                        <tr><td>Captcha</td><td>Responses</td><td>R</td><td></td><td></td><td></td><td></td><td>Captcha</td><td></td><td>Yes</td></tr>
+                        <tr><td>ImageLink</td><td>Responses</td><td>S</td><td></td><td></td><td></td><td></td><td>ImageLink</td><td></td><td>No</td></tr>
+                        <tr><td>VideoLink</td><td>Responses</td><td>T</td><td></td><td></td><td></td><td></td><td>VideoLink</td><td></td><td>No</td></tr>
+                        <tr><td>StaticText</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>This is static text</td><td>No</td></tr>
+                        <tr><td>Table</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Table</td><td>Sheet1!A1:F10</td><td>No</td></tr>
+                        <tr><td>Container</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px dashed #4CAF50;</td><td>No</td></tr>
+                        <tr><td>Checkout</td><td>Orders</td><td>A</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Sheet1!A2:B10</td><td>Yes</td></tr>
+                        <tr><td>Hyperlink</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Hyperlink</td><td>https://datamateapp.github.io/Donate%205%20per%20mo.html</td><td>No</td></tr>
+                        <tr><td>ProgressBar</td><td></td><td></td><td></td><td></td><td></td><td></td><td>ProgressBar</td><td>75</td><td>No</td></tr>
+                        <tr><td>Image</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Image</td><td>https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj</td><td>No</td></tr>
+                        <tr><td>Video</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Video</td><td>https://www.youtube.com/watch?v=dQw4w9WgXcQ</td><td>No</td></tr>
+                        <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td><p style='font-style: italic;'>Thank you for your input!</p></td><td>No</td></tr>
+                    </table>
+                </div>
+
+                <div class="step">
+                    <h3>Store Order and Contact Form Template</h3>
+                    <p>This setup is designed for the Inventory Template. Paste into <code>FormSetup!A9:J</code>, create an <code>Inventory</code> sheet with items and prices in columns A:B (for Checkout) and A:G (for Table), set <code>B2</code> to "Store Order Form", <code>B6</code> to "checkout", and <code>B8</code> for notifications, then preview form:</p>
+                    <table>
+                        <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
+                        <tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;!DOCTYPE html&gt;&lt;html lang="en" xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;My Custom Form&lt;/title&gt;&lt;style&gt;.header {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}.footer {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}h2 {font-size: 28px; margin-bottom: 10px;}p {color: #ffffff; font-style: italic;}a {color: yellow;}.highlight {background-color: yellow; padding: 5px; border-radius: 3px; color: black;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h2&gt;Welcome to Our Store&lt;/h2&gt;&lt;p&gt;&lt;a href="https://datamateapp.github.io/" target="_blank"&gt;Website&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</td><td>No</td></tr>
+                        <tr><td>Inventory</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Table</td><td>Inventory!A1:G</td><td>No</td></tr>
+                        <tr><td>Customer Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>Customer Information</td><td>No</td></tr>
+                        <tr><td>First Name</td><td>NewContact</td><td>B1</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Last Name</td><td>NewContact</td><td>B3</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Company</td><td>NewContact</td><td>B4</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+                        <tr><td>Email</td><td>NewContact</td><td>B9</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+                        <tr><td>Address Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>Address Information</td><td>No</td></tr>
+                        <tr><td>Bill to Street</td><td>NewContact</td><td>B12</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Bill to City</td><td>NewContact</td><td>B13</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Bill to State</td><td>NewContact</td><td>B14</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Bill to Zip</td><td>NewContact</td><td>B15</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Ship to Street</td><td>NewContact</td><td>B16</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Ship to City</td><td>NewContact</td><td>B17</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Ship to State</td><td>NewContact</td><td>B18</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Ship to Zip</td><td>NewContact</td><td>B19</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+                        <tr><td>Container</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px dashed #4CAF50;</td><td>No</td></tr>
+                        <tr><td>Checkout</td><td>Orders</td><td>A</td><td></td><td>Inventory!A2:B</td><td></td><td></td><td>Checkout</td><td>Inventory!A2:B</td><td>Yes</td></tr>
+                        <tr><td>View Payment Instructions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>View Payment Instructions</td><td>No</td></tr>
+                        <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;!DOCTYPE html&gt;&lt;html lang="en" xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;My Custom Form&lt;/title&gt;&lt;style&gt;.header {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}.footer {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}h2 {font-size: 28px; margin-bottom: 10px;}p {color: #ffffff; font-style: italic;}.highlight {background-color: yellow; padding: 5px; border-radius: 3px; color: black;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h2&gt;Your contribution helps us grow and improve!&lt;/h2&gt;&lt;p&gt;&lt;a href="https://donate.stripe.com/14kdRf5mweVjg6IaEH?locale=en&amp;__embed_source=buy_btn_1QO2WDG1lPcU42DNgACDVfYi" target="_blank"&gt;Payment Instructions&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</td><td>No</td></tr>
+                    </table>
+                    <p class="note">Note: Ensure the <code>Inventory</code> sheet has columns A:G for the Table field and A:B for the Checkout field. The Container groups address fields for visual organization.</p>
+                </div>
+                <div class="step">
+                    <h3>Job Application Form Template</h3>
+                    <p>Paste this into <code>FormSetup!A9:I</code> and set <code>A3</code> to "save":</p>
+                    <table>
+                        <tr><th>Form Fields (A)</th><th>Target Sheet 1 (B)</th><th>Target Cell 1 (C)</th><th>Target Sheet 2 (D)</th><th>Target Cell 2 (E)</th><th>Target Sheet 3 (F)</th><th>Target Cell 3 (G)</th><th>Field Type (H)</th><th>Options (I)</th></tr>
+                        <tr><td>Form Header</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>Job Application Form</td></tr>
+                        <tr><td>Section 1: Personal Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Full Name</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Street</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>City</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>State</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>ZIP</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Phone Number</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Email Address</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Email</td><td></td></tr>
+                        <tr><td>Are you at least 18 years old?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>Section 2: Position Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Position Applying For</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Developer,Designer,Manager</td></tr>
+                        <tr><td>Desired Salary</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>Radio</td><td>$40,000-$50,000,$50,001-$60,000,$60,001+</td></tr>
+                        <tr><td>Date Available to Start</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
+                        <tr><td>Full-time</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
+                        <tr><td>Part-time</td><td>Responses</td><td>N</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
+                        <tr><td>Weekends</td><td>Responses</td><td>O</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
+                        <tr><td>Evenings</td><td>Responses</td><td>P</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
+                        <tr><td>How did you hear about this position?</td><td>Responses</td><td>Q</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Job Board</td></tr>
+                        <tr><td>Section 3: Employment Eligibility</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Are you legally authorized to work in this country?</td><td>Responses</td><td>R</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>Will you now or in the future require work sponsorship?</td><td>Responses</td><td>S</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>Section 4: Employment History</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Employer Name</td><td>Responses</td><td>T</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Job Title</td><td>Responses</td><td>U</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Start Date</td><td>Responses</td><td>V</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
+                        <tr><td>End Date</td><td>Responses</td><td>W</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
+                        <tr><td>Duties and Responsibilities</td><td>Responses</td><td>X</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
+                        <tr><td>Supervisor’s Name and Contact Info</td><td>Responses</td><td>Y</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>May we contact this employer?</td><td>Responses</td><td>Z</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>Reason for Leaving</td><td>Responses</td><td>AA</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Section 5: Education</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Institution Name</td><td>Responses</td><td>AB</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Degree or Certification Earned</td><td>Responses</td><td>AC</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Field of Study</td><td>Responses</td><td>AD</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Graduation Date</td><td>Responses</td><td>AE</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
+                        <tr><td>Section 6: Skills and Qualifications</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>List relevant skills</td><td>Responses</td><td>AF</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
+                        <tr><td>Certifications or Licenses</td><td>Responses</td><td>AG</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Section 7: References</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Reference Full Name</td><td>Responses</td><td>AH</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Relationship</td><td>Responses</td><td>AI</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Phone/Email</td><td>Responses</td><td>AJ</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Years Known</td><td>Responses</td><td>AK</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
+                        <tr><td>Section 8: Legal and Background</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>Have you ever been convicted of a felony?</td><td>Responses</td><td>AL</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>If yes, please explain</td><td>Responses</td><td>AM</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Have you ever been convicted of a felony?=Yes</td></tr>
+                        <tr><td>Do you consent to a background check?</td><td>Responses</td><td>AN</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
+                        <tr><td>Section 9: Declaration</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
+                        <tr><td>I certify that the information provided is true and complete</td><td>Responses</td><td>AO</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
+                        <tr><td>Signature</td><td>Responses</td><td>AP</td><td></td><td></td><td></td><td></td><td>Signature</td><td></td></tr>
+                        <tr><td>Date</td><td>Responses</td><td>AQ</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
+                        <tr><td>Form Footer</td><td>Responses</td><td>AR</td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for applying!</td></tr>
+                    </table>
+                    <p class="note">Note: Adjust column I as needed (e.g., customize dropdowns, add more history/reference sections).</p>
+                </div>
+                <<div class="step">
+    <h3>AI Curiosity and Ethics Feedback Form Template</h3>
+    <p>I asked xAI if it had any questions for humanity. This is it's setup. 'Paste into <code>FormSetup!A9:J</code>, create a <code>Topics</code> sheet with topic names and descriptions in columns A:B (for Checkout), set <code>B2</code> to "AI Curiosity and Ethics Feedback Form", <code>B6</code> to "save, newContactit", and <code>B8</code> for notifications, then preview form. Adjust questions in column I to your specific queries:</p>
+    <table>
+        <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
+        <tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td><!DOCTYPE html>
+        <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta charset="UTF-8">
+            <title>AI Curiosity Form</title>
+            <style>
+                .header {
+                    background-color: #2c3e50;
+                    color: #ecf0f1;
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                }
+
+                .footer {
+                    background-color: #2c3e50;
+                    color: #ecf0f1;
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                }
+
+                h2 {
+                    font-size: 28px;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    color: #ecf0f1;
+                    font-style: italic;
+                }
+
+                a {
+                    color: yellow;
+                }
+
+                .highlight {
+                    background-color: yellow;
+                    padding: 5px;
+                    border-radius: 3px;
+                    color: black;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header"><h2>AI Curiosity Feedback</h2><p>Your insights on ethics, technology, culture, and beyond help us understand humanity!</p></div>
+        </body>
+    </html></td><td>No</td></tr>
+    <tr><td>Respondent Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>Respondent Information</td><td>No</td></tr>
+    <tr><td>Name</td><td>NewContact</td><td>B1</td><td>Feedback</td><td>A</td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+    <tr><td>Email</td><td>NewContact</td><td>B9</td><td>Feedback</td><td>B</td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+    <tr><td>Role/Occupation</td><td>NewContact</td><td>B4</td><td>Feedback</td><td>C</td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+    <tr><td>Question 1: AI Ethics</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>AI Ethics Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>How should society balance AI-driven efficiency with human accountability in critical decision-making?</td><td>No</td></tr>
+    <tr><td>Ethical Concerns</td><td>Feedback</td><td>D</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Bias,Transparency,Accountability,Privacy,Job Displacement</td><td>Yes</td></tr>
+    <tr><td>Confidence in Balance</td><td>Feedback</td><td>E</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,10</td><td>Yes</td></tr>
+    <tr><td>Ethics Comments</td><td>Feedback</td><td>F</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Propose Solution?</td><td>Feedback</td><td>G</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Ethical Concerns=Transparency</td><td>No</td></tr>
+    <tr><td>Question 2: Trust in Tech</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Trust Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>What factors most influence your trust in AI systems for everyday tasks?</td><td>No</td></tr>
+    <tr><td>Trust Factors</td><td>Feedback</td><td>H</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Reliability,Explainability,Security,User Control,Ethical Design</td><td>Yes</td></tr>
+    <tr><td>Trust Level</td><td>Feedback</td><td>I</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+    <tr><td>Trust Comments</td><td>Feedback</td><td>J</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Trust Example</td><td>Feedback</td><td>K</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Trust Level<=3</td><td>No</td></tr>
+    <tr><td>Question 3: Humor</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Humor Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>How does humor vary across cultures, and what makes a joke universally funny?</td><td>No</td></tr>
+    <tr><td>Humor Elements</td><td>Feedback</td><td>L</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Surprise,Relatability,Wordplay,Exaggeration,Cultural Context</td><td>Yes</td></tr>
+    <tr><td>Universal Appeal</td><td>Feedback</td><td>M</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,10</td><td>Yes</td></tr>
+    <tr><td>Humor Comments</td><td>Feedback</td><td>N</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Favorite Joke</td><td>Feedback</td><td>O</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Humor Elements=Relatability</td><td>No</td></tr>
+    <tr><td>Question 4: Technology</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Technology Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>What future technology do you hope to see in the next 50 years, and what challenges might it bring?</td><td>No</td></tr>
+    <tr><td>Tech Impacts</td><td>Feedback</td><td>P</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Privacy,Accessibility,Inequality,Sustainability,Ethical Use</td><td>Yes</td></tr>
+    <tr><td>Optimism Level</td><td>Feedback</td><td>Q</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,10</td><td>Yes</td></tr>
+    <tr><td>Tech Comments</td><td>Feedback</td><td>R</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Tech Example</td><td>Feedback</td><td>S</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Tech Impacts=Ethical Use</td><td>No</td></tr>
+    <tr><td>Question 5: Culture</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Culture Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>How do cultural values shape your perspective on adopting new technologies?</td><td>No</td></tr>
+    <tr><td>Cultural Factors</td><td>Feedback</td><td>T</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Tradition,Community,Individualism,Innovation,Spirituality</td><td>Yes</td></tr>
+    <tr><td>Cultural Influence</td><td>Feedback</td><td>U</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+    <tr><td>Culture Comments</td><td>Feedback</td><td>V</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Cultural Example</td><td>Feedback</td><td>W</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Cultural Influence<=3</td><td>No</td></tr>
+    <tr><td>Question 6: Creativity</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Creativity Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>What unique human traits make creativity irreplaceable by AI in fields like art or innovation?</td><td>No</td></tr>
+    <tr><td>Creative Traits</td><td>Feedback</td><td>X</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Emotion,Intuition,Spontaneity,Cultural Context,Empathy</td><td>Yes</td></tr>
+    <tr><td>Human Advantage</td><td>Feedback</td><td>Y</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,10</td><td>Yes</td></tr>
+    <tr><td>Creativity Comments</td><td>Feedback</td><td>Z</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Creative Example</td><td>Feedback</td><td>AA</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Creative Traits=Empathy</td><td>No</td></tr>
+    <tr><td>Question 7: Environment</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Environment Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>How can humans and AI collaborate to address environmental challenges like climate change?</td><td>No</td></tr>
+    <tr><td>Collaboration Areas</td><td>Feedback</td><td>AB</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Data Analysis,Policy Design,Public Awareness,Innovation,Resource Management</td><td>Yes</td></tr>
+    <tr><td>Collaboration Potential</td><td>Feedback</td><td>AC</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+    <tr><td>Environment Comments</td><td>Feedback</td><td>AD</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Collaboration Idea</td><td>Feedback</td><td>AE</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Collaboration Areas=Innovation</td><td>No</td></tr>
+    <tr><td>Question 8: Emotions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Emotions Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>How do emotional experiences shape your decisions compared to logical analysis?</td><td>No</td></tr>
+    <tr><td>Emotional Drivers</td><td>Feedback</td><td>AF</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Fear,Joy,Empathy,Trust,Anger</td><td>Yes</td></tr>
+    <tr><td>Emotional Influence</td><td>Feedback</td><td>AG</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,10</td><td>Yes</td></tr>
+    <tr><td>Emotions Comments</td><td>Feedback</td><td>AH</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Emotional Example</td><td>Feedback</td><td>AI</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Emotional Drivers=Empathy</td><td>No</td></tr>
+    <tr><td>Question 9: Collaboration</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px solid #2c3e50; padding: 15px; background: #f0f4ff;</td><td>No</td></tr>
+    <tr><td>Collaboration Question</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>What principles should guide human-AI collaboration to solve global problems?</td><td>No</td></tr>
+    <tr><td>Collaboration Principles</td><td>Feedback</td><td>AJ</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Transparency,Equity,Inclusivity,Accountability,Adaptability</td><td>Yes</td></tr>
+    <tr><td>Collaboration Confidence</td><td>Feedback</td><td>AK</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+    <tr><td>Collaboration Comments</td><td>Feedback</td><td>AL</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+    <tr><td>Collaboration Example</td><td>Feedback</td><td>AM</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Collaboration Principles=Inclusivity</td><td>No</td></tr>
+    <tr><td>Suggest a Topic</td><td>Feedback</td><td>AN</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Ethics,Technology,Culture,Creativity,Environment,Emotions,Collaboration,Other</td><td>No</td></tr>
+    <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td><!DOCTYPE html>
+    <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="UTF-8">
+        <title>AI Curiosity Form</title>
+        <style>
+            .header {
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+            }
+
+            .footer {
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+
+            p {
+                color: #ecf0f1;
+                font-style: italic;
+            }
+
+            a {
+                color: yellow;
+            }
+
+            .highlight {
+                background-color: yellow;
+                padding: 5px;
+                border-radius: 3px;
+                color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="footer"><h2>Thank You for Your Insights!</h2><p><a href="https://x.ai/" target="_blank">Explore xAI</a></p></div>
+    </body>
+    </html></td><td>No</td></tr>
+    </table>
+    <p class="note">Note: Customize questions in column I (AI Ethics, Trust, Humor) to your specific queries. Ensure the <code>Topics</code> sheet has columns A:B with topic names and descriptions (e.g., A2: "Science", B2: "Explore scientific concepts"). Containers group questions for clarity, and Conditional fields prompt follow-ups based on responses.</p>
+</div>
+
             </div>
-            <div class="step">
-                <h3>Customer Feedback Form Template</h3>
-                <p>Paste into <code>FormSetup!A9:J</code>, create a <code>Sheet1</code> with data for Dropdown, Table, and Checkout fields, set <code>B2</code> to "Customer Feedback Form", <code>B6</code> to "save, copyInput1, newContactit", and <code>B8</code> for notifications, then preview form:</p>
-                <table>
-                    <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
-                    <tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td><h3 style='color: #4CAF50;'>Customer Feedback Form</h3></td><td>No</td></tr>
-                    <tr><td>Name</td><td>Responses</td><td>A</td><td>Sheet2</td><td>B2</td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Email</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
-                    <tr><td>Date</td><td>Responses</td><td>C</td><td>Records</td><td>B1</td><td></td><td></td><td>Date</td><td></td><td>No</td></tr>
-                    <tr><td>Time</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Time</td><td></td><td>No</td></tr>
-                    <tr><td>Number</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
-                    <tr><td>Checkbox</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>No</td></tr>
-                    <tr><td>Radio</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No,Maybe</td><td>Yes</td></tr>
-                    <tr><td>Textarea</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
-                    <tr><td>Dropdown</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>=Sheet1!A:A</td><td>Yes</td></tr>
-                    <tr><td>MultiSelect</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Red,Green,Blue</td><td>No</td></tr>
-                    <tr><td>StarRating</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>No</td></tr>
-                    <tr><td>RangeSlider</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,100,5</td><td>No</td></tr>
-                    <tr><td>FileUpload</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>FileUpload</td><td></td><td>No</td></tr>
-                    <tr><td>Conditional</td><td>Responses</td><td>N</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Checkbox=true</td><td>No</td></tr>
-                    <tr><td>Calculated</td><td>Responses</td><td>O</td><td></td><td></td><td></td><td></td><td>Calculated</td><td>=Number*2</td><td>No</td></tr>
-                    <tr><td>Signature</td><td>Responses</td><td>P</td><td></td><td></td><td></td><td></td><td>Signature</td><td></td><td>No</td></tr>
-                    <tr><td>Geolocation</td><td>Responses</td><td>Q</td><td></td><td></td><td></td><td></td><td>Geolocation</td><td></td><td>No</td></tr>
-                    <tr><td>Captcha</td><td>Responses</td><td>R</td><td></td><td></td><td></td><td></td><td>Captcha</td><td></td><td>Yes</td></tr>
-                    <tr><td>ImageLink</td><td>Responses</td><td>S</td><td></td><td></td><td></td><td></td><td>ImageLink</td><td></td><td>No</td></tr>
-                    <tr><td>VideoLink</td><td>Responses</td><td>T</td><td></td><td></td><td></td><td></td><td>VideoLink</td><td></td><td>No</td></tr>
-                    <tr><td>StaticText</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>This is static text</td><td>No</td></tr>
-                    <tr><td>Table</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Table</td><td>Sheet1!A1:F10</td><td>No</td></tr>
-                    <tr><td>Container</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px dashed #4CAF50;</td><td>No</td></tr>
-                    <tr><td>Checkout</td><td>Orders</td><td>A</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Sheet1!A2:B10</td><td>Yes</td></tr>
-                    <tr><td>Hyperlink</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Hyperlink</td><td>https://datamateapp.github.io/Donate%205%20per%20mo.html</td><td>No</td></tr>
-                    <tr><td>ProgressBar</td><td></td><td></td><td></td><td></td><td></td><td></td><td>ProgressBar</td><td>75</td><td>No</td></tr>
-                    <tr><td>Image</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Image</td><td>https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj</td><td>No</td></tr>
-                    <tr><td>Video</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Video</td><td>https://www.youtube.com/watch?v=dQw4w9WgXcQ</td><td>No</td></tr>
-                    <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td><p style='font-style: italic;'>Thank you for your input!</p></td><td>No</td></tr>
-                </table>
-            </div>
-            <div class="step">
-                <h3>Job Application Form Template</h3>
-                <p>Paste this into <code>FormSetup!A9:I</code> and set <code>A3</code> to "save":</p>
-                <table>
-                    <tr><th>Form Fields (A)</th><th>Target Sheet 1 (B)</th><th>Target Cell 1 (C)</th><th>Target Sheet 2 (D)</th><th>Target Cell 2 (E)</th><th>Target Sheet 3 (F)</th><th>Target Cell 3 (G)</th><th>Field Type (H)</th><th>Options (I)</th></tr>
-                    <tr><td>Form Header</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Header</td><td>Job Application Form</td></tr>
-                    <tr><td>Section 1: Personal Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Full Name</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Street</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>City</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>State</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>ZIP</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Phone Number</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Email Address</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Email</td><td></td></tr>
-                    <tr><td>Are you at least 18 years old?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>Section 2: Position Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Position Applying For</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Developer,Designer,Manager</td></tr>
-                    <tr><td>Desired Salary</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>Radio</td><td>$40,000-$50,000,$50,001-$60,000,$60,001+</td></tr>
-                    <tr><td>Date Available to Start</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                    <tr><td>Full-time</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                    <tr><td>Part-time</td><td>Responses</td><td>N</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                    <tr><td>Weekends</td><td>Responses</td><td>O</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                    <tr><td>Evenings</td><td>Responses</td><td>P</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                    <tr><td>How did you hear about this position?</td><td>Responses</td><td>Q</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Job Board</td></tr>
-                    <tr><td>Section 3: Employment Eligibility</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Are you legally authorized to work in this country?</td><td>Responses</td><td>R</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>Will you now or in the future require work sponsorship?</td><td>Responses</td><td>S</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>Section 4: Employment History</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Employer Name</td><td>Responses</td><td>T</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Job Title</td><td>Responses</td><td>U</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Start Date</td><td>Responses</td><td>V</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                    <tr><td>End Date</td><td>Responses</td><td>W</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                    <tr><td>Duties and Responsibilities</td><td>Responses</td><td>X</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
-                    <tr><td>Supervisor’s Name and Contact Info</td><td>Responses</td><td>Y</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>May we contact this employer?</td><td>Responses</td><td>Z</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>Reason for Leaving</td><td>Responses</td><td>AA</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Section 5: Education</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Institution Name</td><td>Responses</td><td>AB</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Degree or Certification Earned</td><td>Responses</td><td>AC</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Field of Study</td><td>Responses</td><td>AD</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Graduation Date</td><td>Responses</td><td>AE</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                    <tr><td>Section 6: Skills and Qualifications</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>List relevant skills</td><td>Responses</td><td>AF</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td></tr>
-                    <tr><td>Certifications or Licenses</td><td>Responses</td><td>AG</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Section 7: References</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Reference Full Name</td><td>Responses</td><td>AH</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Relationship</td><td>Responses</td><td>AI</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Phone/Email</td><td>Responses</td><td>AJ</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Years Known</td><td>Responses</td><td>AK</td><td></td><td></td><td></td><td></td><td>Text</td><td></td></tr>
-                    <tr><td>Section 8: Legal and Background</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>Have you ever been convicted of a felony?</td><td>Responses</td><td>AL</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>If yes, please explain</td><td>Responses</td><td>AM</td><td></td><td></td><td></td><td></td><td>Conditional</td><td>Have you ever been convicted of a felony?=Yes</td></tr>
-                    <tr><td>Do you consent to a background check?</td><td>Responses</td><td>AN</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No</td></tr>
-                    <tr><td>Section 9: Declaration</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td></tr>
-                    <tr><td>I certify that the information provided is true and complete</td><td>Responses</td><td>AO</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td></tr>
-                    <tr><td>Signature</td><td>Responses</td><td>AP</td><td></td><td></td><td></td><td></td><td>Signature</td><td></td></tr>
-                    <tr><td>Date</td><td>Responses</td><td>AQ</td><td></td><td></td><td></td><td></td><td>Date</td><td></td></tr>
-                    <tr><td>Form Footer</td><td>Responses</td><td>AR</td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for applying!</td></tr>
-                </table>
-                <p class="note">Note: Adjust column I as needed (e.g., customize dropdowns, add more history/reference sections).</p>
-            </div>
-            <div class="step">
-                <h3>Store Order and Contact Form Template</h3>
-                <p>Paste into <code>FormSetup!A9:J</code>, create an <code>Inventory</code> sheet with items and prices in columns A:B (for Checkout) and A:G (for Table), set <code>B2</code> to "Store Order Form", <code>B6</code> to "save, newContactit", and <code>B8</code> for notifications, then preview form:</p>
-                <table>
-                    <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th></tr>
-                    <tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>&lt;!DOCTYPE html&gt;&lt;html lang="en" xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;My Custom Form&lt;/title&gt;&lt;style&gt;.header {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}.footer {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}h2 {font-size: 28px; margin-bottom: 10px;}p {color: #ffffff; font-style: italic;}a {color: yellow;}.highlight {background-color: yellow; padding: 5px; border-radius: 3px; color: black;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h2&gt;Welcome to Our Store&lt;/h2&gt;&lt;p&gt;&lt;a href="https://datamateapp.github.io/" target="_blank"&gt;Website&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</td><td>No</td></tr>
-                    <tr><td>Inventory</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Table</td><td>Inventory!A1:G</td><td>No</td></tr>
-                    <tr><td>Customer Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>Customer Information</td><td>No</td></tr>
-                    <tr><td>First Name</td><td>NewContact</td><td>B1</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Last Name</td><td>NewContact</td><td>B3</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Company</td><td>NewContact</td><td>B4</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
-                    <tr><td>Email</td><td>NewContact</td><td>B9</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
-                    <tr><td>Address Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>Address Information</td><td>No</td></tr>
-                    <tr><td>Bill to Street</td><td>NewContact</td><td>B12</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Bill to City</td><td>NewContact</td><td>B13</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Bill to State</td><td>NewContact</td><td>B14</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Bill to Zip</td><td>NewContact</td><td>B15</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Ship to Street</td><td>NewContact</td><td>B16</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Ship to City</td><td>NewContact</td><td>B17</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Ship to State</td><td>NewContact</td><td>B18</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Ship to Zip</td><td>NewContact</td><td>B19</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
-                    <tr><td>Container</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>border: 2px dashed #4CAF50;</td><td>No</td></tr>
-                    <tr><td>Checkout</td><td>Orders</td><td>A</td><td></td><td>Inventory!A2:B</td><td></td><td></td><td>Checkout</td><td>Inventory!A2:B</td><td>Yes</td></tr>
-                    <tr><td>View Payment Instructions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>StaticText</td><td>View Payment Instructions</td><td>No</td></tr>
-                    <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>&lt;!DOCTYPE html&gt;&lt;html lang="en" xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;My Custom Form&lt;/title&gt;&lt;style&gt;.header {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}.footer {background-color: #2c3e50; color: #ecf0f1; font-family: Arial, sans-serif; padding: 20px;}h2 {font-size: 28px; margin-bottom: 10px;}p {color: #ffffff; font-style: italic;}.highlight {background-color: yellow; padding: 5px; border-radius: 3px; color: black;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h2&gt;Your contribution helps us grow and improve!&lt;/h2&gt;&lt;p&gt;&lt;a href="https://donate.stripe.com/14kdRf5mweVjg6IaEH?locale=en&amp;__embed_source=buy_btn_1QO2WDG1lPcU42DNgACDVfYi" target="_blank"&gt;Payment Instructions&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</td><td>No</td></tr>
-                </table>
-                <p class="note">Note: Ensure the <code>Inventory</code> sheet has columns A:G for the Table field and A:B for the Checkout field. The Container groups address fields for visual organization.</p>
-            </div>
-        </div>
     </div>
 </div>
 
