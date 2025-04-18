@@ -2704,23 +2704,6 @@ function generateFormHTML() {
             height: 150px;
             border: none;
           }
-          .table-display .hyperlink {
-            margin-left: 0;
-            color: #4CAF50;
-            text-decoration: none;
-            cursor: pointer;
-            pointer-events: auto;
-            position: relative;
-            z-index: 1;
-            background-color: rgba(0, 255, 0, 0.1); /* Debug highlight */
-            border: 1px solid blue; /* Debug border */
-          }
-          .table-display .hyperlink:hover {
-            text-decoration: underline;
-          }
-          .table-cell-content {
-            display: inline-block;
-          }
           .hyperlink {
             margin-left: 150px;
             color: #4CAF50;
@@ -2952,15 +2935,10 @@ function generateFormHTML() {
                             <? for (var col = 0; col < tableData[row].length; col++) { ?>
                               <? var cellValue = String(tableData[row][col] || '').trim(); ?>
                               <? if (isHeader) { ?>
-                                <th><?!= cellValue ? cellValue.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '' ?></th>
+                                <th><?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?></th>
                               <? } else { ?>
                                 <td>
-                                  <? 
-                                    var isImage = cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com");
-                                    var isYouTube = cellValue.match(/(youtube\.com|youtu\.be)/i);
-                                    var isUrl = cellValue.startsWith('http://') || cellValue.startsWith('https://');
-                                  ?>
-                                  <? if (isImage && !isYouTube) { ?>
+                                  <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
                                     <? 
                                       var imgSrc = cellValue;
                                       var fallbackSrc = cellValue;
@@ -2974,7 +2952,7 @@ function generateFormHTML() {
                                     ?>
                                     <img src="<?= imgSrc ?>" style="width: 100px; height: auto;" alt="Table Image" 
                                          onerror="this.src='<?= fallbackSrc ?>'; if(this.complete && this.naturalHeight === 0) { this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue.replace(/'/g, "\\'") ?>'; }">
-                                  <? } else if (isYouTube) { ?>
+                                  <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
                                     <? 
                                       var videoId;
                                       if (cellValue.includes("youtu.be")) {
@@ -2985,12 +2963,8 @@ function generateFormHTML() {
                                       }
                                     ?>
                                     <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
-                                  <? } else if (isUrl) { ?>
-                                    <a href="<?= cellValue ?>" target="_blank" class="hyperlink"><?!= cellValue.replace(/</g, '&lt;').replace(/>/g, '&gt;') ?></a>
                                   <? } else { ?>
-                                    <span class="table-cell-content" data-value="<?= cellValue.replace(/"/g, '&quot;').replace(/'/g, '&apos;') ?>">
-                                      <?!= cellValue ? cellValue.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '' ?>
-                                    </span>
+                                    <?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?>
                                   <? } ?>
                                 </td>
                               <? } ?>
@@ -3086,34 +3060,34 @@ function generateFormHTML() {
                              onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0].replace(/'/g, "\\'") ?>';">
                         <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
                       <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
-                        <? 
-                          var videoUrl = processedFieldsData[i][2][0];
-                          var videoId = '';
-                          if (videoUrl.includes("youtu.be") || videoUrl.includes("youtube.com")) {
-                            if (videoUrl.includes("youtu.be")) {
-                              videoId = videoUrl.split('/').pop().split('?')[0];
-                            } else if (videoUrl.includes("youtube.com")) {
-                              var match = videoUrl.match(/[?&]v=([^&]+)/);
-                              if (match) {
-                                videoId = match[1];
-                              } else if (videoUrl.includes("/embed/")) {
-                                videoId = videoUrl.split('/embed/')[1].split('?')[0];
-                              }
-                            }
-                          }
-                        ?>
-                        <? if (videoId) { ?>
-                          <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
-                        <? } else if (!videoUrl.includes("youtu")) { ?>
-                          <video controls id="<?= processedFieldsData[i][0] ?>">
-                            <source src="<?= videoUrl ?>" type="video/mp4">
-                            Your browser does not support the video tag.
-                          </video>
-                        <? } else { ?>
-                          <span class="error" id="<?= processedFieldsData[i][0] ?>-error">Invalid YouTube URL</span>
-                        <? } ?>
-                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= videoUrl ?>">
-                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?>
+  <? 
+    var videoUrl = processedFieldsData[i][2][0];
+    var videoId = '';
+    if (videoUrl.includes("youtu.be") || videoUrl.includes("youtube.com")) {
+      if (videoUrl.includes("youtu.be")) {
+        videoId = videoUrl.split('/').pop().split('?')[0];
+      } else if (videoUrl.includes("youtube.com")) {
+        var match = videoUrl.match(/[?&]v=([^&]+)/);
+        if (match) {
+          videoId = match[1];
+        } else if (videoUrl.includes("/embed/")) {
+          videoId = videoUrl.split('/embed/')[1].split('?')[0];
+        }
+      }
+    }
+  ?>
+  <? if (videoId) { ?>
+    <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+  <? } else if (!videoUrl.includes("youtu")) { ?>
+    <video controls id="<?= processedFieldsData[i][0] ?>">
+      <source src="<?= videoUrl ?>" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  <? } else { ?>
+    <span class="error" id="<?= processedFieldsData[i][0] ?>-error">Invalid YouTube URL</span>
+  <? } ?>
+  <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= videoUrl ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?\>
                         <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Image URL" <?= processedFieldsData[i][4] ? 'required' : '' ?> oninput="previewImage(this)">
                         <img id="<?= processedFieldsData[i][0] ?>-preview" style="display: none;" alt="Preview">
                         <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
@@ -3235,7 +3209,7 @@ function generateFormHTML() {
                     const item = JSON.parse(select.value);
                     description = item.description;
                     unitPrice = parseFloat(item.unitPrice) || 0;
-                    unitPriceCell.textContent = "$" + unitPrice.toFixed(2);
+                    unitPriceCell.textContent = "$" + unitPrice.toFixed(2); // Fixed: Update unit price immediately
                   } catch (e) {
                     console.error("Error parsing item:", e);
                     unitPriceCell.textContent = "$0.00";
@@ -3369,7 +3343,7 @@ function generateFormHTML() {
                   if (parts) {
                     result = evaluateFormula(parts, dataToSend);
                     calcField.value = result;
-                    dataToSend[field[0] ] = result;
+                    dataToSend[field[0]] = result;
                   }
                 }
               });
@@ -3458,49 +3432,6 @@ function generateFormHTML() {
                 document.getElementById(input.id + '-error').textContent = '';
               }
             }
-
-            // Function to render table cell content, converting URLs to hyperlinks
-            function renderTableCellContent() {
-              console.log('Running renderTableCellContent');
-              const urlRegex = /^https?:\/\/[^\s<>"']+$/i;
-              const cells = document.querySelectorAll('.table-cell-content');
-              console.log('Found ' + cells.length + ' table-cell-content elements');
-
-              cells.forEach((cell, index) => {
-                const value = cell.getAttribute('data-value');
-                console.log('Processing cell ' + index + ': ' + value);
-
-                if (value && urlRegex.test(value)) {
-                  console.log('Rendering ' + value + ' as hyperlink');
-                  const a = document.createElement('a');
-                  a.setAttribute('href', value);
-                  a.setAttribute('target', '_blank');
-                  a.className = 'hyperlink';
-                  a.textContent = value;
-                  a.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'; // Debug highlight
-                  console.log('Created <a> tag: ' + a.outerHTML);
-                  try {
-                    cell.parentNode.replaceChild(a, cell);
-                    console.log('Successfully replaced span with hyperlink for: ' + value);
-                    const computedStyles = window.getComputedStyle(a);
-                    console.log('Hyperlink styles for ' + value + ': pointer-events=' + computedStyles.pointerEvents + ', cursor=' + computedStyles.cursor + ', z-index=' + computedStyles.zIndex);
-                    a.addEventListener('click', (e) => {
-                      console.log('Hyperlink clicked: ' + value);
-                    });
-                  } catch (e) {
-                    console.error('Error replacing span with hyperlink for ' + value + ': ' + e.message);
-                  }
-                } else {
-                  console.log('Keeping ' + value + ' as plain text');
-                }
-              });
-            }
-
-            // Run the rendering function when the page loads
-            document.addEventListener('DOMContentLoaded', () => {
-              console.log('DOMContentLoaded event fired');
-              renderTableCellContent();
-            });
 
             processedFieldsData.forEach(field => {
               if (field[1].toUpperCase() === "RANGESLIDER") {
@@ -3728,8 +3659,4 @@ function checkout() {
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 }
-
-
-
-
 
