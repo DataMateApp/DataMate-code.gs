@@ -3548,19 +3548,18 @@ function saveFormRows(rows) {
     setupSheet = ss.getSheetByName("FormSetup");
   }
 
-  // Get the last row with data in column A (field names)
+  // Get the last row with data in column A starting from row 10
   var lastRow = setupSheet.getLastRow();
   var startRow = 10; // Default start row
   if (lastRow >= 10) {
-    // Find the last row with data in column A
     var fieldNames = setupSheet.getRange("A10:A" + lastRow).getValues();
-    var lastDataRow = fieldNames.reverse().findIndex(row => row[0] !== "") + 1;
-    startRow = lastRow - lastDataRow + 10; // Next empty row
-  }
-
-  // Clear only the rows from startRow to lastRow (if needed)
-  if (lastRow >= startRow) {
-    setupSheet.getRange("A" + startRow + ":J" + lastRow).clearContent();
+    // Find the last row with non-empty data in column A
+    for (var i = fieldNames.length - 1; i >= 0; i--) {
+      if (fieldNames[i][0] !== "") {
+        startRow = 10 + i + 1; // Next row after the last non-empty row
+        break;
+      }
+    }
   }
 
   // Write new data starting at startRow
