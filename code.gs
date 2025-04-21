@@ -3548,25 +3548,36 @@ function saveFormRows(rows) {
     setupSheet = ss.getSheetByName("FormSetup");
   }
 
+  // Get the last row with data in column A (field names)
   var lastRow = setupSheet.getLastRow();
-  if (lastRow >= 9) {
-    setupSheet.getRange("A9:J" + lastRow).clear();
+  var startRow = 10; // Default start row
+  if (lastRow >= 10) {
+    // Find the last row with data in column A
+    var fieldNames = setupSheet.getRange("A10:A" + lastRow).getValues();
+    var lastDataRow = fieldNames.reverse().findIndex(row => row[0] !== "") + 1;
+    startRow = lastRow - lastDataRow + 10; // Next empty row
   }
 
+  // Clear only the rows from startRow to lastRow (if needed)
+  if (lastRow >= startRow) {
+    setupSheet.getRange("A" + startRow + ":J" + lastRow).clearContent();
+  }
+
+  // Write new data starting at startRow
   if (rows.length > 0) {
     var data = rows.map(row => [
-      row.fieldName,
-      row.sheet1,
-      row.cell1,
-      row.sheet2,
-      row.cell2,
-      row.sheet3,
-      row.cell3,
-      row.type,
-      row.options,
-      row.required
+      row.fieldName || "",
+      row.sheet1 || "",
+      row.cell1 || "",
+      row.sheet2 || "",
+      row.cell2 || "",
+      row.sheet3 || "",
+      row.cell3 || "",
+      row.type || "",
+      row.options || "",
+      row.required || ""
     ]);
-    setupSheet.getRange("A9:J" + (9 + data.length - 1)).setValues(data);
+    setupSheet.getRange("A" + startRow + ":J" + (startRow + data.length - 1)).setValues(data);
   }
 }
 
