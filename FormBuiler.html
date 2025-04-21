@@ -313,48 +313,48 @@
         document.getElementById('addRow').onclick = () => createRow();
 
         document.getElementById('saveRows').onclick = () => {
-            const rows = document.querySelectorAll('.row.visible');
-            const data = Array.from(rows).map(row => {
-                const inputs = row.querySelectorAll('input, select');
-                return [
-                    inputs[0].value,  // Field Name
-                    inputs[4].value,  // Target Sheet 1
-                    inputs[5].value,  // Cell/Col 1
-                    inputs[6].value,  // Target Sheet 2
-                    inputs[7].value,  // Cell/Col 2
-                    inputs[8].value,  // Target Sheet 3
-                    inputs[9].value,  // Cell/Col 3
-                    inputs[1].value,  // Field Type
-                    inputs[2].value,  // Options
-                    inputs[3].value   // Required
-                ];
-            });
-
-            const message = document.getElementById('message');
-            message.textContent = 'Saving...';
-            message.className = '';
-            message.style.display = 'block';
-
-            if (typeof google === 'undefined' || !google.script || !google.script.run) {
-                message.textContent = 'Error: Google Apps Script environment not detected.';
-                message.className = 'error';
-                setTimeout(() => message.style.display = 'none', 5000);
-                return;
-            }
-
-            google.script.run
-                .withSuccessHandler(() => {
-                    message.textContent = 'Rows saved successfully!';
-                    message.className = 'success';
-                    setTimeout(() => message.style.display = 'none', 3000);
-                })
-                .withFailureHandler(error => {
-                    message.textContent = `Error saving rows: ${error.message}`;
-                    message.className = 'error';
-                    setTimeout(() => message.style.display = 'none', 5000);
-                })
-                .saveFormRowsStartingAtRow10(data);
+    const rows = document.querySelectorAll('.row.visible');
+    const data = Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input, select');
+        return {
+            fieldName: inputs[0].value,
+            sheet1: inputs[4].value,
+            cell1: inputs[5].value,
+            sheet2: inputs[6].value,
+            cell2: inputs[7].value,
+            sheet3: inputs[8].value,
+            cell3: inputs[9].value,
+            type: inputs[1].value,
+            options: inputs[2].value,
+            required: inputs[3].value
         };
+    });
+
+    const message = document.getElementById('message');
+    message.textContent = 'Saving...';
+    message.className = '';
+    message.style.display = 'block';
+
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        message.textContent = 'Error: Google Apps Script environment not detected.';
+        message.className = 'error';
+        setTimeout(() => message.style.display = 'none', 5000);
+        return;
+    }
+
+    google.script.run
+        .withSuccessHandler(() => {
+            message.textContent = 'Rows saved successfully!';
+            message.className = 'success';
+            setTimeout(() => message.style.display = 'none', 3000);
+        })
+        .withFailureHandler(error => {
+            message.textContent = `Error saving rows: ${error.message}`;
+            message.className = 'error';
+            setTimeout(() => message.style.display = 'none', 5000);
+        })
+        .saveFormRows(data);
+};
 
         google.script.run
             .withSuccessHandler(rows => {
