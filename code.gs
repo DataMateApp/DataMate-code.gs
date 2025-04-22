@@ -2254,7 +2254,7 @@ function createFormSetupSheet() {
   var formSetupSheet = ss.getSheetByName("FormSetup");
   if (!formSetupSheet) {
     formSetupSheet = ss.insertSheet("FormSetup");
-    formSetupSheet.getRange("A1:Z100").setBackground("#f5f5f5");
+    formSetupSheet.getRange("A1:Z100").setBackground("#e0e0e0");
 
     // Header
     formSetupSheet.getRange("A1:J1").merge()
@@ -2270,7 +2270,7 @@ function createFormSetupSheet() {
     const instructions = [
       {
         range: "A2:J2",
-        value: "Configure your form below. Add fields and targets in A9:J directly.",
+        value: "Configure your form below. Delete sample rows and add fields and targets in A10:J directly or use Form Builer.",
         background: "#e0e0e0"
       },
       {
@@ -2286,6 +2286,11 @@ function createFormSetupSheet() {
       {
         range: "A5:J5",
         value: "Enter an email address to receive notifications for each form submission.",
+        background: "#e8ecef"
+      },
+      {
+        range: "D7:G7",
+        value: "Tax rate used for Checkout field and checkout function.",
         background: "#e8ecef"
       }
     ];
@@ -2307,7 +2312,17 @@ function createFormSetupSheet() {
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
-      .setHorizontalAlignment("left");
+      .setHorizontalAlignment("left")
+      .setNote("Enter comma-separated function names (e.g., checkout, newcontact, save, copyInput1) to run on form submission.");
+
+    formSetupSheet.getRange("H6").setValue("Form Name:");
+    formSetupSheet.getRange("I6:J6").merge()
+      .setValue("Sample")
+      .setFontSize(12)
+      .setFontColor("#333333")
+      .setBackground("#ffffff")
+      .setHorizontalAlignment("left")
+      .setNote("Enter your form name.");  
 
     // Tax Rate
     formSetupSheet.getRange("A7").setValue("Tax Rate:");
@@ -2315,7 +2330,8 @@ function createFormSetupSheet() {
       .setValue("0.08")
       .setFontSize(12)
       .setFontColor("#333333")
-      .setBackground("#ffffff");
+      .setBackground("#ffffff")
+      .setNote("Tax rate used for Checkout field and checkout function.");
 
     // Email Notification
     formSetupSheet.getRange("A8").setValue("Email Notification:");
@@ -2468,7 +2484,7 @@ function generateFormHTML() {
   var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
   var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
   var taxRate = parseFloat(setupSheet.getRange("B7").getValue()) || 0.08;
-  var formName = setupSheet.getRange("B2").getValue() || "Custom";
+  var formName = setupSheet.getRange("I6").getValue() || "Custom";
 
   var processedFieldsData = fieldsData.map((row, index) => {
     var fieldName = row[0];
@@ -2841,6 +2857,11 @@ function generateFormHTML() {
             padding: 6px 12px;
             border-radius: 4px;
           }
+          .hyperlink::after {
+  content: ' 🔗';
+  font-size: 0.9em;
+  color: #888;
+}
           ${additionalStyles.join('\n')}
         </style>
       </head>
@@ -2926,53 +2947,64 @@ function generateFormHTML() {
                     <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
                       <div class="static-text"><?!= processedFieldsData[i][2][0] ?></div>
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
-                      <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
-                      <table class="table-display">
-                        <? var tableData = processedFieldsData[i][2]; ?>
-                        <? for (var row = 0; row < tableData.length; row++) { ?>
-                          <tr>
-                            <? var isHeader = row === 0; ?>
-                            <? for (var col = 0; col < tableData[row].length; col++) { ?>
-                              <? var cellValue = String(tableData[row][col] || '').trim(); ?>
-                              <? if (isHeader) { ?>
-                                <th><?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?></th>
-                              <? } else { ?>
-                                <td>
-                                  <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
-                                    <? 
-                                      var imgSrc = cellValue;
-                                      var fallbackSrc = cellValue;
-                                      if (cellValue.includes("drive.google.com")) {
-                                        var idMatch = cellValue.match(/([a-zA-Z0-9_-]{20,})/);
-                                        if (idMatch) {
-                                          imgSrc = "https://drive.google.com/thumbnail?id=" + idMatch[1];
-                                          fallbackSrc = "https://drive.google.com/uc?id=" + idMatch[1];
-                                        }
-                                      }
-                                    ?>
-                                    <img src="<?= imgSrc ?>" style="width: 100px; height: auto;" alt="Table Image" 
-                                         onerror="this.src='<?= fallbackSrc ?>'; if(this.complete && this.naturalHeight === 0) { this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue.replace(/'/g, "\\'") ?>'; }">
-                                  <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
-                                    <? 
-                                      var videoId;
-                                      if (cellValue.includes("youtu.be")) {
-                                        videoId = cellValue.split('/').pop().split('?')[0];
-                                      } else {
-                                        var match = cellValue.match(/[?&]v=([^&]+)/);
-                                        videoId = match ? match[1] : cellValue.split('/').pop().split('?')[0];
-                                      }
-                                    ?>
-                                    <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
-                                  <? } else { ?>
-                                    <?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?>
-                                  <? } ?>
-                                </td>
-                              <? } ?>
-                            <? } ?>
-                          </tr>
-                        <? } ?>
-                      </table>
-                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+  <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
+  <table class="table-display">
+    <? var tableData = processedFieldsData[i][2]; ?>
+    <? for (var row = 0; row < tableData.length; row++) { ?>
+      <tr>
+        <? var isHeader = row === 0; ?>
+        <? for (var col = 0; col < tableData[row].length; col++) { ?>
+          <? var cellValue = String(tableData[row][col] || '').trim(); ?>
+          <? if (isHeader) { ?>
+            <th><?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?></th>
+          <? } else { ?>
+            <td>
+  <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
+    <? 
+      var imgSrc = cellValue;
+      var fallbackSrc = cellValue;
+      if (cellValue.includes("drive.google.com")) {
+        var idMatch = cellValue.match(/([a-zA-Z0-9_-]{20,})/);
+        if (idMatch) {
+          imgSrc = "https://drive.google.com/thumbnail?id=" + idMatch[1];
+          fallbackSrc = "https://drive.google.com/uc?id=" + idMatch[1];
+        }
+      }
+    ?>
+    <img src="<?= imgSrc ?>" style="width: 100px; height: auto;" alt="Table Image" 
+         onerror="this.src='<?= fallbackSrc ?>'; if(this.complete && this.naturalHeight === 0) { this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue.replace(/'/g, "\\'") ?>'; }">
+  <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
+    <? 
+      var videoId;
+      if (cellValue.includes("youtu.be")) {
+        videoId = cellValue.split('/').pop().split('?')[0];
+      } else {
+        var match = cellValue.match(/[?&]v=([^&]+)/);
+        videoId = match ? match[1] : cellValue.split('/').pop().split('?')[0];
+      }
+    ?>
+    <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+  <? } else if (cellValue.match(/^(https?:\\/\\/|mailto:|tel:).+$/i)) { ?>
+    <? 
+      var displayText = cellValue;
+      if (cellValue.length > 40) {
+        displayText = cellValue.substring(0, 37) + '...';
+      }
+    ?>
+    <a href="<?= cellValue ?>" target="_blank" class="hyperlink">
+      <?= displayText ?>
+    </a>
+  <? } else { ?>
+    <?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?>
+    <!-- Debug: cellValue='<?= cellValue.replace(/'/g, "\\'") ?>', isURL=<?= cellValue.match(/^(https?:\\/\\/|mailto:|tel:).+$/i) ? 'true' : 'false' ?> -->
+  <? } ?>
+</td>
+          <? } ?>
+        <? } ?>
+      </tr>
+    <? } ?>
+  </table>
+  <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
                     <? } else if (processedFieldsData[i][1].toUpperCase() === "HYPERLINK" && processedFieldsData[i][2][0]) { ?>
                       <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
                       <? if (processedFieldsData[i][2][0].match(/<a\s[^>]*href=["'][^"']*["'][^>]*>/i)) { ?>
