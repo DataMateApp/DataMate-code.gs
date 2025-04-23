@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+        background-color: #f4f4f4;
+      }
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+      .instructions {
+        background-color: #e8f0fe;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-size: 14px;
+      }
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+        color: #333;
+      }
+      select, input[type="text"], select[multiple] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      select[multiple] {
+        height: 100px;
+      }
+      button {
+        background-color: #2c3e50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #34495e;
+      }
+      #contactSelect {
+        display: none;
+      }
+      .error {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Mail It</h2>
+    
+    <div class="instructions">
+      <strong>Instructions:</strong><br>
+      1. Select the sheet containing the data to include in the email body.<br>
+      2. Enter the range (e.g., A1:G48) to copy into the email.<br>
+      3. Choose "All Contacts" or "Specific Contacts" to select recipients.<br>
+      4. If selecting specific contacts, hold Ctrl (or Cmd) to select multiple emails.<br>
+      5. Enter the email subject.<br>
+      6. Choose to create drafts or send emails immediately.<br>
+      7. Click "Submit" to process your request.
+    </div>
+
+    <label for="sheetSelect">Select Sheet:</label>
+    <select id="sheetSelect"></select>
+
+    <label for="rangeInput">Range (e.g., A1:G48):</label>
+    <input type="text" id="rangeInput" placeholder="A1:G48">
+
+    <label for="contactSelection">Contact Selection:</label>
+    <select id="contactSelection">
+      <option value="all">All Contacts</option>
+      <option value="specific">Specific Contacts</option>
+    </select>
+
+    <label for="contactSelect">Select Contacts (for Specific Contacts):</label>
+    <select id="contactSelect" multiple></select>
+
+    <label for="subjectInput">Subject:</label>
+    <input type="text" id="subjectInput" placeholder="Enter email subject">
+
+    <label for="actionSelect">Action:</label>
+    <select id="actionSelect">
+      <option value="draft">Create Drafts</option>
+      <option value="send">Send Immediately</option>
+    </select>
+
+    <button onclick="submitForm()">Submit</button>
+    <div id="error" class="error"></div>
+
+    <script>
+      // Load sheet names and contacts on page load
+      google.script.run
+        .withSuccessHandler(populateForm)
+        .withFailureHandler(showError)
+        .getSpreadsheetData();
+
+      function populateForm(data) {
+        const sheetSelect = document.getElementById('sheetSelect');
+        data.sheetNames.forEach(name => {
+          const option = document.createElement('option');
+          option.value = name;
+          option.text = name;
+          sheetSelect.appendChild(option);
+        });
+
+        const contactSelect = document.getElementById('contactSelect');
+        data.contacts.forEach(contact => {
+          const option = document.createElement('option');
+          option.value = contact.email;
+          option.text = `${contact.name} (${contact.email})`;
+          contactSelect.appendChild(option);
+        });
+
+        // Show/hide contact select based on contact selection
+        document.getElementById('contactSelection').addEventListener('change', function() {
+          contactSelect.style.display = this.value === 'specific' ? 'block' : 'none';
+        });
+      }
+
+      function showError(error) {
+        document.getElementById('error').textContent = error.message;
+      }
+
+      function submitForm() {
+        document.getElementById('error').textContent = '';
+        
+        const formData = {
+          sheetName: document.getElementById('sheetSelect').value,
+          rangeAddress: document.getElementById('rangeInput').value,
+          contactSelection: document.getElementById('contactSelection').value,
+          selectedEmails: Array.from(document.getElementById('contactSelect').selectedOptions).map(option => option.value),
+          subject: document.getElementById('subjectInput').value,
+          action: document.getElementById('actionSelect').value
+        };
+
+        google.script.run
+          .withSuccessHandler(message => {
+            google.script.host.close();
+            google.script.run.withSuccessHandler(() => {
+              SpreadsheetApp.getUi().alert(message);
+            }).doNothing();
+          })
+          .withFailureHandler(showError)
+          .processEmailForm(formData);
+      }
+
+      // Dummy function to allow alert after closing sidebar
+      function doNothing() {}
+    </script>
+  </body>
+</html>
