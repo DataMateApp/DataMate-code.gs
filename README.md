@@ -41,12 +41,16 @@ DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder
 3. Create `FormBuilder.html`:  
    - Name it `FormBuilder.html`.  
    - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
-   - This powers the visual form editor (via `showFormBuilder()`).  
-4. (Optional) Create `UploadCSV.html`:  
+   - This powers the visual form editor (via `showFormBuilder()`).
+4. Create `MailIt.html`:  
+   - Name it `MailIt.html`.  
+   - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
+   - This powers the visual form editor (via `showFormBuilder()`).   
+5. (Optional) Create `UploadCSV.html`:  
    - Name it `UploadCSV.html`.  
    - Copy its contents from the repository.  
    - This enables batch CSV uploads for data entry.  
-5. Click **Save** for each file.  
+6. Click **Save** for each file.  
 
 > **Note**: If `FormBuilder.html` or `UploadCSV.html` aren’t in the repository, basic placeholders can be created (e.g., a form for CSV upload or a field editor). Contact [datamateapp@gmail.com](mailto:datamateapp@gmail.com) for assistance.
 
