@@ -25,17 +25,19 @@ function onOpen() {
         .addItem("🛠️ Form Builder", "showFormBuilder")
     )
     .addSubMenu(
-      ui.createMenu("📇 AddressBlock")
-        .addItem("📋 Add Contact Sheets", "contacts")
-        .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
-        .addItem("➕ New Contact", "newcontact")
-        .addItem("✏️ Edit Name", "EditAddressSheet")
-        .addItem("🏢 Edit Company", "EditAddressSheet1")
-    )
-    .addSeparator()
-    .addItem("🎓 Show Tutorial", "showTutorial");
+  ui.createMenu("📇 AddressBlock")
+    .addItem("📧 Mail It", "showMailItSidebar")
+    .addItem("📋 Add Contact Sheets", "contacts")
+    .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
+    .addItem("➕ New Contact", "newcontact")
+    .addItem("✏️ Edit Name", "EditAddressSheet")
+    .addItem("🏢 Edit Company", "EditAddressSheet1")
+)
+.addSeparator()
+.addItem("🎓 Show Tutorial", "showTutorial");
 
-  menu.addToUi();
+menu.addToUi();
+
 }
 
 function doNothing() {
@@ -2208,23 +2210,7 @@ function processEmailForm(formData) {
   }
 }
 
-// Update onOpen to add Mail It menu item
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('AddressBlock')
-      .addItem('Add Contact Sheets', 'contacts')
-      .addSeparator()
-      .addItem('Save New Contact', 'showSidebar')
-      .addSeparator()
-      .addItem('Address Block Name', 'EditAddressSheet')
-      .addSeparator()
-      .addItem('Address Block Company', 'EditAddressSheet1')
-      .addSeparator()
-      .addItem('Import Gmail™ Contacts', 'showUploadDialog')
-      .addSeparator()
-      .addItem('Mail It', 'showMailItSidebar') // Add this line
-      .addToUi();
-}
+
 
 
 
