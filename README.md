@@ -45,7 +45,7 @@ DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder
 4. Create `MailIt.html`:  
    - Name it `MailIt.html`.  
    - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
-   - This powers the visual form editor (via `showFormBuilder()`).   
+   - This powers the visual form editor (via `showMailItSidebar()`).   
 5. (Optional) Create `UploadCSV.html`:  
    - Name it `UploadCSV.html`.  
    - Copy its contents from the repository.  
