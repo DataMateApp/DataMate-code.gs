@@ -2081,6 +2081,157 @@ function updateInventory() {
 
 
 
+// Show the Mail It sidebar
+function showMailItSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('MailIt')
+      .setTitle('Mail It');
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+// Get sheet names and contact emails for the form
+function getSpreadsheetData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    const contactsSheet = ss.getSheetByName("contacts");
+    
+    if (!contactsSheet) {
+      throw new Error("'contacts' sheet not found.");
+    }
+
+    // Get sheet names
+    const sheetNames = sheets.map(sheet => sheet.getName());
+
+    // Get contact emails and names
+    const lastRow = contactsSheet.getLastRow();
+    let contacts = [];
+    if (lastRow >= 2) {
+      const range = contactsSheet.getRange("A2:P" + lastRow);
+      const values = range.getValues();
+      contacts = values
+        .map((row, index) => ({
+          name: row[0], // Column A (Full Name)
+          email: row[15] // Column P (E-mail Address)
+        }))
+        .filter(contact => contact.email && contact.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+        .map(contact => ({ name: contact.name, email: contact.email }));
+    }
+
+    return { sheetNames, contacts };
+  } catch (error) {
+    throw new Error(`Error fetching data: ${error.message}`);
+  }
+}
+
+// Process the email form submission
+function processEmailForm(formData) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const { sheetName, rangeAddress, contactSelection, selectedEmails, subject, action } = formData;
+
+    // Validate inputs
+    if (!sheetName || !rangeAddress || !subject || !action) {
+      throw new Error("All fields are required.");
+    }
+
+    if (!contactSelection || (contactSelection === "specific" && (!selectedEmails || selectedEmails.length === 0))) {
+      throw new Error("No contacts selected.");
+    }
+
+    // Validate range format
+    if (!rangeAddress.match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
+      throw new Error("Invalid range format. Use format like 'A1:G48'.");
+    }
+
+    const targetSheet = ss.getSheetByName(sheetName);
+    if (!targetSheet) {
+      throw new Error(`Sheet '${sheetName}' not found.`);
+    }
+
+    // Get the range values and convert to HTML table
+    const range = targetSheet.getRange(rangeAddress);
+    const values = range.getValues();
+    
+    let htmlBody = '<table border="1" style="border-collapse: collapse;">';
+    values.forEach(row => {
+      htmlBody += '<tr>';
+      row.forEach(cell => {
+        htmlBody += `<td style="padding: 5px;">${cell}</td>`;
+      });
+      htmlBody += '</tr>';
+    });
+    htmlBody += '</table>';
+
+    // Determine recipients
+    let recipients = [];
+    if (contactSelection === "all") {
+      const contactsSheet = ss.getSheetByName("contacts");
+      const lastRow = contactsSheet.getLastRow();
+      if (lastRow < 2) {
+        throw new Error("No contacts found in the contacts sheet.");
+      }
+      const emailRange = contactsSheet.getRange("P2:P" + lastRow);
+      recipients = emailRange.getValues().flat().filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
+    } else {
+      recipients = selectedEmails.filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
+    }
+
+    if (recipients.length === 0) {
+      throw new Error("No valid email addresses selected.");
+    }
+
+    // Create drafts or send emails
+    let count = 0;
+    recipients.forEach(email => {
+      if (action === "draft") {
+        GmailApp.createDraft(
+          email,
+          subject,
+          '',
+          { htmlBody: htmlBody }
+        );
+        count++;
+      } else if (action === "send") {
+        GmailApp.sendEmail(
+          email,
+          subject,
+          '',
+          { htmlBody: htmlBody }
+        );
+        count++;
+      }
+    });
+
+    return `Successfully ${action === "draft" ? "created" : "sent"} ${count} email${count > 1 ? "s" : ""}!`;
+  } catch (error) {
+    throw new Error(`Error: ${error.message}`);
+  }
+}
+
+// Update onOpen to add Mail It menu item
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('AddressBlock')
+      .addItem('Add Contact Sheets', 'contacts')
+      .addSeparator()
+      .addItem('Save New Contact', 'showSidebar')
+      .addSeparator()
+      .addItem('Address Block Name', 'EditAddressSheet')
+      .addSeparator()
+      .addItem('Address Block Company', 'EditAddressSheet1')
+      .addSeparator()
+      .addItem('Import Gmail™ Contacts', 'showUploadDialog')
+      .addSeparator()
+      .addItem('Mail It', 'showMailItSidebar') // Add this line
+      .addToUi();
+}
+
+
+
+
+
+
+
 
 
 function showTutorial() {
