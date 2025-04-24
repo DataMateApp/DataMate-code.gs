@@ -3794,6 +3794,7 @@ function checkout() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const inputSheet = ss.getSheetByName("Input");
   const ordersSheet = ss.getSheetByName("Orders");
+  const viewSheet = ss.getSheetByName("View_Print");
 
   // Set formulas for A21:A30
   inputSheet.getRange("A21").setFormula("=Orders!A2");
@@ -3821,6 +3822,7 @@ function checkout() {
 
   // Set other formulas
   inputSheet.getRange("A13").setDataValidation(null);
+  viewSheet.getRange("A11").setDataValidation(null);
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 
@@ -3831,11 +3833,10 @@ function checkout() {
   copyInput1();
 
   // Clear the Orders sheet range A1:C12
-  ordersSheet.getRange("A1:C12").clear();
+  ordersSheet.getRange("A1:C").clear();
 
   // Reapply formulas (if needed)
 
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 }
-
