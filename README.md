@@ -96,7 +96,7 @@ Deploy DataMate as a web app to share forms with others:
 - **Email Notifications**: Send automated emails with form response details on submission (configured via `FormSetup!B8`).  
 - **UI**: Simple form preview (`previewForm()`) and visual editor (`showFormBuilder()`).  
 - **File Uploads**: Stores files in Google Drive with public links.  
-- **Custom Actions**: Run functions post-submission (e.g., `save, newContactit`) from `FormSetup!B6`.  
+- **Custom Actions**: Run functions post-submission (e.g., `save, newcontact`) from `FormSetup!B6`.  
 - **Tutorial**: In-app guide via `tutorial.html`.  
 
 ### Upcoming Features  
