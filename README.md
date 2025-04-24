@@ -23,7 +23,7 @@ Technology has democratized development, and for me, this is a **passion project
 ---
 
 ### Installation and Deployment
-Copy [`DataMate Open Source Template`]([https://github.com/DataMateApp/DataMate-code.gs](https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy)
+Copy [DataMate Open Source Template]([https://datamateapp.github.io/](https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy)
 Simple installation just Click Extensions > Apps Script then Click Run > onInstall. Includes all features.
 
 Or:
