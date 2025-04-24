@@ -102,7 +102,7 @@ Deploy DataMate as a web app to share forms with others:
 - **Advanced Filtering**: Enhanced search and sort tools.  
 - **Collaboration Welcome!**: Need help to build these—email [datamateapp@gmail.com](mailto:datamateapp@gmail.com).  
 
-**Have ideas?** Share them at [datamateapp@gmail.com](mailto:datamateapp@gmail.com) or visit [our website](https://datamateapp.github.io/).  
+**Have ideas?** Share them at [[datamateapp@gmail.com](mailto:datamateapp@gmail.com](https://script.google.com/macros/s/AKfycbyPu31wwkbtKZ5X-382wdKzG2Y8vIN-fSApo_lAR9x_1n_qgxPUgmAafmljS6RCc3i7/exec)) or visit [our website](https://datamateapp.github.io/).  
 
 ---
 
