@@ -2150,15 +2150,15 @@ function processEmailForm(formData) {
       throw new Error(`Sheet '${sheetName}' not found.`);
     }
 
-    // Get the range values and convert to HTML table
+    // Get the range values and convert to HTML table without gridlines
     const range = targetSheet.getRange(rangeAddress);
     const values = range.getValues();
     
-    let htmlBody = '<table border="1" style="border-collapse: collapse;">';
+    let htmlBody = '<table style="border-collapse: collapse; border: none;">';
     values.forEach(row => {
       htmlBody += '<tr>';
       row.forEach(cell => {
-        htmlBody += `<td style="padding: 5px;">${cell}</td>`;
+        htmlBody += `<td style="padding: 5px; border: none;">${cell}</td>`;
       });
       htmlBody += '</tr>';
     });
