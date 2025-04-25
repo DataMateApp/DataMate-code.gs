@@ -2729,8 +2729,8 @@ function generateFormHTML() {
             border-radius: 4px;
           }
           .header {
-            ${hasCustomHeader ? '' : 'background: #4CAF50;'}
-            color: white;
+            ${hasCustomHeader ? '' : 'background: #ffffff;'}
+            color: ${hasCustomHeader ? 'white' : 'black'};
             padding: 15px;
             text-align: center;
             border-radius: 4px;
@@ -2738,8 +2738,8 @@ function generateFormHTML() {
             font-size: 24px;
           }
           .footer {
-            ${hasCustomFooter ? '' : 'background: #333;'}
-            color: white;
+            ${hasCustomFooter ? '' : 'background: #ffffff;'}
+            color: ${hasCustomHeader ? 'white' : 'black'};
             padding: 15px;
             text-align: center;
             border-radius: 4px;
@@ -2747,7 +2747,7 @@ function generateFormHTML() {
             font-size: 14px;
           }
           h1 {
-            color: #4CAF50;
+            color: #000000;
             text-align: center;
             margin-bottom: 30px;
             font-size: 28px;
