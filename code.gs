@@ -3822,13 +3822,15 @@ function checkout() {
 
   // Set other formulas
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
+  
 
   // Call other functions
   newcontact();
   save();
   updateInventory();
   copyInput1();
+
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
 
   // Clear the Orders sheet range A1:C12
   ordersSheet.getRange("A1:C").clear();
