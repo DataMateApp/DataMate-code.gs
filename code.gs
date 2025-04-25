@@ -3821,8 +3821,6 @@ function checkout() {
   inputSheet.getRange("B30").setFormula("=Orders!B11");
 
   // Set other formulas
-  inputSheet.getRange("A13").setDataValidation(null);
-  viewSheet.getRange("A11").setDataValidation(null);
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 
