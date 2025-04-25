@@ -3826,6 +3826,7 @@ function checkout() {
 
   // Call other functions
   newcontact();
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
   save();
   updateInventory();
   copyInput1();
