@@ -704,7 +704,7 @@ function save() {
   viewPrintSheet.getRange("B1:L1").merge();
 
   // Add the hyperlink with the display text
-  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://github.com/DataMateApp/DataMate-code.gs", "Opensource")');
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy", "Open Source")');
 
   // Set the font style and color for the hyperlink
   const cell = viewPrintSheet.getRange("B1");
