@@ -2658,23 +2658,6 @@ function createFormSetupSheet() {
   return formSetupSheet;
 }
 
-function uploadFile(fileData) {
-  var folder = DriveApp.getRootFolder();
-  var blob = Utilities.newBlob(
-    Utilities.base64Decode(fileData.data),
-    fileData.type,
-    fileData.name
-  );
-  var file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
-}
-
-function getOrCreateSheet(ss, name) {
-  var sheet = ss.getSheetByName(name);
-  if (!sheet) sheet = ss.insertSheet(name);
-  return sheet;
-}
 
 
 function previewForm() {
