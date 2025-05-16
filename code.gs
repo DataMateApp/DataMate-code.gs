@@ -2840,9 +2840,7 @@ function previewForm() {
   SpreadsheetApp.getUi().showModalDialog(html, html.getTitle());
 }
 
-function doGet(e) {
-  return generateFormHTML();
-}
+
 
 function showFormBuilder() {
   var html = HtmlService.createHtmlOutputFromFile('FormBuilder')
@@ -2854,57 +2852,6 @@ function showFormBuilder() {
 
 
 
-function checkout() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const inputSheet = ss.getSheetByName("Input");
-  const ordersSheet = ss.getSheetByName("Orders");
-  const viewSheet = ss.getSheetByName("View_Print");
-
-  // Set formulas for A21:A30
-  inputSheet.getRange("A21").setFormula("=Orders!A2");
-  inputSheet.getRange("A22").setFormula("=Orders!A3");
-  inputSheet.getRange("A23").setFormula("=Orders!A4");
-  inputSheet.getRange("A24").setFormula("=Orders!A5");
-  inputSheet.getRange("A25").setFormula("=Orders!A6");
-  inputSheet.getRange("A26").setFormula("=Orders!A7");
-  inputSheet.getRange("A27").setFormula("=Orders!A8");
-  inputSheet.getRange("A28").setFormula("=Orders!A9");
-  inputSheet.getRange("A29").setFormula("=Orders!A10");
-  inputSheet.getRange("A30").setFormula("=Orders!A11"); 
-
-  // Set formulas for B21:B30
-  inputSheet.getRange("B21").setFormula("=Orders!B2");
-  inputSheet.getRange("B22").setFormula("=Orders!B3");
-  inputSheet.getRange("B23").setFormula("=Orders!B4");
-  inputSheet.getRange("B24").setFormula("=Orders!B5");
-  inputSheet.getRange("B25").setFormula("=Orders!B6");
-  inputSheet.getRange("B26").setFormula("=Orders!B7");
-  inputSheet.getRange("B27").setFormula("=Orders!B8");
-  inputSheet.getRange("B28").setFormula("=Orders!B9");
-  inputSheet.getRange("B29").setFormula("=Orders!B10");
-  inputSheet.getRange("B30").setFormula("=Orders!B11");
-
-  // Set other formulas
-  inputSheet.getRange("B11").setFormula("=Log!A10+1");
-  
-
-  // Call other functions
-  newcontact();
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-  save();
-  updateInventory();
-  copyInput1();
-
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-
-  // Clear the Orders sheet range A1:C12
-  ordersSheet.getRange("A1:C").clear();
-
-  // Reapply formulas (if needed)
-
-  inputSheet.getRange("B11").setFormula("=Log!A10+1");
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-}
 
 
 function loadFormRows() {
