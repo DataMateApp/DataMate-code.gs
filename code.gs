@@ -2851,33 +2851,6 @@ function showFormBuilder() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
 }
 
-function loadFormRows() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) {
-    createFormSetupSheet();
-    setupSheet = ss.getSheetByName("FormSetup");
-  }
-
-  var lastRow = setupSheet.getLastRow();
-  if (lastRow < 9) return [];
-
-  var range = setupSheet.getRange("A9:J" + lastRow);
-  var values = range.getValues();
-
-  return values.map(row => ({
-    fieldName: row[0],
-    sheet1: row[1],
-    cell1: row[2],
-    sheet2: row[3],
-    cell2: row[4],
-    sheet3: row[5],
-    cell3: row[6],
-    type: row[7],
-    options: row[8],
-    required: row[9]
-  }));
-}
 
 function saveFormRows(rows) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
