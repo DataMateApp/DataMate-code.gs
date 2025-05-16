@@ -534,16 +534,6 @@ function sendDataMateEmail() {
   
 
 
-function sendDataMateEmail1() {
-  MailApp.sendEmail({
-    to: "projectprodigyapp@gmail.com",
-    subject: "DataMate Record",
-    body: "Another record saved."
-  });
-}
-
-
-
 
 function view() {
   
