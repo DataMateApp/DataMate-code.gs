@@ -1856,45 +1856,6 @@ try {
 
 
 
-function updateInventory() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var inventorySheet = spreadsheet.getSheetByName('Inventory');
-  var invoiceSheet = spreadsheet.getSheetByName('Input');
-
-  if (!inventorySheet || !invoiceSheet) {
-    Logger.log('Missing required sheets: Inventory or Input');
-    return;
-  }
-
-  // Get invoice data
-  var invoiceData = invoiceSheet.getRange('A21:D30').getValues();
-
-  // Loop through invoice data to process each item
-  for (var i = 0; i < invoiceData.length; i++) {
-    var itemDescription = invoiceData[i][0];
-    var quantitySold = invoiceData[i][1];
-
-    if (itemDescription && quantitySold) {
-      // Get inventory data (updated to include column C)
-      var inventoryData = inventorySheet.getRange('A2:C' + inventorySheet.getLastRow()).getValues();
-
-      for (var j = 0; j < inventoryData.length; j++) {
-        if (inventoryData[j][0] == itemDescription) {
-          var currentStock = inventoryData[j][2]; // Changed from [1] to [2] for column C
-
-          if (typeof currentStock === 'number' && currentStock >= quantitySold) {
-            // Update inventory stock in column C
-            inventorySheet.getRange('C' + (j + 2)).setValue(currentStock - quantitySold);
-          } else {
-            Logger.log('Insufficient stock for item: ' + itemDescription);
-          }
-          break; // Exit inner loop once match is found
-        }
-      }
-    }
-  }
-}
-
 
 
 
