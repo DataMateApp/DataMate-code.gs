@@ -1,7 +1,7 @@
 function onInstall() {
   onOpen();
 }
-function onOpen() {
+function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
   const menu = ui.createMenu("DataMate 🌐")
     .addItem("💾 Save Record", "save")
@@ -25,23 +25,97 @@ function onOpen() {
         .addItem("🛠️ Form Builder", "showFormBuilder")
     )
     .addSubMenu(
-  ui.createMenu("📇 AddressBlock")
-    .addItem("📧 Mail It", "showMailItSidebar")
-    .addItem("📋 Add Contact Sheets", "contacts")
-    .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
-    .addItem("➕ New Contact", "newcontact")
-    .addItem("✏️ Edit Name", "EditAddressSheet")
-    .addItem("🏢 Edit Company", "EditAddressSheet1")
-)
-.addSeparator()
-.addItem("🎓 Show Tutorial", "showTutorial");
+      ui.createMenu("📇 AddressBlock")
+        .addItem("📧 Mail It", "showMailItSidebar")
+        .addItem("📋 Add Contact Sheets", "contacts")
+        .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
+        .addItem("➕ New Contact", "newcontact")
+        .addItem("✏️ Edit Name", "EditAddressSheet")
+        .addItem("🏢 Edit Company", "EditAddressSheet1")
+    )
+    .addSeparator()
+    .addItem("🎓 Show Tutorial", "showTutorial");
 
-menu.addToUi();
+  menu.addToUi();
 
 }
 
+
 function doNothing() {
   SpreadsheetApp.getUi().alert("Please select a template option below.");
+}
+
+function showUploadDialog() {
+  const html = HtmlService.createHtmlOutputFromFile('UploadCSV')
+    .setWidth(400)
+    .setHeight(300);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Upload CSV File');
+}
+
+function processCSV(csvContent) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let importSheet = ss.getSheetByName("Import");
+
+  if (!importSheet) {
+    importSheet = ss.insertSheet("Import");
+  }
+
+  importSheet.clear();
+
+  const csvData = Utilities.parseCsv(csvContent);
+  if (!csvData || csvData.length === 0) {
+    throw new Error('The uploaded file is empty or invalid.');
+  }
+
+  // Paste the CSV data into the Import sheet
+  importSheet.getRange(1, 1, csvData.length, csvData[0].length).setValues(csvData);
+
+  // Define the mapping logic
+  const contactsSheet = ss.getSheetByName("contacts");
+  if (!contactsSheet) {
+    throw new Error("The 'contacts' sheet does not exist.");
+  }
+
+  // Copy specific ranges based on the VBA mapping logic
+  const mappings = [
+    { source: "A1:A2000", target: "B1:B2000" },
+    { source: "B1:B2000", target: "C1:C2000" },
+    { source: "C1:C2000", target: "D1:D2000" },
+    { source: "N1:N2000", target: "T1:T2000" },
+    { source: "J1:J2000", target: "P1:P2000" },
+    { source: "AM1:AM2000", target: "E1:E2000" },
+    { source: "AH1:AH2000", target: "AN1:AN2000" },
+    { source: "P1:P2000", target: "V1:V2000" },
+    { source: "AJ1:AJ2000", target: "AP1:AP2000" },
+    { source: "AL1:AL2000", target: "AR1:AR2000" },
+    { source: "AP1:AP2000", target: "AZ1:AZ2000" },
+    { source: "AT1:AT2000", target: "BD1:BD2000" },
+    { source: "AU1:AU2000", target: "BE1:BE2000" },
+    { source: "AV1:AV2000", target: "BF1:BF2000" },
+    { source: "T1:T2000", target: "Z1:Z2000" },
+    { source: "X1:X2000", target: "AD1:AD2000" },
+    { source: "Y1:Y2000", target: "AE1:AE2000" },
+    { source: "Z1:Z2000", target: "AF1:AF2000" },
+    { source: "BA1:BA2000", target: "BK1:BK2000" },
+    { source: "BE1:BE2000", target: "BO1:BO2000" },
+    { source: "BF1:BF2000", target: "BP1:BP2000" },
+    { source: "BG1:BG2000", target: "BQ1:BQ2000" }
+  ];
+
+  // Apply the mappings
+  mappings.forEach(({ source, target }) => {
+    const sourceRange = importSheet.getRange(source);
+    const targetRange = contactsSheet.getRange(target);
+    targetRange.setValues(sourceRange.getValues());
+  });
+
+  // Copy formulas from column A in Import sheet to A2:A2000 in Contacts sheet
+  contactsSheet.getRange('A2:A2000').activate();
+  contactsSheet.getRange('A1').copyTo(contactsSheet.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+
+
+  // Notify user of success
+  SpreadsheetApp.getUi().alert("CSV data has been successfully imported and mapped into the 'contacts' sheet.");
 }
 
 
@@ -444,9 +518,19 @@ viewPrintSheet.setHiddenGridlines(true);
 
   copyInput1();
   view();
+  sendDataMateEmail();
 
   inputSheet.getRange("W1").activate();
 }
+
+function sendDataMateEmail() {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "DataMate Dataset Created",
+    body: "A custom Dataset has been added to a spreadsheet."
+  });
+}
+
   
 function save() {
 
@@ -719,6 +803,16 @@ function save() {
   cell.setHorizontalAlignment("center");
   cell.setVerticalAlignment("middle");
 
+  sendDataMateEmail1();
+
+}
+
+function sendDataMateEmail1() {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "DataMate Record",
+    body: "Another record saved."
+  });
 }
 
 
@@ -1073,6 +1167,8 @@ function EditAddressSheet1() {
     SpreadsheetApp.getUi().alert(`Error: ${error.message}`);
   }
 }
+
+
 
 
 
@@ -1591,6 +1687,7 @@ function setup() {
   createInvoiceTemplate();
   createReceiptTemplate();
   createPackingSlipTemplate();
+  createFormSetupSheet();
   cleanupIT();
   
 }
@@ -1599,6 +1696,7 @@ function cleanupIT() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const inputSheet = ss.getSheetByName("Input");
   const logSheet = ss.getSheetByName("Log");
+  const formSetupSheet = ss.getSheetByName("FormSetup");
 
   const mappings = [
     ["A1", "=A11"], ["A2", "=B11"], ["B1", "=D12"], ["B2", "=D13"],
@@ -1614,6 +1712,132 @@ function cleanupIT() {
   });
 
   logSheet.getRange("A2").setValue("Order Log");
+  formSetupSheet.getRange("A10:J39").clearContent();
+  formSetupSheet.getRange("I6").setValue("Store");
+  var sampleFields = [
+  ["Form Header", "", "", "", "", "", "", "Header", 
+   `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>My Custom Form</title>
+    <style>
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #ffffff;
+            font-style: italic;
+        }
+
+        a {
+            color: yellow; /* Sets link color to yellow */
+        }
+
+        .highlight {
+            background-color: yellow;
+            padding: 5px;
+            border-radius: 3px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome to Our Store</h2>
+
+
+    <p><a href="https://datamateapp.github.io/" target="_blank">Website</a></p>
+
+</body>
+</html>`, "No"],
+  ["Inventory", "", "", "", "", "", "", "Table", "Inventory!A1:G", "No"],
+  ["Customer Information", "", "", "", "", "", "", "StaticText", "Customer Information", "No"],
+  ["First Name", "NewContact", "B1", "", "", "", "", "Text", "", "Yes"],
+  ["Last Name", "NewContact", "B3", "", "", "", "", "Text", "", "Yes"],
+  ["Company", "NewContact", "B4", "", "", "", "", "Text", "", "No"],
+  ["Email", "NewContact", "B9", "", "", "", "", "Email", "", "Yes"],
+  ["Address Information", "", "", "", "", "", "", "StaticText", "Address Information", "No"],
+  ["Bill to Street", "NewContact", "B12", "", "", "", "", "Text", "", "Yes"],
+  ["Bill to City", "NewContact", "B13", "", "", "", "", "Text", "", "Yes"],
+  ["Bill to State", "NewContact", "B14", "", "", "", "", "Text", "", "Yes"],
+  ["Bill to Zip", "NewContact", "B15", "", "", "", "", "Text", "", "Yes"],
+  ["Ship to Street", "NewContact", "B16", "", "", "", "", "Text", "", "Yes"],
+  ["Ship to City", "NewContact", "B17", "", "", "", "", "Text", "", "Yes"],
+  ["Ship to State", "NewContact", "B18", "", "", "", "", "Text", "", "Yes"],
+  ["Ship to Zip", "NewContact", "B19", "", "", "", "", "Text", "", "Yes"],
+  ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
+  ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Inventory!A2:B", "Yes"],
+  ["View Payment Instructions", "", "", "", "", "", "", "StaticText", "View Payment Instructions", "No"],
+  ["Form Footer", "", "", "", "", "", "", "Footer", 
+   `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>My Custom Form</title>
+    <style>
+        .header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #ffffff;
+            font-style: italic;
+        }
+
+        .highlight {
+            background-color: yellow;
+            padding: 5px;
+            border-radius: 3px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h2>Your contribution helps us grow and improve!</h2>
+    <p><a href="https://donate.stripe.com/14kdRf5mweVjg6IaEH?locale=en&__embed_source=buy_btn_1QO2WDG1lPcU42DNgACDVfYi" target="_blank">Payment Instructions</a></p>
+
+
+</body>
+</html>`, "No"]
+];
+
+if (sampleFields.length > 0) {
+      const lastRow = 10 + sampleFields.length - 1;
+      formSetupSheet.getRange(`A10:J${lastRow}`).setValues(sampleFields)
+        .setBackground("#ffffff")
+        .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+    }
 }
 
 function createInvoiceTemplate() {
@@ -1949,7 +2173,7 @@ function createPackingSlipTemplate() {
     
 
 try {
-  var sheetsToMove = ['Packing Slip', 'Receipt', 'Inventory']; // Reverse order
+  var sheetsToMove = ['Update','Log','Input','View_Print','Packing Slip', 'Receipt', 'Inventory']; // Reverse order
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
   // Loop through the sheets and move them to the front
@@ -2104,19 +2328,76 @@ function processEmailForm(formData) {
       throw new Error(`Sheet '${sheetName}' not found.`);
     }
 
-    // Get the range values and convert to HTML table without gridlines
+    // Get the range
     const range = targetSheet.getRange(rangeAddress);
     const values = range.getValues();
-    
-    let htmlBody = '<table style="border-collapse: collapse; border: none;">';
-    values.forEach(row => {
-      htmlBody += '<tr>';
-      row.forEach(cell => {
-        htmlBody += `<td style="padding: 5px; border: none;">${cell}</td>`;
-      });
-      htmlBody += '</tr>';
+    const backgrounds = range.getBackgrounds();
+    const fontWeights = range.getFontWeights();
+    const fontColors = range.getFontColors();
+    const fontStyles = range.getFontStyles();
+    const numRows = values.length;
+    const numCols = values[0].length;
+
+    // Track merged cells
+    const mergedRanges = range.getMergedRanges();
+    const mergeMap = {};
+
+    mergedRanges.forEach(mr => {
+      const startRow = mr.getRow() - range.getRow() + 1;
+      const startCol = mr.getColumn() - range.getColumn() + 1;
+      const rowspan = mr.getNumRows();
+      const colspan = mr.getNumColumns();
+      mergeMap[`${startRow},${startCol}`] = { rowspan, colspan };
+
+      for (let r = startRow; r < startRow + rowspan; r++) {
+        for (let c = startCol; c < startCol + colspan; c++) {
+          if (!(r === startRow && c === startCol)) {
+            mergeMap[`${r},${c}`] = "skip";
+          }
+        }
+      }
     });
-    htmlBody += '</table>';
+
+    // Build formatted HTML table
+    let htmlBody = '<table style="border-collapse: collapse; border: none;">';
+for (let r = 0; r < numRows; r++) {
+  htmlBody += '<tr>';
+  for (let c = 0; c < numCols; c++) {
+    const key = `${r + 1},${c + 1}`;
+    if (mergeMap[key] === "skip") continue;
+
+    const cellValue = values[r][c];
+    const bgColor = backgrounds[r][c];
+    const fontWeight = fontWeights[r][c];
+    const fontColor = fontColors[r][c];
+    const fontStyle = fontStyles[r][c];
+
+    let style = `
+      padding: 5px;
+      border: none;
+      background-color: ${bgColor};
+      font-weight: ${fontWeight};
+      color: ${fontColor};
+      font-style: ${fontStyle};
+    `;
+
+    let attrs = '';
+    if (mergeMap[key]) {
+      const { rowspan, colspan } = mergeMap[key];
+      if (rowspan > 1) attrs += ` rowspan="${rowspan}"`;
+      if (colspan > 1) attrs += ` colspan="${colspan}"`;
+    }
+
+    const isHeader = r === 0;
+    const tag = isHeader ? 'th' : 'td';
+    const finalStyle = isHeader ? style + ' font-weight: bold;' : style;
+
+    htmlBody += `<${tag} style="${finalStyle}"${attrs}>${cellValue}</${tag}>`;
+  }
+  htmlBody += '</tr>';
+}
+htmlBody += '</table>';
+
 
     // Determine recipients
     let recipients = [];
@@ -2140,22 +2421,11 @@ function processEmailForm(formData) {
     let count = 0;
     recipients.forEach(email => {
       if (action === "draft") {
-        GmailApp.createDraft(
-          email,
-          subject,
-          '',
-          { htmlBody: htmlBody }
-        );
-        count++;
+        GmailApp.createDraft(email, subject, '', { htmlBody });
       } else if (action === "send") {
-        GmailApp.sendEmail(
-          email,
-          subject,
-          '',
-          { htmlBody: htmlBody }
-        );
-        count++;
+        GmailApp.sendEmail(email, subject, '', { htmlBody });
       }
+      count++;
     });
 
     return `Successfully ${action === "draft" ? "created" : "sent"} ${count} email${count > 1 ? "s" : ""}!`;
@@ -2399,7 +2669,6 @@ function createFormSetupSheet() {
     // On Submit Functions
     formSetupSheet.getRange("A6").setValue("On Submit Functions:");
     formSetupSheet.getRange("B6:F6").merge()
-      .setValue("checkout")
       .setFontSize(12)
       .setFontColor("#333333")
       .setBackground("#ffffff")
@@ -2504,11 +2773,11 @@ function createFormSetupSheet() {
       ["Email", "Responses", "B", "", "", "", "", "Email", "", "Yes"],
       ["Date", "Responses", "C", "Records", "B1", "", "", "Date", "", "No"],
       ["Time", "Responses", "D", "", "", "", "", "Time", "", "No"],
-      ["Number", "Responses", "E", "", "", "", "", "Number", "", "Yes"],
+      ["Number", "Responses", "E", "", "", "", "", "Number", "", "No"],
       ["Checkbox", "Responses", "F", "", "", "", "", "Checkbox", "", "No"],
-      ["Radio", "Responses", "G", "", "", "", "", "Radio", "Yes,No,Maybe", "Yes"],
+      ["Radio", "Responses", "G", "", "", "", "", "Radio", "Yes,No,Maybe", "No"],
       ["Textarea", "Responses", "H", "", "", "", "", "Textarea", "", "No"],
-      ["Dropdown", "Responses", "I", "", "", "", "", "Dropdown", "=Sheet1!A:A", "Yes"],
+      ["Dropdown", "Responses", "I", "", "", "", "", "Dropdown", "=Sheet1!A:A", "No"],
       ["MultiSelect", "Responses", "J", "", "", "", "", "MultiSelect", "Red,Green,Blue", "No"],
       ["StarRating", "Responses", "K", "", "", "", "", "StarRating", "", "No"],
       ["RangeSlider", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,5", "No"],
@@ -2518,7 +2787,7 @@ function createFormSetupSheet() {
       ["Signature", "Responses", "P", "", "", "", "", "Signature", "", "No"],
       ["Geolocation", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"],
       ["ProgressBar", "", "", "", "", "", "", "ProgressBar", "75", "No"],
-      ["Captcha", "Responses", "R", "", "", "", "", "Captcha", "", "Yes"],
+      ["Captcha", "Responses", "R", "", "", "", "", "Captcha", "", "No"],
       ["Image", "", "", "", "", "", "", "Image", "https://drive.google.com/uc?export=view&id=165kqv1atBk1WBbSkIbj6pnoikR9JOpLj", "No"],
       ["Video", "", "", "", "", "", "", "Video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "No"],
       ["ImageLink", "Responses", "S", "", "", "", "", "ImageLink", "", "No"],
@@ -2526,7 +2795,7 @@ function createFormSetupSheet() {
       ["StaticText", "", "", "", "", "", "", "StaticText", "This is static text", "No"],
       ["Table", "", "", "", "", "", "", "Table", "Sheet1!A1:F10", "No"],
       ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
-      ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Sheet1!A2:B10", "Yes"],
+      ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Sheet1!A2:B10", "No"],
       ["Hyperlink", "", "", "", "", "", "", "Hyperlink", "https://datamateapp.github.io/Donate%205%20per%20mo.html", "No"],
       ["Form Footer", "", "", "", "", "", "", "Footer", "<p style='font-style: italic;'>Thank you for your input!</p>", "No"]
     ];
@@ -3795,3 +4064,1793 @@ function checkout() {
   inputSheet.getRange("B11").setFormula("=Log!A10+1");
   inputSheet.getRange("A13").setFormula("=contacts!A2");
 }
+
+
+function loadFormRows() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow < 9) return [];
+
+  var range = setupSheet.getRange("A9:J" + lastRow);
+  var values = range.getValues();
+
+  return values.map(row => ({
+    fieldName: row[0],
+    sheet1: row[1],
+    cell1: row[2],
+    sheet2: row[3],
+    cell2: row[4],
+    sheet3: row[5],
+    cell3: row[6],
+    type: row[7],
+    options: row[8],
+    required: row[9]
+  }));
+}
+
+function saveFormRows(rows) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  // Get the last row with data in column A starting from row 10
+  var lastRow = setupSheet.getLastRow();
+  var startRow = 10; // Default start row
+  if (lastRow >= 10) {
+    var fieldNames = setupSheet.getRange("A10:A" + lastRow).getValues();
+    // Find the last row with non-empty data in column A
+    for (var i = fieldNames.length - 1; i >= 0; i--) {
+      if (fieldNames[i][0] !== "") {
+        startRow = 10 + i + 1; // Next row after the last non-empty row
+        break;
+      }
+    }
+  }
+
+  // Write new data starting at startRow
+  if (rows.length > 0) {
+    var data = rows.map(row => [
+      row.fieldName || "",
+      row.sheet1 || "",
+      row.cell1 || "",
+      row.sheet2 || "",
+      row.cell2 || "",
+      row.sheet3 || "",
+      row.cell3 || "",
+      row.type || "",
+      row.options || "",
+      row.required || ""
+    ]);
+    setupSheet.getRange("A" + startRow + ":J" + (startRow + data.length - 1)).setValues(data);
+  }
+}
+
+function saveToResponses(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+  Logger.log("Saving to Responses: " + JSON.stringify(data));
+
+  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var fieldType = row[7] || "Text";
+    var targetSheetName = row[1];
+    var targetColumn = row[2];
+    var fieldValue = data[fieldName];
+
+    if (fieldValue && fieldType.toUpperCase() === "CHECKOUT" && targetSheetName && targetColumn) {
+      try {
+        var items = JSON.parse(fieldValue);
+        if (items.length === 0) return;
+
+        var checkoutData = items.map(item => [item.description, item.quantity]);
+        var targetSheet = getOrCreateSheet(ss, targetSheetName);
+        var startColumn = columnToNumber(targetColumn);
+        var lastRow = targetSheet.getLastRow();
+        var nextRow = lastRow >= 1 ? lastRow + 1 : 1;
+        targetSheet.getRange(nextRow, startColumn, checkoutData.length, 2).setValues(checkoutData);
+        
+        Logger.log(`Data appended to ${targetSheetName} at ${targetColumn}${nextRow}:${String.fromCharCode(64 + startColumn + 1)}${nextRow + checkoutData.length - 1}: ` + JSON.stringify(checkoutData));
+      } catch (e) {
+        Logger.log(`Error processing Checkout field ${fieldName}: ${e.message}`);
+      }
+    }
+  });
+}
+
+function columnToNumber(column) {
+  return column.toUpperCase().charCodeAt(0) - 64;
+}
+function generateFormHTML() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+  var taxRate = parseFloat(setupSheet.getRange("B7").getValue()) || 0.08;
+  var formName = setupSheet.getRange("I6").getValue() || "Custom";
+
+  var processedFieldsData = fieldsData.map((row, index) => {
+    var fieldName = row[0];
+    var fieldType = row[7] || "Text";
+    var cell = setupSheet.getRange("I" + (index + 10));
+    var options = cell.getFormula() || row[8] || "";
+    var required = row[9].toString().toLowerCase() === "yes";
+    options = String(options);
+    var targets = [
+      { sheet: row[1], cell: row[2] },
+      { sheet: row[3], cell: row[4] },
+      { sheet: row[5], cell: row[6] }
+    ].filter(t => t.sheet && t.cell);
+
+    var fieldOptions = [];
+    if (fieldType.toUpperCase() === "CHECKOUT" && options) {
+      try {
+        var range = ss.getRange(options);
+        fieldOptions = range.getValues().map(r => ({
+          description: String(r[0] || ""),
+          unitPrice: Number(r[1]) || 0
+        })).filter(item => item.description);
+      } catch (e) {
+        fieldOptions = [{ description: "Error: Invalid range " + options, unitPrice: 0 }];
+      }
+    } else if (["DROPDOWN", "RADIO", "MULTISELECT"].includes(fieldType.toUpperCase())) {
+      if (options.startsWith("=")) {
+        try {
+          var range = ss.getRange(options.substring(1));
+          fieldOptions = range.getValues().flat().filter(String);
+        } catch (e) {
+          fieldOptions = ["Error: Invalid range " + options];
+        }
+      } else if (options) {
+        fieldOptions = options.split(",");
+      }
+    } else if (["FILEUPLOAD", "CONDITIONAL", "CALCULATED", "STATICTEXT", "PROGRESSBAR", "CONTAINER", "HEADER", "FOOTER"].includes(fieldType.toUpperCase())) {
+      fieldOptions = [options];
+    } else if (fieldType.toUpperCase() === "HYPERLINK" && options) {
+      var hrefMatch = options.match(/href=["'](.*?)["']/i);
+      fieldOptions = [options, hrefMatch ? hrefMatch[1] : options];
+    } else if (fieldType.toUpperCase() === "RANGESLIDER" && options) {
+      var parts = options.split(",");
+      fieldOptions = parts.length === 3 ? parts.map(Number) : [0, 100, 1];
+    } else if (["IMAGE", "VIDEO"].includes(fieldType.toUpperCase()) && options) {
+      if (options.includes("drive.google.com")) {
+        var fileIdMatch = options.match(/([a-zA-Z0-9_-]{20,})/);
+        if (fileIdMatch) options = "https://drive.google.com/thumbnail?id=" + fileIdMatch[1];
+      }
+      fieldOptions = [options];
+    } else if (fieldType.toUpperCase() === "TABLE" && options) {
+      try {
+        var range = ss.getRange(options);
+        fieldOptions = range.getValues().filter(row => 
+          row.some(cell => String(cell || '').trim() !== '')
+        ).map(row => row.map(cell => String(cell || '')));
+      } catch (e) {
+        fieldOptions = [["Error: Invalid range " + options]];
+      }
+    }
+
+    return [fieldName, fieldType, fieldOptions, targets, required];
+  });
+
+  var additionalStyles = [];
+  var hasCustomHeader = false;
+  var hasCustomFooter = false;
+  processedFieldsData.forEach(field => {
+    if (["HEADER", "FOOTER"].includes(field[1].toUpperCase()) && field[2][0]) {
+      var options = field[2][0];
+      if (options.match(/<!DOCTYPE|<html/i)) {
+        var styleMatch = options.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        if (styleMatch) additionalStyles.push(styleMatch[1]);
+        if (field[1].toUpperCase() === "HEADER") hasCustomHeader = true;
+        if (field[1].toUpperCase() === "FOOTER") hasCustomFooter = true;
+      }
+    }
+  });
+
+  var template = HtmlService.createTemplate(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <base target="_top">
+        <style>
+          body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          .custom-container {
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .header {
+            ${hasCustomHeader ? '' : 'background: #ffffff;'}
+            color: ${hasCustomHeader ? 'white' : 'black'};
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 24px;
+          }
+          .footer {
+            ${hasCustomFooter ? '' : 'background: #ffffff;'}
+            color: ${hasCustomHeader ? 'white' : 'black'};
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+          h1 {
+            color: #000000;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+          }
+          .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          label {
+            width: 150px;
+            font-weight: 500;
+            margin-right: 15px;
+            color: #555;
+          }
+          input[type="text"], input[type="date"], input[type="number"], 
+          input[type="email"], input[type="time"], input[type="range"], 
+          select, textarea, input[type="file"] {
+            width: 250px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+          }
+          input:focus, select:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+          }
+          textarea {
+            resize: vertical;
+            min-height: 100px;
+          }
+          input[type="checkbox"] {
+            margin-left: 150px;
+          }
+          .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .radio-group label {
+            width: auto;
+            margin: 0 0 0 5px;
+            display: inline;
+          }
+          .star-rating {
+            display: inline-flex;
+            font-size: 28px;
+            direction: rtl;
+          }
+          .star-rating input[type="radio"] {
+            display: none;
+          }
+          .star-rating label {
+            color: #ddd;
+            cursor: pointer;
+            margin: 0 3px;
+            width: auto;
+            transition: color 0.2s;
+          }
+          .star-rating label:hover,
+          .star-rating label:hover ~ label,
+          .star-rating input[type="radio"]:checked ~ label {
+            color: #f5b301;
+          }
+          img, video, iframe {
+            max-width: 250px;
+            max-height: 250px;
+            margin-top: 10px;
+            border-radius: 4px;
+          }
+          .static-text {
+            width: 100%;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            margin: 0 0 20px 150px;
+            font-size: 16px;
+            color: #444;
+          }
+          .table-display {
+            width: 100%;
+            margin: 0 0 20px 0;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid #ddd;
+          }
+          .table-display th, .table-display td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+          }
+          .table-display th {
+            background: #f1f1f1;
+            font-weight: bold;
+          }
+          .table-display img {
+            width: 100px;
+            height: auto;
+            display: block;
+          }
+          .table-display iframe {
+            width: 200px;
+            height: 150px;
+            border: none;
+          }
+          .hyperlink {
+            margin-left: 150px;
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 16px;
+          }
+          .hyperlink:hover {
+            text-decoration: underline;
+          }
+          .range-output {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #666;
+          }
+          .conditional-field {
+            display: none;
+          }
+          .calculated-field {
+            background: #f9f9f9;
+            pointer-events: none;
+          }
+          canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 250px;
+            height: 100px;
+          }
+          progress {
+            width: 250px;
+            height: 20px;
+          }
+          button {
+            padding: 12px 25px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+          }
+          button:hover:not(:disabled) {
+            background: #45a049;
+          }
+          button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+          }
+          .spinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+          @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+          #message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            display: none;
+          }
+          .error {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-left: 165px;
+            margin-top: 5px;
+          }
+          .no-fields {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            padding: 20px;
+          }
+          .required::after {
+            content: " *";
+            color: #d32f2f;
+          }
+          .checkout-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 10px 0;
+            border: 1px solid #ddd;
+          }
+          .checkout-table th, .checkout-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+          }
+          .checkout-table th {
+            background: #e8491d;
+            color: white;
+          }
+          .checkout-table tr:nth-child(even) {
+            background: #f2f2f2;
+          }
+          .checkout-table select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .checkout-table input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          .calculation-field {
+            margin-left: 150px;
+            margin-bottom: 10px;
+          }
+          .calculation-field span {
+            display: inline-block;
+            width: 100px;
+          }
+          .add-item-btn {
+            background: #2196F3;
+            margin-left: 150px;
+            margin-top: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+          }
+          .remove-item-btn {
+            background: #e74c3c;
+            padding: 6px 12px;
+            border-radius: 4px;
+          }
+          .hyperlink::after {
+  content: ' 🔗';
+  font-size: 0.9em;
+  color: #888;
+}
+          ${additionalStyles.join('\n')}
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <? if (processedFieldsData.length > 0) { ?>
+            <form id="myForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
+              <? var inContainer = false; ?>
+              <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
+                <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
+                  <? var options = processedFieldsData[i][2][0]; ?>
+                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+                    <? if (bodyMatch) { ?>
+                      <div class="header"><?!= bodyMatch[1] ?></div>
+                    <? } else { ?>
+                      <div class="header"><?= processedFieldsData[i][0] ?></div>
+                    <? } ?>
+                  <? } else if (options.includes(':')) { ?>
+                    <div class="header" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+                  <? } else { ?>
+                    <div class="header"><?!= options ?></div>
+                  <? } ?>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? inContainer = false; } ?>
+                  <? var options = processedFieldsData[i][2][0]; ?>
+                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+                    <? if (bodyMatch) { ?>
+                      <div class="footer"><?!= bodyMatch[1] ?></div>
+                    <? } else { ?>
+                      <div class="footer"><?= processedFieldsData[i][0] ?></div>
+                    <? } ?>
+                  <? } else if (options.includes(':')) { ?>
+                    <div class="footer" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+                  <? } else { ?>
+                    <div class="footer"><?!= options ?></div>
+                  <? } ?>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
+                  <? if (inContainer) { ?></div><? } ?>
+                  <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
+                  <? inContainer = true; ?>
+                <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKOUT" && processedFieldsData[i][2].length > 0) { ?>
+                  <div class="form-group" id="group-<?= processedFieldsData[i][0] ?>">
+                    <div>
+                      <table class="checkout-table" id="<?= processedFieldsData[i][0] ?>-table">
+                        <thead>
+                          <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="<?= processedFieldsData[i][0] ?>-tbody">
+                          <tr id="<?= processedFieldsData[i][0] ?>-row-0">
+                            <td>
+                              <select name="description" onchange="updateCheckoutTotals('<?= processedFieldsData[i][0] ?>')">
+                                <option value="">Select an item</option>
+                                <? for (var j = 0; j < processedFieldsData[i][2].length; j++) { ?>
+                                  <option value='<?= JSON.stringify({ description: processedFieldsData[i][2][j].description, unitPrice: processedFieldsData[i][2][j].unitPrice }) ?>'><?= processedFieldsData[i][2][j].description ?></option>
+                                <? } ?>
+                              </select>
+                            </td>
+                            <td><input type="number" name="quantity" min="0" value="0" oninput="updateCheckoutTotals('<?= processedFieldsData[i][0] ?>')"></td>
+                            <td class="unitPrice">$0.00</td>
+                            <td class="itemTotal">$0.00</td>
+                            <td><button type="button" class="remove-item-btn" onclick="removeCheckoutItem('<?= processedFieldsData[i][0] ?>', '<?= processedFieldsData[i][0] ?>-row-0')">Remove</button></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <div class="calculation-field"><span>Subtotal:</span><span id="<?= processedFieldsData[i][0] ?>-subtotal">$0.00</span></div>
+                      <div class="calculation-field"><span>Tax (${(taxRate * 100).toFixed(2)}%):</span><span id="<?= processedFieldsData[i][0] ?>-tax">$0.00</span></div>
+                      <div class="calculation-field"><span>Total:</span><span id="<?= processedFieldsData[i][0] ?>-total">$0.00</span></div>
+                      <button type="button" class="add-item-btn" onclick="addCheckoutItem('<?= processedFieldsData[i][0] ?>')">Add Item</button>
+                      <input type="hidden" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    </div>
+                  </div>
+                <? } else { ?>
+                  <div class="form-group <?= processedFieldsData[i][1].toUpperCase() === 'CONDITIONAL' ? 'conditional-field' : '' ?>" id="group-<?= processedFieldsData[i][0] ?>">
+                    <? if (processedFieldsData[i][1].toUpperCase() === "STATICTEXT" && processedFieldsData[i][2][0]) { ?>
+                      <div class="static-text"><?!= processedFieldsData[i][2][0] ?></div>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "TABLE" && processedFieldsData[i][2].length > 0) { ?>
+  <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
+  <table class="table-display">
+    <? var tableData = processedFieldsData[i][2]; ?>
+    <? for (var row = 0; row < tableData.length; row++) { ?>
+      <tr>
+        <? var isHeader = row === 0; ?>
+        <? for (var col = 0; col < tableData[row].length; col++) { ?>
+          <? var cellValue = String(tableData[row][col] || '').trim(); ?>
+          <? if (isHeader) { ?>
+            <th><?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?></th>
+          <? } else { ?>
+            <td>
+  <? if (cellValue.match(/\.(jpg|jpeg|png|gif)$/i) || cellValue.includes("drive.google.com")) { ?>
+    <? 
+      var imgSrc = cellValue;
+      var fallbackSrc = cellValue;
+      if (cellValue.includes("drive.google.com")) {
+        var idMatch = cellValue.match(/([a-zA-Z0-9_-]{20,})/);
+        if (idMatch) {
+          imgSrc = "https://drive.google.com/thumbnail?id=" + idMatch[1];
+          fallbackSrc = "https://drive.google.com/uc?id=" + idMatch[1];
+        }
+      }
+    ?>
+    <img src="<?= imgSrc ?>" style="width: 100px; height: auto;" alt="Table Image" 
+         onerror="this.src='<?= fallbackSrc ?>'; if(this.complete && this.naturalHeight === 0) { this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= cellValue.replace(/'/g, "\\'") ?>'; }">
+  <? } else if (cellValue.match(/(youtube\.com|youtu\.be)/i)) { ?>
+    <? 
+      var videoId;
+      if (cellValue.includes("youtu.be")) {
+        videoId = cellValue.split('/').pop().split('?')[0];
+      } else {
+        var match = cellValue.match(/[?&]v=([^&]+)/);
+        videoId = match ? match[1] : cellValue.split('/').pop().split('?')[0];
+      }
+    ?>
+    <iframe src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+  <? } else if (cellValue.match(/^(https?:\\/\\/|mailto:|tel:).+$/i)) { ?>
+    <? 
+      var displayText = cellValue;
+      if (cellValue.length > 40) {
+        displayText = cellValue.substring(0, 37) + '...';
+      }
+    ?>
+    <a href="<?= cellValue ?>" target="_blank" class="hyperlink">
+      <?= displayText ?>
+    </a>
+  <? } else { ?>
+    <?!= cellValue ? cellValue.replace(/</g, '<').replace(/>/g, '>') : '' ?>
+    <!-- Debug: cellValue='<?= cellValue.replace(/'/g, "\\'") ?>', isURL=<?= cellValue.match(/^(https?:\\/\\/|mailto:|tel:).+$/i) ? 'true' : 'false' ?> -->
+  <? } ?>
+</td>
+          <? } ?>
+        <? } ?>
+      </tr>
+    <? } ?>
+  </table>
+  <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    <? } else if (processedFieldsData[i][1].toUpperCase() === "HYPERLINK" && processedFieldsData[i][2][0]) { ?>
+                      <label class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <? if (processedFieldsData[i][2][0].match(/<a\s[^>]*href=["'][^"']*["'][^>]*>/i)) { ?>
+                        <?!= processedFieldsData[i][2][0] ?>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][1] ?>">
+                      <? } else { ?>
+                        <a href="<?= processedFieldsData[i][2][0] ?>" class="hyperlink" target="_blank"><?= processedFieldsData[i][2][0] ?></a>
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } ?>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    <? } else { ?>
+                      <label for="<?= processedFieldsData[i][0] ?>" class="<?= processedFieldsData[i][4] ? 'required' : '' ?>"><?= processedFieldsData[i][0] ?>:</label>
+                      <? if (processedFieldsData[i][1].toUpperCase() === "DROPDOWN" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "MULTISELECT" && processedFieldsData[i][2].length > 0) { ?>
+                        <select id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" multiple <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <option value="<?= options[j] ?>"><?= options[j] ?></option>
+                          <? } ?>
+                        </select>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "DATE") { ?>
+                        <input type="date" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TIME") { ?>
+                        <input type="time" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "NUMBER") { ?>
+                        <input type="number" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CHECKBOX") { ?>
+                        <input type="checkbox" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RADIO" && processedFieldsData[i][2].length > 0) { ?>
+                        <div class="radio-group" id="<?= processedFieldsData[i][0] ?>">
+                          <? var options = processedFieldsData[i][2]; ?>
+                          <? for (var j = 0; j < options.length; j++) { ?>
+                            <div>
+                              <input type="radio" id="<?= processedFieldsData[i][0] + '-' + j ?>" name="<?= processedFieldsData[i][0] ?>" value="<?= options[j] ?>" <?= processedFieldsData[i][4] && j === 0 ? 'required' : '' ?>>
+                              <label for="<?= processedFieldsData[i][0] + '-' + j ?>"><?= options[j] ?></label>
+                            </div>
+                          <? } ?>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "TEXTAREA") { ?>
+                        <textarea id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>></textarea>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "EMAIL") { ?>
+                        <input type="email" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "STARRATING") { ?>
+                        <div class="star-rating" id="<?= processedFieldsData[i][0] ?>">
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-5" name="<?= processedFieldsData[i][0] ?>" value="5" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                          <label for="<?= processedFieldsData[i][0] ?>-5">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-4" name="<?= processedFieldsData[i][0] ?>" value="4">
+                          <label for="<?= processedFieldsData[i][0] ?>-4">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-3" name="<?= processedFieldsData[i][0] ?>" value="3">
+                          <label for="<?= processedFieldsData[i][0] ?>-3">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-2" name="<?= processedFieldsData[i][0] ?>" value="2">
+                          <label for="<?= processedFieldsData[i][0] ?>-2">★</label>
+                          <input type="radio" id="<?= processedFieldsData[i][0] ?>-1" name="<?= processedFieldsData[i][0] ?>" value="1">
+                          <label for="<?= processedFieldsData[i][0] ?>-1">★</label>
+                        </div>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "RANGESLIDER" && processedFieldsData[i][2].length === 3) { ?>
+                        <input type="range" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" 
+                          min="<?= processedFieldsData[i][2][0] ?>" max="<?= processedFieldsData[i][2][1] ?>" step="<?= processedFieldsData[i][2][2] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                        <span class="range-output" id="<?= processedFieldsData[i][0] ?>-output"><?= processedFieldsData[i][2][0] ?></span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "FILEUPLOAD") { ?>
+                        <input type="file" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" accept="image/*,.pdf" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CONDITIONAL" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" data-condition="<?= processedFieldsData[i][2][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CALCULATED" && processedFieldsData[i][2][0]) { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" class="calculated-field" readonly>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "SIGNATURE") { ?>
+                        <canvas id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>"></canvas>
+                        <input type="hidden" id="<?= processedFieldsData[i][0] ?>-hidden" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "GEOLOCATION") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" readonly <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                        <button type="button" onclick="getLocation('<?= processedFieldsData[i][0] ?>')">Get Location</button>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "PROGRESSBAR" && processedFieldsData[i][2].length > 0) { ?>
+                        <progress id="<?= processedFieldsData[i][0] ?>" value="<?= String(processedFieldsData[i][2][0] || '0').startsWith('=') ? 0 : processedFieldsData[i][2][0] || 0 ?>" max="100"></progress>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "CAPTCHA") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter sum (e.g., 3 + 5)" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                        <span id="captcha-question">What is 3 + 5?</span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGE" && processedFieldsData[i][2][0]) { ?>
+                        <img src="<?= processedFieldsData[i][2][0] ?>" alt="<?= processedFieldsData[i][0] ?>" id="<?= processedFieldsData[i][0] ?>" 
+                             onerror="this.style.display='none'; document.getElementById('<?= processedFieldsData[i][0] ?>-error').textContent='Image failed to load: <?= processedFieldsData[i][2][0].replace(/'/g, "\\'") ?>';">
+                        <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= processedFieldsData[i][2][0] ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEO" && processedFieldsData[i][2][0]) { ?>
+  <? 
+    var videoUrl = processedFieldsData[i][2][0];
+    var videoId = '';
+    if (videoUrl.includes("youtu.be") || videoUrl.includes("youtube.com")) {
+      if (videoUrl.includes("youtu.be")) {
+        videoId = videoUrl.split('/').pop().split('?')[0];
+      } else if (videoUrl.includes("youtube.com")) {
+        var match = videoUrl.match(/[?&]v=([^&]+)/);
+        if (match) {
+          videoId = match[1];
+        } else if (videoUrl.includes("/embed/")) {
+          videoId = videoUrl.split('/embed/')[1].split('?')[0];
+        }
+      }
+    }
+  ?>
+  <? if (videoId) { ?>
+    <iframe width="250" height="150" src="https://www.youtube.com/embed/<?= videoId ?>" frameborder="0" allowfullscreen></iframe>
+  <? } else if (!videoUrl.includes("youtu")) { ?>
+    <video controls id="<?= processedFieldsData[i][0] ?>">
+      <source src="<?= videoUrl ?>" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  <? } else { ?>
+    <span class="error" id="<?= processedFieldsData[i][0] ?>-error">Invalid YouTube URL</span>
+  <? } ?>
+  <input type="hidden" name="<?= processedFieldsData[i][0] ?>" value="<?= videoUrl ?>">
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "IMAGELINK") { ?\>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Image URL" <?= processedFieldsData[i][4] ? 'required' : '' ?> oninput="previewImage(this)">
+                        <img id="<?= processedFieldsData[i][0] ?>-preview" style="display: none;" alt="Preview">
+                        <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                      <? } else if (processedFieldsData[i][1].toUpperCase() === "VIDEOLINK") { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" placeholder="Enter Video URL" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } else { ?>
+                        <input type="text" id="<?= processedFieldsData[i][0] ?>" name="<?= processedFieldsData[i][0] ?>" <?= processedFieldsData[i][4] ? 'required' : '' ?>>
+                      <? } ?>
+                      <span class="error" id="<?= processedFieldsData[i][0] ?>-error"></span>
+                    <? } ?>
+                  </div>
+                <? } ?>
+              <? } ?>
+              <? if (inContainer) { ?></div><? } ?>
+              <button type="submit" id="submitButton">Submit <span class="spinner" id="spinner"></span></button>
+            </form>
+            <div id="message">Data submitted successfully!</div>
+          <? } else { ?>
+            <div class="no-fields">No fields defined. Please add fields in FormSetup A10:J.</div>
+          <? } ?>
+        </div>
+        <script>
+          <? if (processedFieldsData.length > 0) { ?>
+            const processedFieldsData = <?!= JSON.stringify(processedFieldsData) ?>;
+            const taxRate = <?!= taxRate ?>;
+            let signatureCanvases = {};
+
+            function escapeHtml(text) {
+              const div = document.createElement('div');
+              div.textContent = text;
+              return div.innerHTML;
+            }
+
+            function addCheckoutItem(fieldId) {
+              const tbody = document.getElementById(fieldId + "-tbody");
+              const rowCount = tbody.getElementsByTagName("tr").length;
+              const rowId = fieldId + "-row-" + rowCount;
+              const field = processedFieldsData.find(f => f[0] === fieldId);
+
+              const row = document.createElement("tr");
+              row.id = rowId;
+
+              const selectTd = document.createElement("td");
+              const select = document.createElement("select");
+              select.name = "description";
+              select.onchange = () => updateCheckoutTotals(fieldId);
+              const defaultOption = document.createElement("option");
+              defaultOption.value = "";
+              defaultOption.text = "Select an item";
+              select.appendChild(defaultOption);
+
+              field[2].forEach(item => {
+                const option = document.createElement("option");
+                option.value = JSON.stringify({ description: item.description, unitPrice: item.unitPrice });
+                option.text = escapeHtml(item.description);
+                select.appendChild(option);
+              });
+              selectTd.appendChild(select);
+
+              const quantityTd = document.createElement("td");
+              const quantityInput = document.createElement("input");
+              quantityInput.type = "number";
+              quantityInput.name = "quantity";
+              quantityInput.min = "0";
+              quantityInput.value = "0";
+              quantityInput.oninput = () => updateCheckoutTotals(fieldId);
+              quantityTd.appendChild(quantityInput);
+
+              const unitPriceTd = document.createElement("td");
+              unitPriceTd.className = "unitPrice";
+              unitPriceTd.textContent = "$0.00";
+
+              const itemTotalTd = document.createElement("td");
+              itemTotalTd.className = "itemTotal";
+              itemTotalTd.textContent = "$0.00";
+
+              const actionTd = document.createElement("td");
+              const removeButton = document.createElement("button");
+              removeButton.type = "button";
+              removeButton.className = "remove-item-btn";
+              removeButton.textContent = "Remove";
+              removeButton.onclick = () => removeCheckoutItem(fieldId, rowId);
+              actionTd.appendChild(removeButton);
+
+              row.appendChild(selectTd);
+              row.appendChild(quantityTd);
+              row.appendChild(unitPriceTd);
+              row.appendChild(itemTotalTd);
+              row.appendChild(actionTd);
+
+              tbody.appendChild(row);
+              updateCheckoutTotals(fieldId);
+            }
+
+            function removeCheckoutItem(fieldId, rowId) {
+              const row = document.getElementById(rowId);
+              if (row) row.parentNode.removeChild(row);
+              updateCheckoutTotals(fieldId);
+            }
+
+            function updateCheckoutTotals(fieldId) {
+              const tbody = document.getElementById(fieldId + "-tbody");
+              if (!tbody) return;
+              const rows = tbody.querySelectorAll("tr");
+              let subtotal = 0;
+
+              rows.forEach(row => {
+                const select = row.querySelector("select[name='description']");
+                const quantityInput = row.querySelector("input[name='quantity']");
+                const unitPriceCell = row.querySelector(".unitPrice");
+                const itemTotalCell = row.querySelector(".itemTotal");
+
+                let unitPrice = 0;
+                let description = "";
+                const quantity = parseFloat(quantityInput.value) || 0;
+
+                if (select.value) {
+                  try {
+                    const item = JSON.parse(select.value);
+                    description = item.description;
+                    unitPrice = parseFloat(item.unitPrice) || 0;
+                    unitPriceCell.textContent = "$" + unitPrice.toFixed(2); // Fixed: Update unit price immediately
+                  } catch (e) {
+                    console.error("Error parsing item:", e);
+                    unitPriceCell.textContent = "$0.00";
+                  }
+                } else {
+                  unitPriceCell.textContent = "$0.00";
+                }
+
+                const total = quantity * unitPrice;
+                subtotal += total;
+                itemTotalCell.textContent = "$" + total.toFixed(2);
+              });
+
+              const items = Array.from(rows).map(row => {
+                const select = row.querySelector("select[name='description']");
+                const quantityInput = row.querySelector("input[name='quantity']");
+                const value = select.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                let description = "";
+                let unitPrice = 0;
+
+                if (value) {
+                  try {
+                    const item = JSON.parse(value);
+                    description = item.description;
+                    unitPrice = parseFloat(item.unitPrice) || 0;
+                  } catch (e) {
+                    console.error("Error parsing item:", e);
+                  }
+                }
+
+                return { description, quantity, unitPrice };
+              }).filter(item => item.quantity > 0 && item.description);
+
+              const tax = subtotal * taxRate;
+              const total = subtotal + tax;
+
+              document.getElementById(fieldId + "-subtotal").textContent = "$" + subtotal.toFixed(2);
+              document.getElementById(fieldId + "-tax").textContent = "$" + tax.toFixed(2);
+              document.getElementById(fieldId + "-total").textContent = "$" + total.toFixed(2);
+              document.getElementById(fieldId).value = JSON.stringify(items);
+            }
+
+            function handleSubmit(event) {
+              event.preventDefault();
+              const form = document.getElementById('myForm');
+              const submitButton = document.getElementById('submitButton');
+              const spinner = document.getElementById('spinner');
+              const dataToSend = {};
+              let isValid = true;
+              let pendingFiles = 0;
+
+              const inputs = form.querySelectorAll('input, select, textarea');
+              inputs.forEach(input => {
+                const name = input.name;
+                if (!name || input.type === 'button') return;
+
+                let value;
+                const errorSpan = document.getElementById(name + '-error');
+                const fieldData = processedFieldsData.find(f => f[0] === name);
+                const isRequired = fieldData && fieldData[4];
+
+                if (input.type === 'file' && input.files.length > 0) {
+                  const file = input.files[0];
+                  if (file.size > 6 * 1024 * 1024) {
+                    errorSpan.textContent = 'File too large (max 6 MB)';
+                    isValid = false;
+                  } else {
+                    pendingFiles++;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                      dataToSend[name] = {
+                        name: file.name,
+                        data: e.target.result.split(',')[1],
+                        type: file.type || 'application/octet-stream'
+                      };
+                      pendingFiles--;
+                      if (pendingFiles === 0 && isValid) submitForm();
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                } else if (input.type === 'checkbox') {
+                  value = input.checked;
+                  dataToSend[name] = value;
+                } else if (input.type === 'radio') {
+                  if (input.checked) dataToSend[name] = input.value;
+                  return;
+                } else if (input.tagName === 'SELECT' && input.multiple) {
+                  value = Array.from(input.selectedOptions).map(option => option.value).join(',');
+                  dataToSend[name] = value;
+                } else if (input.id.endsWith('-hidden') && signatureCanvases[name]) {
+                  value = signatureCanvases[name].toDataURL().split(',')[1];
+                  dataToSend[name] = { name: name + '.png', data: value, type: 'image/png' };
+                } else if (fieldData && fieldData[1].toUpperCase() === 'CHECKOUT') {
+                  value = input.value;
+                  if (isRequired && (!value || value === '[]')) {
+                    errorSpan.textContent = 'Please add at least one item with a quantity greater than 0';
+                    isValid = false;
+                  } else {
+                    errorSpan.textContent = '';
+                    dataToSend[name] = value;
+                  }
+                } else {
+                  value = input.value;
+                  dataToSend[name] = value;
+                }
+
+                if (fieldData && fieldData[1].toUpperCase() !== 'CHECKOUT' && isRequired && (!value || value === '')) {
+                  errorSpan.textContent = 'This field is required';
+                  isValid = false;
+                } else if (input.type === 'number' && value && isNaN(value)) {
+                  errorSpan.textContent = 'Please enter a valid number';
+                  isValid = false;
+                } else if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                  errorSpan.textContent = 'Please enter a valid email';
+                  isValid = false;
+                } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
+                  errorSpan.textContent = 'Incorrect answer. Please enter 8.';
+                  isValid = false;
+                } else if (fieldData && fieldData[1].toUpperCase() !== 'CHECKOUT') {
+                  errorSpan.textContent = '';
+                }
+              });
+
+              processedFieldsData.forEach(field => {
+                if (field[1].toUpperCase() === "CALCULATED" && field[2][0]) {
+                  const calcField = document.getElementById(field[0]);
+                  const formula = field[2][0].split('=')[1];
+                  const parts = formula.match(/(\w+|\d+|[*+/-])/g);
+                  let result = 0;
+                  if (parts) {
+                    result = evaluateFormula(parts, dataToSend);
+                    calcField.value = result;
+                    dataToSend[field[0]] = result;
+                  }
+                }
+              });
+
+              if (pendingFiles === 0 && isValid) submitForm();
+
+              function submitForm() {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                spinner.style.display = 'inline-block';
+
+                google.script.run
+                  .withSuccessHandler(() => {
+                    form.reset();
+                    resetSignatures();
+                    processedFieldsData.forEach(field => {
+                      if (field[1].toUpperCase() === "CHECKOUT") {
+                        const tbody = document.getElementById(field[0] + "-tbody");
+                        tbody.innerHTML = "";
+                        addCheckoutItem(field[0]);
+                        updateCheckoutTotals(field[0]);
+                      }
+                    });
+                    showMessage();
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .withFailureHandler(error => {
+                    alert('Error submitting form: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    spinner.style.display = 'none';
+                  })
+                  .processForm(dataToSend);
+              }
+            }
+
+            function evaluateFormula(parts, data) {
+              let result = 0;
+              let operator = '+';
+              parts.forEach(part => {
+                if (['+', '-', '*', '/'].includes(part)) {
+                  operator = part;
+                } else {
+                  const num = isNaN(part) ? (data[part] || 0) : Number(part);
+                  if (operator === '+') result += num;
+                  else if (operator === '-') result -= num;
+                  else if (operator === '*') result *= num;
+                  else if (operator === '/' && num !== 0) result /= num;
+                }
+              });
+              return result;
+            }
+
+            function showMessage() {
+              const message = document.getElementById('message');
+              message.style.display = 'block';
+              setTimeout(() => message.style.display = 'none', 3000);
+            }
+
+            function getLocation(fieldId) {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  position => {
+                    document.getElementById(fieldId).value = position.coords.latitude + ',' + position.coords.longitude;
+                  },
+                  error => document.getElementById(fieldId + '-error').textContent = 'Unable to get location'
+                );
+              } else {
+                document.getElementById(fieldId + '-error').textContent = 'Geolocation not supported';
+              }
+            }
+
+            function previewImage(input) {
+              const preview = document.getElementById(input.id + '-preview');
+              if (input.value) {
+                preview.src = input.value;
+                preview.style.display = 'block';
+                preview.onerror = () => {
+                  preview.style.display = 'none';
+                  document.getElementById(input.id + '-error').textContent = 'Invalid image URL';
+                };
+              } else {
+                preview.style.display = 'none';
+                document.getElementById(input.id + '-error').textContent = '';
+              }
+            }
+
+            processedFieldsData.forEach(field => {
+              if (field[1].toUpperCase() === "RANGESLIDER") {
+                const slider = document.getElementById(field[0]);
+                const output = document.getElementById(field[0] + '-output');
+                if (slider && output) {
+                  slider.oninput = () => output.textContent = slider.value;
+                }
+              } else if (field[1].toUpperCase() === "SIGNATURE") {
+                const canvas = document.getElementById(field[0]);
+                if (canvas) {
+                  const ctx = canvas.getContext('2d');
+                  let drawing = false;
+                  signatureCanvases[field[0]] = canvas;
+
+                  canvas.onmousedown = e => {
+                    drawing = true;
+                    ctx.beginPath();
+                    ctx.moveTo(e.offsetX, e.offsetY);
+                  };
+                  canvas.onmousemove = e => {
+                    if (drawing) {
+                      ctx.lineTo(e.offsetX, e.offsetY);
+                      ctx.stroke();
+                    }
+                  };
+                  canvas.onmouseup = () => drawing = false;
+                  canvas.onmouseleave = () => drawing = false;
+                }
+              } else if (field[1].toUpperCase() === "CONDITIONAL" && field[2][0]) {
+                const [triggerField, triggerValue] = field[2][0].split('=');
+                const triggerInput = document.getElementById(triggerField);
+                const conditionalGroup = document.getElementById('group-' + field[0]);
+                if (triggerInput && conditionalGroup) {
+                  triggerInput.onchange = () => {
+                    const show = (triggerInput.type === 'checkbox' ? triggerInput.checked : triggerInput.value) === triggerValue;
+                    conditionalGroup.style.display = show ? 'flex' : 'none';
+                  };
+                }
+              } else if (field[1].toUpperCase() === "CHECKOUT") {
+                updateCheckoutTotals(field[0]);
+              }
+            });
+
+            function resetSignatures() {
+              Object.values(signatureCanvases).forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              });
+            }
+          <? } ?>
+        </script>
+      </body>
+    </html>
+  `);
+
+  template.formName = formName;
+  template.processedFieldsData = processedFieldsData;
+  template.taxRate = taxRate;
+  template.additionalStyles = additionalStyles;
+  return template.evaluate().setTitle(formName || "Form Preview");
+}
+function doGet(e) {
+  return generateFormHTML();
+}
+function processForm(formData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+  var fieldsRange = setupSheet.getRange("A9:J" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  // Validate required fields
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var isRequired = row[9].toString().toLowerCase() === "yes";
+    var fieldValue = formData[fieldName];
+
+    if (isRequired && (fieldValue === undefined || fieldValue === "" || fieldValue === null)) {
+      throw new Error(`Field "${fieldName}" is required but was not provided.`);
+    }
+  });
+
+  var sheetsData = {};
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var targetSheets = [row[1], row[3], row[5]].filter(Boolean);
+    var targetCells = [row[2], row[4], row[6]].filter(Boolean);
+    var fieldValue = formData[fieldName];
+
+    if (fieldValue === undefined) return;
+
+    // Handle file uploads and checkout fields
+    if (typeof fieldValue === 'object' && fieldValue.data) {
+      fieldValue = uploadFile(fieldValue);
+    } else if (row[7].toUpperCase() === "CHECKOUT" && typeof fieldValue === 'string') {
+      try {
+        var checkoutItems = JSON.parse(fieldValue);
+        if (checkoutItems.length === 0) {
+          fieldValue = "";
+        } else {
+          fieldValue = checkoutItems
+            .map(item => `${item.description}:${item.quantity}:${item.unitPrice}`)
+            .join(",");
+        }
+      } catch (e) {
+        fieldValue = "";
+      }
+    }
+
+    targetSheets.forEach((sheetName, index) => {
+      if (!sheetName || !targetCells[index]) return;
+      if (!sheetsData[sheetName]) sheetsData[sheetName] = { singleCell: [], tableRow: [] };
+
+      var targetCell = targetCells[index];
+      if (/^[A-Z]+[0-9]+$/.test(targetCell)) {
+        sheetsData[sheetName].singleCell.push({ fieldName, targetCell, value: fieldValue });
+      } else if (/^[A-Z]+$/.test(targetCell) && row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
+        var checkoutItems = fieldValue.split(",").map(item => {
+          var [description, quantity, price] = item.split(":");
+          return [description, parseInt(quantity), parseFloat(price)];
+        });
+        sheetsData[sheetName].tableRow.push({ fieldName, column: targetCell, value: checkoutItems });
+      } else if (/^[A-Z]+$/.test(targetCell)) {
+        sheetsData[sheetName].tableRow.push({ fieldName, column: targetCell, value: fieldValue });
+      }
+    });
+  });
+
+  // Write data to target sheets
+  Object.keys(sheetsData).forEach(sheetName => {
+    var sheet = getOrCreateSheet(ss, sheetName);
+    var singleCellData = sheetsData[sheetName].singleCell;
+    singleCellData.forEach(data => {
+      sheet.getRange(data.targetCell).setValue(data.value);
+    });
+
+    var tableRowData = sheetsData[sheetName].tableRow;
+    if (tableRowData.length > 0) {
+      // Find the last row with data across all relevant columns
+      var lastRow = Math.max(1, sheet.getLastRow());
+      var nextRow = lastRow >= 1 ? lastRow + 1 : 2;
+
+      tableRowData.forEach(data => {
+        if (Array.isArray(data.value) && data.fieldName && fieldsData.find(row => row[0] === data.fieldName && row[7].toUpperCase() === "CHECKOUT")) {
+          data.value.forEach(item => {
+            var colIndex = data.column.charCodeAt(0) - 65;
+            var rowData = new Array(Math.max(colIndex + 3, 1)).fill('');
+            rowData[colIndex] = item[0]; // description
+            rowData[colIndex + 1] = item[1]; // quantity
+            rowData[colIndex + 2] = item[2]; // price
+            sheet.getRange(nextRow, 1, 1, rowData.length).setValues([rowData]);
+            nextRow++;
+          });
+        } else {
+          var colIndex = columnToNumber(data.column);
+          var targetRange = sheet.getRange(nextRow, colIndex, 1, 1);
+          targetRange.setValue(data.value);
+        }
+      });
+    }
+  });
+
+  // Email notification
+  var emailRecipient = setupSheet.getRange("B8").getValue();
+  if (emailRecipient) {
+    var subject = "New Form Submission";
+    var body = "A new form submission has been received:\n\n";
+    fieldsData.forEach(row => {
+      var fieldName = row[0];
+      var fieldValue = formData[fieldName] || "(No value)";
+      if (row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
+        try {
+          fieldValue = JSON.parse(fieldValue)
+            .filter(item => item.quantity > 0)
+            .map(item => `${item.description} (Qty: ${item.quantity}, Price: ${item.unitPrice})`)
+            .join("\n") || "(No items selected)";
+        } catch (e) {
+          fieldValue = "(Invalid checkout data)";
+        }
+      }
+      body += `${fieldName}: ${fieldValue}\n`;
+    });
+    try {
+      MailApp.sendEmail(emailRecipient, subject, body);
+    } catch (e) {
+      Logger.log(`Error sending email: ${e.message}`);
+    }
+  }
+
+  // Execute on-submit functions
+  var onSubmitFunctions = setupSheet.getRange("B6").getValue();
+  if (onSubmitFunctions) {
+    var functionNames = onSubmitFunctions.split(',').map(name => name.trim());
+    var functionMap = {
+      "save": save,
+      "copyInput1": copyInput1,
+      "newcontact": newcontact,
+      "updateInventory": updateInventory
+    };
+
+    functionNames.forEach(funcName => {
+      if (functionMap[funcName]) {
+        try {
+          functionMap[funcName]();
+        } catch (e) {
+          Logger.log(`Error executing function ${funcName}: ${e.message}`);
+        }
+      } else {
+        try {
+          var func = new Function(`return ${funcName}`)();
+          if (typeof func === "function") func();
+          else Logger.log(`Function ${funcName} is not callable`);
+        } catch (e) {
+          Logger.log(`Function ${funcName} not found or invalid: ${e.message}`);
+        }
+      }
+    });
+  }
+
+  return "Success";
+}
+function uploadFile(fileData) {
+  var folder = DriveApp.getRootFolder();
+  var blob = Utilities.newBlob(
+    Utilities.base64Decode(fileData.data),
+    fileData.type,
+    fileData.name
+  );
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getUrl();
+}
+
+function getOrCreateSheet(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+  return sheet;
+}
+function checkout() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const ordersSheet = ss.getSheetByName("Orders");
+  const viewSheet = ss.getSheetByName("View_Print");
+
+  // Set formulas for A21:A30
+  inputSheet.getRange("A21").setFormula("=Orders!A2");
+  inputSheet.getRange("A22").setFormula("=Orders!A3");
+  inputSheet.getRange("A23").setFormula("=Orders!A4");
+  inputSheet.getRange("A24").setFormula("=Orders!A5");
+  inputSheet.getRange("A25").setFormula("=Orders!A6");
+  inputSheet.getRange("A26").setFormula("=Orders!A7");
+  inputSheet.getRange("A27").setFormula("=Orders!A8");
+  inputSheet.getRange("A28").setFormula("=Orders!A9");
+  inputSheet.getRange("A29").setFormula("=Orders!A10");
+  inputSheet.getRange("A30").setFormula("=Orders!A11"); 
+
+  // Set formulas for B21:B30
+  inputSheet.getRange("B21").setFormula("=Orders!B2");
+  inputSheet.getRange("B22").setFormula("=Orders!B3");
+  inputSheet.getRange("B23").setFormula("=Orders!B4");
+  inputSheet.getRange("B24").setFormula("=Orders!B5");
+  inputSheet.getRange("B25").setFormula("=Orders!B6");
+  inputSheet.getRange("B26").setFormula("=Orders!B7");
+  inputSheet.getRange("B27").setFormula("=Orders!B8");
+  inputSheet.getRange("B28").setFormula("=Orders!B9");
+  inputSheet.getRange("B29").setFormula("=Orders!B10");
+  inputSheet.getRange("B30").setFormula("=Orders!B11");
+
+  // Set other formulas
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+  
+
+  // Call other functions
+  newcontact();
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+  save();
+  updateInventory();
+  copyInput1();
+
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+
+  // Clear the Orders sheet range A1:C12
+  ordersSheet.getRange("A1:C").clear();
+
+  // Reapply formulas (if needed)
+
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+}
+function save() {
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const dataSheet = ss.getSheetByName("Data");
+  const viewPrintSheet = ss.getSheetByName("View_Print");
+  const updateSheet = ss.getSheetByName("Update");
+  const logSheet = ss.getSheetByName("Log");
+
+  dataSheet.insertRowAfter(1);
+
+  inputSheet
+    .getRange("A1:Q1")
+    .copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A2:Q2")
+    .copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A3:Q3")
+    .copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A4:Q4")
+    .copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A5:Q5")
+    .copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A6:Q6")
+    .copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A7:Q7")
+    .copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A8:Q8")
+    .copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A9:Q9")
+    .copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A10:Q10")
+    .copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A11:Q11")
+    .copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A12:Q12")
+    .copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A13:Q13")
+    .copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A14:Q14")
+    .copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A15:Q15")
+    .copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A16:Q16")
+    .copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A17:Q17")
+    .copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A18:Q18")
+    .copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A19:Q19")
+    .copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A20:Q20")
+    .copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A21:Q21")
+    .copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A22:Q22")
+    .copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A23:Q23")
+    .copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A24:Q24")
+    .copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A25:Q25")
+    .copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A26:Q26")
+    .copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A27:Q27")
+    .copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A28:Q28")
+    .copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A29:Q29")
+    .copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A30:Q30")
+    .copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A31:Q31")
+    .copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A32:Q32")
+    .copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A33:Q33")
+    .copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A34:Q34")
+    .copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A35:Q35")
+    .copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A36:Q36")
+    .copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A37:Q37")
+    .copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A38:Q38")
+    .copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A39:Q39")
+    .copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A40:Q40")
+    .copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A41:Q41")
+    .copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A42:Q42")
+    .copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A43:Q43")
+    .copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A44:Q44")
+    .copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A45:Q45")
+    .copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A46:Q46")
+    .copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A47:Q47")
+    .copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A48:Q48")
+    .copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
+
+  dataSheet
+    .getRange("A2")
+    .setFormula(
+      '=Data!S2&"- "&T2&"- "&U2&"- "&V2&"- "&W2&"- "&X2&"- "&Y2&"- "&Z2&"- "&AA2&"- "&AB2&"- "&AC2&"- "&AD2'
+    );
+  dataSheet
+    .getRange("A1")
+    .setFormula(
+      '=Data!S1&"- "&T1&"- "&U1&"- "&V1&"- "&W1&"- "&X1&"- "&Y1&"- "&Z1&"- "&AA1&"- "&AB1&"- "&AC1&"- "&AD1'
+    );
+
+  dataSheet
+    .getRange("AE2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
+  dataSheet
+    .getRange("AF2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
+  dataSheet
+    .getRange("AG2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
+
+      const images = inputSheet.getImages();
+  images.forEach(image => {
+    const sourceRange = image.getAnchorCell();
+    // Check if the image's anchor cell is within A3:Q48
+    if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
+      const blob = image.getBlob();
+      const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
+      const targetColumn = sourceRange.getColumn();
+      
+      // Insert image into Data sheet at the corresponding position
+      dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
+    }
+  });
+
+  updateSheet.insertRowAfter(1);
+  updateSheet.getRange("A2").setFormula("=Data!A2");
+  updateSheet.getRange("E2").setFormula("=Data!S2");
+  updateSheet.getRange("F2").setFormula("=Data!T2");
+  updateSheet.getRange("G2").setFormula("=Data!U2");
+  updateSheet.getRange("H2").setFormula("=Data!V2");
+  updateSheet.getRange("I2").setFormula("=Data!W2");
+  updateSheet.getRange("J2").setFormula("=Data!X2");
+  updateSheet.getRange("K2").setFormula("=Data!Y2");
+  updateSheet.getRange("L2").setFormula("=Data!Z2");
+  updateSheet.getRange("M2").setFormula("=Data!AA2");
+  updateSheet.getRange("N2").setFormula("=Data!AB2");
+  updateSheet.getRange("O2").setFormula("=Data!AC2");
+  updateSheet.getRange("P2").setFormula("=Data!AD2");
+
+  var rangeWithFilter = logSheet.getRange("A10:O10");
+  var filterCriteria = rangeWithFilter.getFilter().getRange().getA1Notation();
+
+  logSheet.insertRowBefore(10);
+
+  rangeWithFilter.getFilter().remove();
+
+  var fullRange = logSheet.getRange("A9:O9" + logSheet.getLastRow());
+  fullRange.createFilter();
+
+  logSheet.getRange("A10").setFormula("=Data!S2");
+  logSheet.getRange("B10").setFormula("=Data!T2");
+  logSheet.getRange("C10").setFormula("=Data!U2");
+  logSheet.getRange("D10").setFormula("=Data!V2");
+  logSheet.getRange("E10").setFormula("=Data!W2");
+  logSheet.getRange("F10").setFormula("=Data!X2");
+  logSheet.getRange("G10").setFormula("=Data!Y2");
+  logSheet.getRange("H10").setFormula("=Data!Z2");
+  logSheet.getRange("I10").setFormula("=Data!AA2");
+  logSheet.getRange("J10").setFormula("=Data!AB2");
+  logSheet.getRange("K10").setFormula("=Data!AC2");
+  logSheet.getRange("L10").setFormula("=Data!AD2");
+  logSheet.getRange("M10").setFormula("=Data!AE2");
+  logSheet.getRange("N10").setFormula("=Data!AF2");
+  logSheet.getRange("O10").setFormula("=Data!AG2");
+
+  logSheet.getRange("A9").setFormula("=Input!A1");
+  logSheet.getRange("B9").setFormula("=Input!B1");
+  logSheet.getRange("C9").setFormula("=Input!C1");
+  logSheet.getRange("D9").setFormula("=Input!D1");
+  logSheet.getRange("E9").setFormula("=Input!E1");
+  logSheet.getRange("F9").setFormula("=Input!F1");
+  logSheet.getRange("G9").setFormula("=Input!G1");
+  logSheet.getRange("H9").setFormula("=Input!H1");
+  logSheet.getRange("I9").setFormula("=Input!I1");
+  logSheet.getRange("J9").setFormula("=Input!J1");
+  logSheet.getRange("K9").setFormula("=Input!K1");
+  logSheet.getRange("L9").setFormula("=Input!L1");
+  logSheet.getRange("M9").setFormula("=Input!M1");
+  logSheet.getRange("N9").setFormula("=Input!N1");
+  logSheet.getRange("O9").setFormula("=Input!O1");
+
+  viewPrintSheet.getRange("B2").activate();
+      // Clear any existing content or hyperlink in cells B1:L1
+  viewPrintSheet.getRange("B1:L1").clearContent();
+
+  // Merge cells B1:L1
+  viewPrintSheet.getRange("B1:L1").merge();
+
+  // Add the hyperlink with the display text
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy", "Open Source")');
+
+  // Set the font style and color for the hyperlink
+  const cell = viewPrintSheet.getRange("B1");
+  cell.setFontWeight("bold");
+  cell.setFontSize(12);
+  cell.setFontColor("#0066CC"); // Set font color to a noticeable blue
+
+  // Set fill to No Fill for merged cells B1:L1
+  cell.setBackground(null); // Removes any background color
+
+  // Center-align the text in the merged cells
+  cell.setHorizontalAlignment("center");
+  cell.setVerticalAlignment("middle");
+
+  sendDataMateEmail1();
+
+}
+function sendDataMateEmail1() {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "DataMate Record",
+    body: "Another record saved."
+  });
+}
+function newcontact() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const newContact = ss.getSheetByName("NewContact");
+  const contactsSheet = ss.getSheetByName("contacts");
+
+   contactsSheet.insertRowAfter(1);
+
+newContact.getRange('B1').copyTo(contactsSheet.getRange('contacts!B2'), { contentsOnly: true });
+newContact.getRange('B2').copyTo(contactsSheet.getRange('contacts!C2'), { contentsOnly: true });
+newContact.getRange('B3').copyTo(contactsSheet.getRange('contacts!D2'), { contentsOnly: true });
+newContact.getRange('B4').copyTo(contactsSheet.getRange('contacts!AR2'), { contentsOnly: true });
+newContact.getRange('B5').copyTo(contactsSheet.getRange('contacts!AZ2'), { contentsOnly: true });
+newContact.getRange('B6').copyTo(contactsSheet.getRange('contacts!BD2'), { contentsOnly: true });
+newContact.getRange('B7').copyTo(contactsSheet.getRange('contacts!BE2'), { contentsOnly: true });
+newContact.getRange('B8').copyTo(contactsSheet.getRange('contacts!BF2'), { contentsOnly: true });
+newContact.getRange('B9').copyTo(contactsSheet.getRange('contacts!P2'), { contentsOnly: true });
+newContact.getRange('B10').copyTo(contactsSheet.getRange('contacts!AN2'), { contentsOnly: true });
+newContact.getRange('B11').copyTo(contactsSheet.getRange('contacts!AP2'), { contentsOnly: true });
+newContact.getRange('B12').copyTo(contactsSheet.getRange('contacts!Z2'), { contentsOnly: true });
+newContact.getRange('B13').copyTo(contactsSheet.getRange('contacts!AD2'), { contentsOnly: true });
+newContact.getRange('B14').copyTo(contactsSheet.getRange('contacts!AE2'), { contentsOnly: true });
+newContact.getRange('B15').copyTo(contactsSheet.getRange('contacts!AF2'), { contentsOnly: true });
+newContact.getRange('B16').copyTo(contactsSheet.getRange('contacts!BK2'), { contentsOnly: true });
+newContact.getRange('B17').copyTo(contactsSheet.getRange('contacts!BO2'), { contentsOnly: true });
+newContact.getRange('B18').copyTo(contactsSheet.getRange('contacts!BP2'), { contentsOnly: true });
+newContact.getRange('B19').copyTo(contactsSheet.getRange('contacts!BQ2'), { contentsOnly: true });
+newContact.getRange('B20').copyTo(contactsSheet.getRange('contacts!E2'), { contentsOnly: true });
+newContact.getRange('B21').copyTo(contactsSheet.getRange('contacts!T2'), { contentsOnly: true });
+newContact.getRange('B22').copyTo(contactsSheet.getRange('contacts!V2'), { contentsOnly: true });
+
+contactsSheet.getRange('A2').activate();
+contactsSheet.getCurrentCell().setFormula('=CONCATENATE(B2," ",C2," ",D2)');
+contactsSheet.getRange('A:A').activate();
+contactsSheet.getRange('A1').copyTo(contactsSheet.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+
+contactsSheet.getRange('A1').activate();
+contactsSheet.getRange('A1').getFilter().sort(1, false);
+
+newContact.getRange('B1:B22').activate();
+newContact.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
+  
+}
+
+function copyInput1() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sourceSheet = ss.getSheetByName("Sheet1");
+  var targetSheet = ss.getSheetByName("Input");
+  
+  // Define the range to copy
+  var copyRange = sourceSheet.getRange("A3:Q48");
+  var targetRange = targetSheet.getRange("A3:Q48");
+  
+  // Copy everything from source to target
+  copyRange.copyTo(targetRange); // This will copy values, formats, and formulas
+  
+  // Copy column widths
+  var sourceColWidths = [];
+  var lastColumnSource = sourceSheet.getLastColumn();
+  var lastColumnTarget = targetSheet.getLastColumn();
+  
+  // Ensure we only consider columns up to the last column in both sheets
+  var columnsToCopy = Math.min(lastColumnSource, lastColumnTarget, 17); // A to Q = 17 columns
+  
+  for (var i = 1; i <= columnsToCopy; i++) {
+    sourceColWidths.push(sourceSheet.getColumnWidth(i));
+  }
+  
+  // Set column widths in target sheet, but only for existing columns
+  for (var j = 1; j <= columnsToCopy; j++) {
+    targetSheet.setColumnWidth(j, sourceColWidths[j - 1]);
+  }
+  
+  // Select cell C4 in the target sheet
+  targetSheet.activate();
+  targetSheet.getRange("C4").activate();
+
+}
+function updateInventory() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var inventorySheet = spreadsheet.getSheetByName('Inventory');
+  var invoiceSheet = spreadsheet.getSheetByName('Input');
+
+  if (!inventorySheet || !invoiceSheet) {
+    Logger.log('Missing required sheets: Inventory or Input');
+    return;
+  }
+
+  // Get invoice data
+  var invoiceData = invoiceSheet.getRange('A21:D30').getValues();
+
+  // Loop through invoice data to process each item
+  for (var i = 0; i < invoiceData.length; i++) {
+    var itemDescription = invoiceData[i][0];
+    var quantitySold = invoiceData[i][1];
+
+    if (itemDescription && quantitySold) {
+      // Get inventory data (updated to include column C)
+      var inventoryData = inventorySheet.getRange('A2:C' + inventorySheet.getLastRow()).getValues();
+
+      for (var j = 0; j < inventoryData.length; j++) {
+        if (inventoryData[j][0] == itemDescription) {
+          var currentStock = inventoryData[j][2]; // Changed from [1] to [2] for column C
+
+          if (typeof currentStock === 'number' && currentStock >= quantitySold) {
+            // Update inventory stock in column C
+            inventorySheet.getRange('C' + (j + 2)).setValue(currentStock - quantitySold);
+          } else {
+            Logger.log('Insufficient stock for item: ' + itemDescription);
+          }
+          break; // Exit inner loop once match is found
+        }
+      }
+    }
+  }
+}
+
+
