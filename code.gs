@@ -2098,6 +2098,11 @@ function createFormSetupSheet() {
         range: "D7:G7",
         value: "Tax rate used for Checkout field and checkout function.",
         background: "#e8ecef"
+      },
+      {
+        range: "K1:O1",
+        value: "All 29 Field Types:",
+        background: "#e8ecef"
       }
     ];
 
@@ -2147,6 +2152,38 @@ function createFormSetupSheet() {
       .setBackground("#ffffff")
       .setHorizontalAlignment("left")
       .setNote("Enter an email address to receive form submission notifications.");
+
+    formSetupSheet.getRange("K2").setValue("Header");
+    formSetupSheet.getRange("K3").setValue("Text");
+    formSetupSheet.getRange("K4").setValue("Email");
+    formSetupSheet.getRange("K5").setValue("Date");
+    formSetupSheet.getRange("K6").setValue("Time");
+    formSetupSheet.getRange("K7").setValue("Number");
+    formSetupSheet.getRange("K8").setValue("Checkbox");
+    formSetupSheet.getRange("L2").setValue("Radio");
+    formSetupSheet.getRange("L3").setValue("Textarea");
+    formSetupSheet.getRange("L4").setValue("Dropdown");
+    formSetupSheet.getRange("L5").setValue("MultiSelect");
+    formSetupSheet.getRange("L6").setValue("StarRating");
+    formSetupSheet.getRange("L7").setValue("RangeSlider");
+    formSetupSheet.getRange("L8").setValue("FileUpload");
+    formSetupSheet.getRange("M2").setValue("Conditional");
+    formSetupSheet.getRange("M3").setValue("Calculated");
+    formSetupSheet.getRange("M4").setValue("Signature");
+    formSetupSheet.getRange("M5").setValue("Geolocation");
+    formSetupSheet.getRange("M6").setValue("ProgressBar");
+    formSetupSheet.getRange("M7").setValue("Captcha");
+    formSetupSheet.getRange("M8").setValue("Image");
+    formSetupSheet.getRange("N2").setValue("Video");
+    formSetupSheet.getRange("N3").setValue("ImageLink");
+    formSetupSheet.getRange("N4").setValue("VideoLink");
+    formSetupSheet.getRange("N5").setValue("StaticTextt");
+    formSetupSheet.getRange("N6").setValue("Table");
+    formSetupSheet.getRange("N7").setValue("Container");
+    formSetupSheet.getRange("N8").setValue("Checkout");
+    formSetupSheet.getRange("O2").setValue("Hyperlink");
+    formSetupSheet.getRange("O2").setValue("Footer");
+  
 
     // Field Headers
     const headers = [
@@ -2210,8 +2247,8 @@ function createFormSetupSheet() {
     <h2>Master Your Data with Ease</h2>
     <p>Transform your spreadsheets into powerful data management tools with DataMateApps.</p>
     <p>This demonstrates how custom HTML can be used in a form header.</p>
-    <p><a href="https://github.com/DataMateApp/DataMate-code.gs" target="_blank">Open Source</a></p>
-    <span class="highlight">Test HTML</span>
+    
+    <span class="highlight">Below are all 29 field types.</span>
 </body>
 </html>`, "No"],
       ["Name", "Responses", "A", "Sheet2", "B2", "", "", "Text", "", "Yes"],
