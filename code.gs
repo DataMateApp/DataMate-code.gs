@@ -1354,6 +1354,7 @@ function cleanupIT() {
   logSheet.getRange("A2").setValue("Order Log");
   formSetupSheet.getRange("A10:J39").clearContent();
   formSetupSheet.getRange("I6").setValue("Store");
+  formSetupSheet.getRange("B6").setValue("checkout");
   var sampleFields = [
   ["Form Header", "", "", "", "", "", "", "Header", 
    `<!DOCTYPE html>
@@ -2275,6 +2276,10 @@ function showFormBuilder() {
     .setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
 }
+
+
+
+
 
 
 
@@ -3445,6 +3450,16 @@ function generateFormHTML() {
 function doGet(e) {
   return generateFormHTML();
 }
+
+// Helper function to get or create a folder in Google Drive
+function getOrCreateFolder(folderName) {
+  var folders = DriveApp.getFoldersByName(folderName);
+  if (folders.hasNext()) {
+    return folders.next(); // Return the first matching folder
+  }
+  return DriveApp.createFolder(folderName); // Create new folder if none exists
+}
+
 function processForm(formData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var setupSheet = ss.getSheetByName("FormSetup");
@@ -3603,15 +3618,31 @@ function processForm(formData) {
 
   return "Success";
 }
+
 function uploadFile(fileData) {
-  var folder = DriveApp.getRootFolder();
-  var blob = Utilities.newBlob(
-    Utilities.base64Decode(fileData.data),
-    fileData.type,
-    fileData.name
-  );
-  var file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  // Initialize folders
+  var fileUploadsFolder = getOrCreateFolder("File Uploads_Signatures");
+ 
+
+  // Extract file details from fileData
+  var fileName = fileData.fileName || "Untitled";
+  var mimeType = fileData.mimeType || "application/octet-stream";
+  var data = fileData.data;
+
+  // Convert base64 data to Blob (assuming data is base64-encoded)
+  var bytes = Utilities.base64Decode(data);
+  var blob = Utilities.newBlob(bytes, mimeType, fileName);
+
+  // Determine if the file is a signature (e.g., based on MIME type)
+  var isSignature = mimeType.startsWith("image/"); // Adjust logic as needed
+
+  // Choose the target folder
+  var targetFolder = isSignature ? signaturesFolder : fileUploadsFolder;
+
+  // Save the file to the target folder
+  var file = targetFolder.createFile(blob);
+
+  // Return the file URL or ID for storage in the spreadsheet
   return file.getUrl();
 }
 
@@ -3927,7 +3958,7 @@ function save() {
   viewPrintSheet.getRange("B1:L1").merge();
 
   // Add the hyperlink with the display text
-  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy", "Open Source")');
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://drive.google.com/file/d/1yBphbReTNS95pbjNodU-USWuq-L48Jes/view?usp=sharing", "Open Source")');
 
   // Set the font style and color for the hyperlink
   const cell = viewPrintSheet.getRange("B1");
@@ -4067,5 +4098,3 @@ function updateInventory() {
     }
   }
 }
-
-
