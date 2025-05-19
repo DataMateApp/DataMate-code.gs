@@ -23,9 +23,9 @@ Technology has democratized development, and for me, this is a **passion project
 ---
 
 ### Installation and Deployment
-Copy [DataMate Open Source Template](https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy)
+Copy [DataMate Open Source]([https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/copy](https://drive.google.com/file/d/1yBphbReTNS95pbjNodU-USWuq-L48Jes/view))
 
-Simple installation just Click Extensions > Apps Script then Click Run > onInstall. Includes all features.
+Open-source code to deploy as web app.
 
 Or:
 #### Step 1: Install the Core Script  
@@ -124,4 +124,4 @@ Every donation keeps this project thriving!
 Licensed under the **MIT License**. See [`LICENSE.txt`](https://github.com/DataMateApp/DataMate-code.gs/blob/main/LICENSE.txt) in the repository for details.  
 
 ## Credits  
-Developed by **Dan Northway**. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.
+Developed by **Dan Northway** Founder and **Sara Bohannon** Co-Founder. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.
