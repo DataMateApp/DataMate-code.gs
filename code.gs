@@ -517,7 +517,7 @@ function contacts() {
     // Add headers and formatting
     contactsSheet.getRange("A1").setFormula('=B1 & " " & C1 & " " & D1');
     contactsSheet.getRange("B1:E1").setValues([["First Name", "Middle Name", "Last Name", "Title"]]);
-    contactsSheet.getRange("B1").setBackground("#D9EAD3");
+
     contactsSheet.getRange("P1").setValue("E-mail Address");
     contactsSheet.getRange("T1").setValue("Home Phone");
     contactsSheet.getRange("V1").setValue("Mobile Phone");
@@ -622,8 +622,6 @@ function contacts() {
     newContactSheet.setColumnWidth(1, 200);
     newContactSheet.setColumnWidth(2, 200);
 
-    // Hide gridlines in all sheets
-    sheets.forEach(sheet => sheet.setHiddenGridlines(true));
 
     addressSheet.getRange("B1").activate()
 
@@ -709,7 +707,7 @@ function EditAddressSheet() {
     validationCell.setDataValidation(rule);
 
     // Copy formulas to Sheet1 starting under the validated cell
-    const formulasToCopy = wsAddress.getRange("F2:F6").getFormulas();
+    const formulasToCopy = wsAddress.getRange("F2:F14").getFormulas();
     const targetRange = wsSheet1.getRange(validationCell.getRow() + 1, validationCell.getColumn(), formulasToCopy.length, 1);
     targetRange.setFormulas(formulasToCopy);
 
@@ -796,7 +794,7 @@ function EditAddressSheet1() {
     validationCell.setDataValidation(rule);
 
     // Copy formulas to Sheet1 starting under the validated cell
-    const formulasToCopy = wsAddress.getRange("G2:G6").getFormulas();
+    const formulasToCopy = wsAddress.getRange("G2:G14").getFormulas();
     const targetRange = wsSheet1.getRange(validationCell.getRow() + 1, validationCell.getColumn(), formulasToCopy.length, 1);
     targetRange.setFormulas(formulasToCopy);
 
@@ -1613,8 +1611,8 @@ function createReceiptTemplate() {
   sheet.getRange('A16:B16').merge().setFormula("=VLOOKUP(A13, contacts!A:CJ, 20, FALSE)");
 
    
-  sheet.getRange('D10:E10').merge().setValue('Date Shipped:').setFontWeight('bold');
-  sheet.getRange('D11:E11').merge().setFormula("=View_Print!O2");
+  sheet.getRange('D10:E10').merge().setValue('Date Paid:').setFontWeight('bold');
+  sheet.getRange('D11:E11').merge().setFormula("=View_Print!M2");
   
   // Invoice Details Table Header
   sheet.getRange('A18').setValue('Description').setFontWeight('bold').setBackground('#cccccc');
@@ -2166,10 +2164,10 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("L5").setValue("MultiSelect");
     formSetupSheet.getRange("L6").setValue("StarRating");
     formSetupSheet.getRange("L7").setValue("RangeSlider");
-    formSetupSheet.getRange("L8").setValue("FileUpload");
+    formSetupSheet.getRange("L8").setValue("FileUpload*");
     formSetupSheet.getRange("M2").setValue("Conditional");
     formSetupSheet.getRange("M3").setValue("Calculated");
-    formSetupSheet.getRange("M4").setValue("Signature");
+    formSetupSheet.getRange("M4").setValue("Signature*");
     formSetupSheet.getRange("M5").setValue("Geolocation");
     formSetupSheet.getRange("M6").setValue("ProgressBar");
     formSetupSheet.getRange("M7").setValue("Captcha");
@@ -2177,13 +2175,18 @@ function createFormSetupSheet() {
     formSetupSheet.getRange("N2").setValue("Video");
     formSetupSheet.getRange("N3").setValue("ImageLink");
     formSetupSheet.getRange("N4").setValue("VideoLink");
-    formSetupSheet.getRange("N5").setValue("StaticTextt");
+    formSetupSheet.getRange("N5").setValue("StaticText");
     formSetupSheet.getRange("N6").setValue("Table");
     formSetupSheet.getRange("N7").setValue("Container");
     formSetupSheet.getRange("N8").setValue("Checkout");
     formSetupSheet.getRange("O2").setValue("Hyperlink");
     formSetupSheet.getRange("O2").setValue("Footer");
-  
+    formSetupSheet.getRange("O3").setValue("*FileUpload and Signature fields are available only when deployed as a web app with the open source code.");
+    formSetupSheet.getRange("O4").setValue("Deploy as a Web App via Google Apps Script.");
+    formSetupSheet.getRange("O5").setValue("Optional: Use Open Source Code From Our Website");
+    formSetupSheet.getRange("O6").setValue("Copy the provided open-source code and paste it into the Apps Script Editor.");
+    formSetupSheet.getRange("O7").setValue("In the Apps Script Editor, click Deploy > New Deployment, Select Web App,Configure the deployment, Click Deploy.");
+    formSetupSheet.getRange("O8").setValue("Share the Web App URL with users to access the form directly in their browsers.");
 
     // Field Headers
     const headers = [
@@ -3995,7 +3998,7 @@ function save() {
   viewPrintSheet.getRange("B1:L1").merge();
 
   // Add the hyperlink with the display text
-  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://drive.google.com/file/d/1yBphbReTNS95pbjNodU-USWuq-L48Jes/view?usp=sharing", "Open Source")');
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://datamateapp.github.io/Donate%205%20per%20mo.html", "Support DataMateApps")');
 
   // Set the font style and color for the hyperlink
   const cell = viewPrintSheet.getRange("B1");
