@@ -13,9 +13,9 @@ function onOpen(e) {
     .addSubMenu(
       ui.createMenu("📋 Templates")
         .addItem("📦 Inventory", "setup")
-        .addItem("🔧 Update Inventory", "updateInventory")
+        .addItem("🔧 Save Invoice", "saveAndUpdate")
         .addItem("⏰ Weekly Timesheets", "setupTS")
-        .addItem("💸 Update Cost Codes", "copyToCodeTotals")
+        .addItem("💸 Submit Timesheet", "saveAndCopyWithTempRename")
         .addItem("🛒 Purchase Order", "setupPO")
     )
     .addSeparator()
@@ -32,12 +32,9 @@ function onOpen(e) {
         .addItem("➕ New Contact", "newcontact")
         .addItem("✏️ Edit Name", "EditAddressSheet")
         .addItem("🏢 Edit Company", "EditAddressSheet1")
-    )
-    .addSeparator()
-    .addItem("🎓 Show Tutorial", "showTutorial");
+    );
 
   menu.addToUi();
-
 }
 
 
@@ -827,7 +824,8 @@ function cleanupTS() {
     ["C1", "=A5"], ["C2", "=A6"], ["D1", "=A41"], ["D2", "=P43"],
     ["E1", "=P41"], ["E2", "=P42"], ["F1", "=Q41"], ["F2", "=Q42"],
     ["G1", "=A45"], ["G2", "=B45"], ["H1", "=E45"], ["H2", "=F45"],
-    ["I1", "=I45"],["I2", "=J45"], ["J1", "=M45"], ["J2", "=O45"], ["K1", "Log 11"], ["L1", "Log 12"],
+    ["I1", "=I45"],["I2", "=J45"], ["J1", "=M45"], ["J2", "=O45"],
+    ["K1", "Log 11"], ["L1", "Log 12"],
     ["M1", "Update 1"], ["N1", "Update 2"], ["O1", "Update 3"]
   ];
 
@@ -844,7 +842,11 @@ function cleanupTS() {
   logSheet.getRange("H7").setFormula("=SUM(H9:H)");
   logSheet.getRange("I7").setFormula("=SUM(I9:I)");
   logSheet.getRange("J7").setFormula("=SUM(J9:J)");
+
+  // Rename sheet
+  inputSheet.setName("Input Template");
 }
+
 
 function copyToCodeTotals() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1354,8 +1356,8 @@ function cleanupIT() {
   formSetupSheet.getRange("I6").setValue("Store");
   formSetupSheet.getRange("B6").setValue("checkout");
   var sampleFields = [
-  ["Form Header", "", "", "", "", "", "", "Header", 
-   `<!DOCTYPE html>
+    ["Form Header", "", "", "", "", "", "", "Header", 
+     `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
@@ -1399,32 +1401,29 @@ function cleanupIT() {
 </head>
 <body>
     <h2>Welcome to Our Store</h2>
-
-
     <p><a href="https://datamateapp.github.io/" target="_blank">Website</a></p>
-
 </body>
 </html>`, "No"],
-  ["Inventory", "", "", "", "", "", "", "Table", "Inventory!A1:G", "No"],
-  ["Customer Information", "", "", "", "", "", "", "StaticText", "Customer Information", "No"],
-  ["First Name", "NewContact", "B1", "", "", "", "", "Text", "", "Yes"],
-  ["Last Name", "NewContact", "B3", "", "", "", "", "Text", "", "Yes"],
-  ["Company", "NewContact", "B4", "", "", "", "", "Text", "", "No"],
-  ["Email", "NewContact", "B9", "", "", "", "", "Email", "", "Yes"],
-  ["Address Information", "", "", "", "", "", "", "StaticText", "Address Information", "No"],
-  ["Bill to Street", "NewContact", "B12", "", "", "", "", "Text", "", "Yes"],
-  ["Bill to City", "NewContact", "B13", "", "", "", "", "Text", "", "Yes"],
-  ["Bill to State", "NewContact", "B14", "", "", "", "", "Text", "", "Yes"],
-  ["Bill to Zip", "NewContact", "B15", "", "", "", "", "Text", "", "Yes"],
-  ["Ship to Street", "NewContact", "B16", "", "", "", "", "Text", "", "Yes"],
-  ["Ship to City", "NewContact", "B17", "", "", "", "", "Text", "", "Yes"],
-  ["Ship to State", "NewContact", "B18", "", "", "", "", "Text", "", "Yes"],
-  ["Ship to Zip", "NewContact", "B19", "", "", "", "", "Text", "", "Yes"],
-  ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
-  ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Inventory!A2:B", "Yes"],
-  ["View Payment Instructions", "", "", "", "", "", "", "StaticText", "View Payment Instructions", "No"],
-  ["Form Footer", "", "", "", "", "", "", "Footer", 
-   `<!DOCTYPE html>
+    ["Inventory", "", "", "", "", "", "", "Table", "Inventory!A1:G", "No"],
+    ["Customer Information", "", "", "", "", "", "", "StaticText", "Customer Information", "No"],
+    ["First Name", "NewContact", "B1", "", "", "", "", "Text", "", "Yes"],
+    ["Last Name", "NewContact", "B3", "", "", "", "", "Text", "", "Yes"],
+    ["Company", "NewContact", "B4", "", "", "", "", "Text", "", "No"],
+    ["Email", "NewContact", "B9", "", "", "", "", "Email", "", "Yes"],
+    ["Address Information", "", "", "", "", "", "", "StaticText", "Address Information", "No"],
+    ["Bill to Street", "NewContact", "B12", "", "", "", "", "Text", "", "Yes"],
+    ["Bill to City", "NewContact", "B13", "", "", "", "", "Text", "", "Yes"],
+    ["Bill to State", "NewContact", "B14", "", "", "", "", "Text", "", "Yes"],
+    ["Bill to Zip", "NewContact", "B15", "", "", "", "", "Text", "", "Yes"],
+    ["Ship to Street", "NewContact", "B16", "", "", "", "", "Text", "", "Yes"],
+    ["Ship to City", "NewContact", "B17", "", "", "", "", "Text", "", "Yes"],
+    ["Ship to State", "NewContact", "B18", "", "", "", "", "Text", "", "Yes"],
+    ["Ship to Zip", "NewContact", "B19", "", "", "", "", "Text", "", "Yes"],
+    ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
+    ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Inventory!A2:B", "Yes"],
+    ["View Payment Instructions", "", "", "", "", "", "", "StaticText", "View Payment Instructions", "No"],
+    ["Form Footer", "", "", "", "", "", "", "Footer", 
+     `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
@@ -1465,18 +1464,43 @@ function cleanupIT() {
 <body>
     <h2>Your contribution helps us grow and improve!</h2>
     <p><a href="https://donate.stripe.com/14kdRf5mweVjg6IaEH?locale=en&__embed_source=buy_btn_1QO2WDG1lPcU42DNgACDVfYi" target="_blank">Payment Instructions</a></p>
-
-
 </body>
 </html>`, "No"]
-];
+  ];
 
-if (sampleFields.length > 0) {
-      const lastRow = 10 + sampleFields.length - 1;
-      formSetupSheet.getRange(`A10:J${lastRow}`).setValues(sampleFields)
-        .setBackground("#ffffff")
-        .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+  if (sampleFields.length > 0) {
+    const lastRow = 10 + sampleFields.length - 1;
+    formSetupSheet.getRange(`A10:J${lastRow}`).setValues(sampleFields)
+      .setBackground("#ffffff")
+      .setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+  }
+
+  try {
+    var sheetsToMove = ['Update', 'Log', 'FormSetup', 'Input', 'View_Print', 'Packing Slip', 'Receipt', 'Inventory']; // Reverse order
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+    // Loop through the sheets and move them to the front
+    sheetsToMove.forEach(function(sheetName) {
+      var sheet = spreadsheet.getSheetByName(sheetName);
+      if (sheet) {
+        spreadsheet.setActiveSheet(sheet);
+        spreadsheet.moveActiveSheet(0); // Move to the front (index 0)
+      }
+    });
+
+    // Activate 'FormSetup' at the end
+    var sheet1 = spreadsheet.getSheetByName('FormSetup');
+    if (sheet1) {
+      sheet1.activate();
+    } else {
+      SpreadsheetApp.getUi().alert("Sheet1 not found.");
     }
+
+    SpreadsheetApp.getUi().alert("Inventory Template created successfully. Please support DataMateApps and help us grow!");
+
+  } catch (e) {
+    SpreadsheetApp.getUi().alert(`Error: ${e.message}`);
+  }
 }
 
 function createInvoiceTemplate() {
@@ -1516,7 +1540,7 @@ function createInvoiceTemplate() {
     'VLOOKUP(A11, contacts!A:CJ, 32, FALSE)'
   );
   sheet.getRange('A15:B15').merge().setFormula("=HYPERLINK(VLOOKUP(A11, contacts!A:CJ, 16, FALSE))");
-  sheet.getRange('A16:B16').merge().setFormula("=VLOOKUP(A11, contacts!A:CJ, 20, FALSE)");
+
 
   sheet.getRange('D10:E10').merge().setValue('Date:').setFontWeight('bold');
   sheet.getRange('D11:E11').merge().setFormula("=TODAY()");
@@ -1540,11 +1564,16 @@ function createInvoiceTemplate() {
     Logger.log("Error: 'Inventory' sheet not found.");
   }
 
-  // Populate formulas for items in the invoice
-  for (var row = 19; row <= 28; row++) {
-    sheet.getRange('C' + row).setFormula(`=IFERROR(VLOOKUP(A${row},Inventory!$A$2:$CL$9341,2,FALSE), 0)`).setFontSize(10);
-    sheet.getRange('D' + row).setFormula(`=IFERROR($B${row}*$C${row},0)`).setFontSize(10);
-  }
+ // Populate formulas for items in the invoice
+for (var row = 19; row <= 28; row++) {
+  sheet.getRange('C' + row)
+       .setFormula(`=IFERROR(VLOOKUP(A${row},Inventory!$A$2:$CL$9341,2,FALSE), "")`)
+       .setFontSize(10);
+  sheet.getRange('D' + row)
+       .setFormula(`=IF(C${row}="", "", $B${row}*$C${row})`)
+       .setFontSize(10);
+}
+
 
   // Summary Section
   sheet.getRange('C30').setValue('Subtotal:').setFontWeight('bold');
@@ -1608,7 +1637,7 @@ function createReceiptTemplate() {
   'VLOOKUP(A11, contacts!A:CJ, 32, FALSE)'
 );
   sheet.getRange('A15:B15').merge().setFormula("=HYPERLINK(VLOOKUP(A11, contacts!A:CJ, 16, FALSE))");
-  sheet.getRange('A16:B16').merge().setFormula("=VLOOKUP(A13, contacts!A:CJ, 20, FALSE)");
+
 
    
   sheet.getRange('D10:E10').merge().setValue('Date Paid:').setFontWeight('bold');
@@ -1761,7 +1790,6 @@ function createPackingSlipTemplate() {
 
     );
     sheet.getRange('A15:B15').merge().setFormula("=HYPERLINK(VLOOKUP(A11, contacts!A:CJ, 16, FALSE))");
-    sheet.getRange('A16:B16').merge().setFormula("=VLOOKUP(A13, contacts!A:CJ, 20, FALSE)");
 
     sheet.getRange('D10:E10').merge().setValue('Date Shipped:').setFontWeight('bold');
     sheet.getRange('D11:E11').merge().setFormula("=View_Print!O2");
@@ -1811,32 +1839,7 @@ function createPackingSlipTemplate() {
     sheet.getRange('D30:D32').setNumberFormat('$#,##0.00');
     
 
-try {
-  var sheetsToMove = ['Update','Log','Input','View_Print','Packing Slip', 'Receipt', 'Inventory']; // Reverse order
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Loop through the sheets and move them to the front
-  sheetsToMove.forEach(function(sheetName) {
-    var sheet = spreadsheet.getSheetByName(sheetName);
-    if (sheet) {
-      spreadsheet.setActiveSheet(sheet);
-      spreadsheet.moveActiveSheet(0); // Move to the front (index 0)
-    }
-  });
-
-  // Activate 'Sheet1' at the end
-  var sheet1 = spreadsheet.getSheetByName('Sheet1');
-  if (sheet1) {
-    sheet1.activate();
-  } else {
-    SpreadsheetApp.getUi().alert("Sheet1 not found.");
-  }
-
-  SpreadsheetApp.getUi().alert("Inventory Template created successfully. Please support DataMateApps and help us grow!");
-
-} catch (e) {
-  SpreadsheetApp.getUi().alert(`Error: ${e.message}`);
-}
 
 
   copyInput1()
@@ -1959,18 +1962,27 @@ function processEmailForm(formData) {
     });
 
     // Build formatted HTML table
-    let htmlBody = '<table style="border-collapse: collapse; border: none;">';
+let htmlBody = '<table style="border-collapse: collapse; border: none;">';
 for (let r = 0; r < numRows; r++) {
   htmlBody += '<tr>';
   for (let c = 0; c < numCols; c++) {
     const key = `${r + 1},${c + 1}`;
     if (mergeMap[key] === "skip") continue;
 
-    const cellValue = values[r][c];
+    let cellValue = values[r][c];
     const bgColor = backgrounds[r][c];
     const fontWeight = fontWeights[r][c];
     const fontColor = fontColors[r][c];
     const fontStyle = fontStyles[r][c];
+
+    // Check if cellValue is a Date object and format it
+    if (cellValue instanceof Date) {
+      cellValue = cellValue.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
 
     let style = `
       padding: 5px;
@@ -2282,7 +2294,7 @@ function createFormSetupSheet() {
       ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
       ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Sheet1!A2:B10", "No"],
       ["Hyperlink", "", "", "", "", "", "", "Hyperlink", "https://datamateapp.github.io/Donate%205%20per%20mo.html", "No"],
-      ["Form Footer", "", "", "", "", "", "", "Footer", "<p style='font-style: italic;'>Thank you for your input!</p>", "No"]
+      ["Form Footer", "", "", "", "", "", "", "Footer", "This form will only submit if deployed as a web app. UploadFile and Signature fields require Drive permissions authorized. Sheet1 must contain data in columns A 'Descripton' and B 'Price' for the Checkout and Table feilds.", "No"]
     ];
 
     if (sampleFields.length > 0) {
@@ -2326,114 +2338,150 @@ function showFormBuilder() {
 
 
 
-function loadFormRows() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) {
-    createFormSetupSheet();
-    setupSheet = ss.getSheetByName("FormSetup");
-  }
 
-  var lastRow = setupSheet.getLastRow();
-  if (lastRow < 9) return [];
 
-  var range = setupSheet.getRange("A9:J" + lastRow);
-  var values = range.getValues();
 
-  return values.map(row => ({
-    fieldName: row[0],
-    sheet1: row[1],
-    cell1: row[2],
-    sheet2: row[3],
-    cell2: row[4],
-    sheet3: row[5],
-    cell3: row[6],
-    type: row[7],
-    options: row[8],
-    required: row[9]
-  }));
+
+//The Apps Script below is open-source and editable. It is required for Web App Deployment. Custom functions can be added and called on the DataMate FormBuilder Form Setup Dashboard.//
+
+
+//This checkout function is a custom function made for the Invoice Template. It is a good example of how custom functions can automate the form to spreadsheet processes upon form submission.//
+
+function checkout() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+  const ordersSheet = ss.getSheetByName("Orders");
+  const viewSheet = ss.getSheetByName("View_Print");
+
+  // Set formulas for A21:A30
+  inputSheet.getRange("A21").setFormula("=Orders!A2");
+  inputSheet.getRange("A22").setFormula("=Orders!A3");
+  inputSheet.getRange("A23").setFormula("=Orders!A4");
+  inputSheet.getRange("A24").setFormula("=Orders!A5");
+  inputSheet.getRange("A25").setFormula("=Orders!A6");
+  inputSheet.getRange("A26").setFormula("=Orders!A7");
+  inputSheet.getRange("A27").setFormula("=Orders!A8");
+  inputSheet.getRange("A28").setFormula("=Orders!A9");
+  inputSheet.getRange("A29").setFormula("=Orders!A10");
+  inputSheet.getRange("A30").setFormula("=Orders!A11"); 
+
+  // Set formulas for B21:B30
+  inputSheet.getRange("B21").setFormula("=Orders!B2");
+  inputSheet.getRange("B22").setFormula("=Orders!B3");
+  inputSheet.getRange("B23").setFormula("=Orders!B4");
+  inputSheet.getRange("B24").setFormula("=Orders!B5");
+  inputSheet.getRange("B25").setFormula("=Orders!B6");
+  inputSheet.getRange("B26").setFormula("=Orders!B7");
+  inputSheet.getRange("B27").setFormula("=Orders!B8");
+  inputSheet.getRange("B28").setFormula("=Orders!B9");
+  inputSheet.getRange("B29").setFormula("=Orders!B10");
+  inputSheet.getRange("B30").setFormula("=Orders!B11");
+
+  // Set other formulas
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+  
+
+  // Call other functions
+  newcontact();
+  inputSheet.getRange("A13").setFormula("=contacts!A2");
+  save();
+  updateInventory();
+  copyInput1();
+
+
+  // Clear the Orders sheet range A1:C12
+  ordersSheet.getRange("A1:C").clear();
+
+  // Reapply formulas (if needed)
+
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+
 }
 
-function saveFormRows(rows) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) {
-    createFormSetupSheet();
-    setupSheet = ss.getSheetByName("FormSetup");
+//This updateInventory function is a custom function made for the Invoice Template. It is a good example of how custom functions can automate the form to spreadsheet processes upon form submission.//
+
+function updateInventory() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var inventorySheet = spreadsheet.getSheetByName('Inventory');
+  var invoiceSheet = spreadsheet.getSheetByName('Input');
+
+  if (!inventorySheet || !invoiceSheet) {
+    Logger.log('Missing required sheets: Inventory or Input');
+    return;
   }
 
-  // Get the last row with data in column A starting from row 10
-  var lastRow = setupSheet.getLastRow();
-  var startRow = 10; // Default start row
-  if (lastRow >= 10) {
-    var fieldNames = setupSheet.getRange("A10:A" + lastRow).getValues();
-    // Find the last row with non-empty data in column A
-    for (var i = fieldNames.length - 1; i >= 0; i--) {
-      if (fieldNames[i][0] !== "") {
-        startRow = 10 + i + 1; // Next row after the last non-empty row
-        break;
+  // Get invoice data
+  var invoiceData = invoiceSheet.getRange('A21:D30').getValues();
+
+  // Loop through invoice data to process each item
+  for (var i = 0; i < invoiceData.length; i++) {
+    var itemDescription = invoiceData[i][0];
+    var quantitySold = invoiceData[i][1];
+
+    if (itemDescription && quantitySold) {
+      // Get inventory data (updated to include column C)
+      var inventoryData = inventorySheet.getRange('A2:C' + inventorySheet.getLastRow()).getValues();
+
+      for (var j = 0; j < inventoryData.length; j++) {
+        if (inventoryData[j][0] == itemDescription) {
+          var currentStock = inventoryData[j][2]; // Changed from [1] to [2] for column C
+
+          if (typeof currentStock === 'number' && currentStock >= quantitySold) {
+            // Update inventory stock in column C
+            inventorySheet.getRange('C' + (j + 2)).setValue(currentStock - quantitySold);
+          } else {
+            Logger.log('Insufficient stock for item: ' + itemDescription);
+          }
+          break; // Exit inner loop once match is found
+        }
       }
     }
   }
+}
 
-  // Write new data starting at startRow
-  if (rows.length > 0) {
-    var data = rows.map(row => [
-      row.fieldName || "",
-      row.sheet1 || "",
-      row.cell1 || "",
-      row.sheet2 || "",
-      row.cell2 || "",
-      row.sheet3 || "",
-      row.cell3 || "",
-      row.type || "",
-      row.options || "",
-      row.required || ""
-    ]);
-    setupSheet.getRange("A" + startRow + ":J" + (startRow + data.length - 1)).setValues(data);
+function saveAndUpdate() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inputSheet = ss.getSheetByName("Input");
+
+  // Set other formulas
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+
+  // Call other functions
+  save();
+  updateInventory();
+  copyInput1();
+
+  // Reapply formulas (if needed)
+
+  inputSheet.getRange("B11").setFormula("=Log!A10+1");
+
+}
+
+//This saveAndCopyWithTempRename function is a custom function made for the Timesheet Template.//
+
+function saveAndCopyWithTempRename() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var originalName = activeSheet.getName(); // Store the original name
+  
+  // Rename the active sheet to "Input"
+  activeSheet.setName("Input");
+  
+  try {
+    // Run the provided functions
+    save();
+    copyToCodeTotals();
+  } catch (e) {
+    Logger.log("Error occurred: " + e);
+  } finally {
+    // Restore the original sheet name
+    activeSheet.setName(originalName);
   }
 }
 
-function saveToResponses(data) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var setupSheet = ss.getSheetByName("FormSetup");
-  if (!setupSheet) throw new Error("FormSetup sheet not found.");
 
-  Logger.log("Saving to Responses: " + JSON.stringify(data));
 
-  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
-  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
 
-  fieldsData.forEach(row => {
-    var fieldName = row[0];
-    var fieldType = row[7] || "Text";
-    var targetSheetName = row[1];
-    var targetColumn = row[2];
-    var fieldValue = data[fieldName];
-
-    if (fieldValue && fieldType.toUpperCase() === "CHECKOUT" && targetSheetName && targetColumn) {
-      try {
-        var items = JSON.parse(fieldValue);
-        if (items.length === 0) return;
-
-        var checkoutData = items.map(item => [item.description, item.quantity]);
-        var targetSheet = getOrCreateSheet(ss, targetSheetName);
-        var startColumn = columnToNumber(targetColumn);
-        var lastRow = targetSheet.getLastRow();
-        var nextRow = lastRow >= 1 ? lastRow + 1 : 1;
-        targetSheet.getRange(nextRow, startColumn, checkoutData.length, 2).setValues(checkoutData);
-        
-        Logger.log(`Data appended to ${targetSheetName} at ${targetColumn}${nextRow}:${String.fromCharCode(64 + startColumn + 1)}${nextRow + checkoutData.length - 1}: ` + JSON.stringify(checkoutData));
-      } catch (e) {
-        Logger.log(`Error processing Checkout field ${fieldName}: ${e.message}`);
-      }
-    }
-  });
-}
-
-function columnToNumber(column) {
-  return column.toUpperCase().charCodeAt(0) - 64;
-}
 function generateFormHTML() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var setupSheet = ss.getSheetByName("FormSetup");
@@ -2570,12 +2618,7 @@ function generateFormHTML() {
             margin-top: 20px;
             font-size: 14px;
           }
-          h1 {
-            color: #000000;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-          }
+
           .form-group {
             margin-bottom: 20px;
             display: flex;
@@ -3487,8 +3530,118 @@ function generateFormHTML() {
   template.additionalStyles = additionalStyles;
   return template.evaluate().setTitle(formName || "Form Preview");
 }
+
 function doGet(e) {
   return generateFormHTML();
+}
+
+function loadFormRows() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  var lastRow = setupSheet.getLastRow();
+  if (lastRow < 9) return [];
+
+  var range = setupSheet.getRange("A9:J" + lastRow);
+  var values = range.getValues();
+
+  return values.map(row => ({
+    fieldName: row[0],
+    sheet1: row[1],
+    cell1: row[2],
+    sheet2: row[3],
+    cell2: row[4],
+    sheet3: row[5],
+    cell3: row[6],
+    type: row[7],
+    options: row[8],
+    required: row[9]
+  }));
+}
+
+function saveFormRows(rows) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) {
+    createFormSetupSheet();
+    setupSheet = ss.getSheetByName("FormSetup");
+  }
+
+  // Get the last row with data in column A starting from row 10
+  var lastRow = setupSheet.getLastRow();
+  var startRow = 10; // Default start row
+  if (lastRow >= 10) {
+    var fieldNames = setupSheet.getRange("A10:A" + lastRow).getValues();
+    // Find the last row with non-empty data in column A
+    for (var i = fieldNames.length - 1; i >= 0; i--) {
+      if (fieldNames[i][0] !== "") {
+        startRow = 10 + i + 1; // Next row after the last non-empty row
+        break;
+      }
+    }
+  }
+
+  // Write new data starting at startRow
+  if (rows.length > 0) {
+    var data = rows.map(row => [
+      row.fieldName || "",
+      row.sheet1 || "",
+      row.cell1 || "",
+      row.sheet2 || "",
+      row.cell2 || "",
+      row.sheet3 || "",
+      row.cell3 || "",
+      row.type || "",
+      row.options || "",
+      row.required || ""
+    ]);
+    setupSheet.getRange("A" + startRow + ":J" + (startRow + data.length - 1)).setValues(data);
+  }
+}
+
+function saveToResponses(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var setupSheet = ss.getSheetByName("FormSetup");
+  if (!setupSheet) throw new Error("FormSetup sheet not found.");
+
+  Logger.log("Saving to Responses: " + JSON.stringify(data));
+
+  var fieldsRange = setupSheet.getRange("A10:J" + setupSheet.getLastRow());
+  var fieldsData = fieldsRange.getValues().filter(row => row[0] !== "");
+
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var fieldType = row[7] || "Text";
+    var targetSheetName = row[1];
+    var targetColumn = row[2];
+    var fieldValue = data[fieldName];
+
+    if (fieldValue && fieldType.toUpperCase() === "CHECKOUT" && targetSheetName && targetColumn) {
+      try {
+        var items = JSON.parse(fieldValue);
+        if (items.length === 0) return;
+
+        var checkoutData = items.map(item => [item.description, item.quantity]);
+        var targetSheet = getOrCreateSheet(ss, targetSheetName);
+        var startColumn = columnToNumber(targetColumn);
+        var lastRow = targetSheet.getLastRow();
+        var nextRow = lastRow >= 1 ? lastRow + 1 : 1;
+        targetSheet.getRange(nextRow, startColumn, checkoutData.length, 2).setValues(checkoutData);
+        
+        Logger.log(`Data appended to ${targetSheetName} at ${targetColumn}${nextRow}:${String.fromCharCode(64 + startColumn + 1)}${nextRow + checkoutData.length - 1}: ` + JSON.stringify(checkoutData));
+      } catch (e) {
+        Logger.log(`Error processing Checkout field ${fieldName}: ${e.message}`);
+      }
+    }
+  });
+}
+
+function columnToNumber(column) {
+  return column.toUpperCase().charCodeAt(0) - 64;
 }
 
 // Helper function to get or create a folder in Google Drive
@@ -3691,57 +3844,8 @@ function getOrCreateSheet(ss, name) {
   if (!sheet) sheet = ss.insertSheet(name);
   return sheet;
 }
-function checkout() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const inputSheet = ss.getSheetByName("Input");
-  const ordersSheet = ss.getSheetByName("Orders");
-  const viewSheet = ss.getSheetByName("View_Print");
 
-  // Set formulas for A21:A30
-  inputSheet.getRange("A21").setFormula("=Orders!A2");
-  inputSheet.getRange("A22").setFormula("=Orders!A3");
-  inputSheet.getRange("A23").setFormula("=Orders!A4");
-  inputSheet.getRange("A24").setFormula("=Orders!A5");
-  inputSheet.getRange("A25").setFormula("=Orders!A6");
-  inputSheet.getRange("A26").setFormula("=Orders!A7");
-  inputSheet.getRange("A27").setFormula("=Orders!A8");
-  inputSheet.getRange("A28").setFormula("=Orders!A9");
-  inputSheet.getRange("A29").setFormula("=Orders!A10");
-  inputSheet.getRange("A30").setFormula("=Orders!A11"); 
 
-  // Set formulas for B21:B30
-  inputSheet.getRange("B21").setFormula("=Orders!B2");
-  inputSheet.getRange("B22").setFormula("=Orders!B3");
-  inputSheet.getRange("B23").setFormula("=Orders!B4");
-  inputSheet.getRange("B24").setFormula("=Orders!B5");
-  inputSheet.getRange("B25").setFormula("=Orders!B6");
-  inputSheet.getRange("B26").setFormula("=Orders!B7");
-  inputSheet.getRange("B27").setFormula("=Orders!B8");
-  inputSheet.getRange("B28").setFormula("=Orders!B9");
-  inputSheet.getRange("B29").setFormula("=Orders!B10");
-  inputSheet.getRange("B30").setFormula("=Orders!B11");
-
-  // Set other formulas
-  inputSheet.getRange("B11").setFormula("=Log!A10+1");
-  
-
-  // Call other functions
-  newcontact();
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-  save();
-  updateInventory();
-  copyInput1();
-
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-
-  // Clear the Orders sheet range A1:C12
-  ordersSheet.getRange("A1:C").clear();
-
-  // Reapply formulas (if needed)
-
-  inputSheet.getRange("B11").setFormula("=Log!A10+1");
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
-}
 function save() {
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -4099,42 +4203,4 @@ function copyInput1() {
   targetSheet.activate();
   targetSheet.getRange("C4").activate();
 
-}
-function updateInventory() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var inventorySheet = spreadsheet.getSheetByName('Inventory');
-  var invoiceSheet = spreadsheet.getSheetByName('Input');
-
-  if (!inventorySheet || !invoiceSheet) {
-    Logger.log('Missing required sheets: Inventory or Input');
-    return;
-  }
-
-  // Get invoice data
-  var invoiceData = invoiceSheet.getRange('A21:D30').getValues();
-
-  // Loop through invoice data to process each item
-  for (var i = 0; i < invoiceData.length; i++) {
-    var itemDescription = invoiceData[i][0];
-    var quantitySold = invoiceData[i][1];
-
-    if (itemDescription && quantitySold) {
-      // Get inventory data (updated to include column C)
-      var inventoryData = inventorySheet.getRange('A2:C' + inventorySheet.getLastRow()).getValues();
-
-      for (var j = 0; j < inventoryData.length; j++) {
-        if (inventoryData[j][0] == itemDescription) {
-          var currentStock = inventoryData[j][2]; // Changed from [1] to [2] for column C
-
-          if (typeof currentStock === 'number' && currentStock >= quantitySold) {
-            // Update inventory stock in column C
-            inventorySheet.getRange('C' + (j + 2)).setValue(currentStock - quantitySold);
-          } else {
-            Logger.log('Insufficient stock for item: ' + itemDescription);
-          }
-          break; // Exit inner loop once match is found
-        }
-      }
-    }
-  }
 }
