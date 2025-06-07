@@ -3,11 +3,12 @@ function onInstall() {
 }
 function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu("DataMate 🌐")
+  const menu = ui.createMenu("DataMateApps 🌐")
     .addItem("💾 Save Record", "save")
     .addItem("🔄 Reset Input", "copyInput1")
     .addItem("👁️ Reset View/Print", "view")
     .addItem("📄 New Dataset", "newfile")
+    .addItem("📄 Add Input Sheet", "duplicateAndRenameSheet")
     .addSeparator()
     .addItem("🚀 Start with a Template 🚀", "doNothing")
     .addSubMenu(
@@ -40,6 +41,148 @@ function onOpen(e) {
 
 function doNothing() {
   SpreadsheetApp.getUi().alert("Please select a template option below.");
+}
+
+function saveWithTempRename() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var originalName = activeSheet.getName(); // Store the original name
+  
+  // Only rename to "Input" if the sheet is not already named "Input"
+  if (originalName !== "Input") {
+    activeSheet.setName("Input");
+  }
+  
+  try {
+    // Run the save function
+    save();
+  } catch (e) {
+    Logger.log("Error occurred: " + e);
+  } finally {
+    // Restore the original sheet name only if it was changed
+    if (originalName !== "Input") {
+      activeSheet.setName(originalName);
+    }
+  }
+}
+
+function saveAndCopyWithTempRename() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var originalName = activeSheet.getName(); // Store the original name
+  
+  // Rename the active sheet to "Input"
+  activeSheet.setName("Input");
+  
+  try {
+    // Run the provided functions
+    save();
+    copyToCodeTotals();
+  } catch (e) {
+    Logger.log("Error occurred: " + e);
+  } finally {
+    // Restore the original sheet name
+    activeSheet.setName(originalName);
+  }
+}
+
+function duplicateAndRenameSheet() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var inputSheet = spreadsheet.getSheetByName('Input') || spreadsheet.getSheetByName('Input Template');
+  
+  if (!inputSheet) {
+    SpreadsheetApp.getUi().alert('No Input or Input Template sheet found!');
+    return;
+  }
+  
+  // Prompt user for new sheet name
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Enter new sheet name:', ui.ButtonSet.OK_CANCEL);
+  
+  // Check if user clicked OK and provided a name
+  if (response.getSelectedButton() == ui.Button.OK) {
+    var newSheetName = response.getResponseText().trim();
+    
+    // Validate the new sheet name
+    if (newSheetName === '') {
+      ui.alert('Please enter a valid sheet name!');
+      return;
+    }
+    
+    if (spreadsheet.getSheetByName(newSheetName)) {
+      ui.alert('Sheet name already exists! Please choose a different name.');
+      return;
+    }
+    
+    // Check if Dashboard sheet exists, create and format if not
+    var dashboardSheet = spreadsheet.getSheetByName('Dashboard');
+    if (!dashboardSheet) {
+      dashboardSheet = spreadsheet.insertSheet('Dashboard');
+      
+      // Format Dashboard sheet
+      // Set title in A1
+      dashboardSheet.getRange('A1').setValue('Dashboard to Added Sheets')
+        .setFontSize(16)
+        .setFontWeight('bold')
+        .setHorizontalAlignment('center');
+      
+      // Merge A1 across multiple columns for better appearance
+      dashboardSheet.getRange('A1:C1').merge();
+      
+      // Set column widths
+      dashboardSheet.setColumnWidth(1, 200); // Wider column for sheet names
+      dashboardSheet.setColumnWidths(2, dashboardSheet.getMaxColumns() - 1, 100);
+      
+      // Add header for links in A2
+      dashboardSheet.getRange('A2').setValue('Sheet Links')
+        .setFontWeight('bold')
+        .setBackground('#4A90E2') // Blue background
+        .setFontColor('#FFFFFF') // White text
+        .setHorizontalAlignment('center');
+      
+      // Apply alternating row colors starting from A3
+      var maxRows = dashboardSheet.getMaxRows();
+      if (maxRows > 2) {
+        var range = dashboardSheet.getRange('A3:A' + maxRows);
+        range.setBackground(null); // Clear existing backgrounds
+        for (var i = 3; i <= maxRows; i += 2) {
+          dashboardSheet.getRange('A' + i).setBackground('#F5F6F5'); // Light gray
+        }
+      }
+      
+      // Add border to header
+      dashboardSheet.getRange('A2').setBorder(true, true, true, true, false, false, '#000000', SpreadsheetApp.BorderStyle.SOLID);
+      
+      // Freeze the first two rows
+      dashboardSheet.setFrozenRows(2);
+    }
+    
+    // Duplicate the sheet and rename it
+    var newSheet = inputSheet.copyTo(spreadsheet);
+    newSheet.setName(newSheetName);
+    
+    // Add link to Dashboard in cell R1 of the new sheet
+    newSheet.getRange('R1').setFormula(`=HYPERLINK("#gid=${dashboardSheet.getSheetId()}","Dashboard")`)
+      .setFontSize(12)
+      .setFontColor('#4A90E2')
+      .setHorizontalAlignment('center');
+    
+    // Find the next available cell in Dashboard (starting at A3, then A5, A7, etc.)
+    var lastRow = dashboardSheet.getLastRow();
+    var targetRow = lastRow < 3 ? 3 : lastRow + (lastRow % 2 === 0 ? 1 : 2);
+    
+    // Add link to the new sheet in the Dashboard
+    dashboardSheet.getRange('A' + targetRow)
+      .setFormula(`=HYPERLINK("#gid=${newSheet.getSheetId()}","${newSheetName}")`)
+      .setFontSize(11)
+      .setFontColor('#4A90E2')
+      .setHorizontalAlignment('left');
+    
+    // If original sheet is named 'Input', rename it to 'Input Template'
+    if (inputSheet.getName() === 'Input') {
+      inputSheet.setName('Input Template');
+    }
+  }
 }
 
 function showUploadDialog() {
@@ -438,18 +581,10 @@ viewPrintSheet.setHiddenGridlines(true);
 
   copyInput1();
   view();
-  sendDataMateEmail();
 
   inputSheet.getRange("W1").activate();
 }
 
-function sendDataMateEmail() {
-  MailApp.sendEmail({
-    to: "projectprodigyapp@gmail.com",
-    subject: "DataMate Dataset Created",
-    body: "A custom Dataset has been added to a spreadsheet."
-  });
-}
 
   
 
@@ -2263,7 +2398,7 @@ function createFormSetupSheet() {
     <p>Transform your spreadsheets into powerful data management tools with DataMateApps.</p>
     <p>This demonstrates how custom HTML can be used in a form header.</p>
     
-    <span class="highlight">Below are all 29 field types.</span>
+    <span class="highlight">Below are 27 of all 29 field types.</span>
 </body>
 </html>`, "No"],
       ["Name", "Responses", "A", "Sheet2", "B2", "", "", "Text", "", "Yes"],
@@ -2278,10 +2413,8 @@ function createFormSetupSheet() {
       ["MultiSelect", "Responses", "J", "", "", "", "", "MultiSelect", "Red,Green,Blue", "No"],
       ["StarRating", "Responses", "K", "", "", "", "", "StarRating", "", "No"],
       ["RangeSlider", "Responses", "L", "", "", "", "", "RangeSlider", "0,100,5", "No"],
-      ["FileUpload", "Responses", "M", "", "", "", "", "FileUpload", "", "No"],
       ["Conditional", "Responses", "N", "", "", "", "", "Conditional", "Checkbox=true", "No"],
       ["Calculated", "Responses", "O", "", "", "", "", "Calculated", "=Number*2", "No"],
-      ["Signature", "Responses", "P", "", "", "", "", "Signature", "", "No"],
       ["Geolocation", "Responses", "Q", "", "", "", "", "Geolocation", "", "No"],
       ["ProgressBar", "", "", "", "", "", "", "ProgressBar", "75", "No"],
       ["Captcha", "Responses", "R", "", "", "", "", "Captcha", "", "No"],
@@ -2294,7 +2427,7 @@ function createFormSetupSheet() {
       ["Container", "", "", "", "", "", "", "Container", "border: 2px dashed #4CAF50;", "No"],
       ["Checkout", "Orders", "A", "", "", "", "", "Checkout", "Sheet1!A2:B10", "No"],
       ["Hyperlink", "", "", "", "", "", "", "Hyperlink", "https://datamateapp.github.io/Donate%205%20per%20mo.html", "No"],
-      ["Form Footer", "", "", "", "", "", "", "Footer", "This form will only submit if deployed as a web app. UploadFile and Signature fields require Drive permissions authorized. Sheet1 must contain data in columns A 'Descripton' and B 'Price' for the Checkout and Table feilds.", "No"]
+      ["Form Footer", "", "", "", "", "", "", "Footer", "UploadFile and Signature fields require Drive permissions authorized and will only submit if deployed as a web app. Sheet1 must contain data in columns A 'Descripton' and B 'Price' for the Checkout and Table feilds.", "No"]
     ];
 
     if (sampleFields.length > 0) {
@@ -2457,27 +2590,6 @@ function saveAndUpdate() {
 
 }
 
-//This saveAndCopyWithTempRename function is a custom function made for the Timesheet Template.//
-
-function saveAndCopyWithTempRename() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var activeSheet = ss.getActiveSheet();
-  var originalName = activeSheet.getName(); // Store the original name
-  
-  // Rename the active sheet to "Input"
-  activeSheet.setName("Input");
-  
-  try {
-    // Run the provided functions
-    save();
-    copyToCodeTotals();
-  } catch (e) {
-    Logger.log("Error occurred: " + e);
-  } finally {
-    // Restore the original sheet name
-    activeSheet.setName(originalName);
-  }
-}
 
 
 
@@ -3847,212 +3959,120 @@ function getOrCreateSheet(ss, name) {
 
 
 function save() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = ss.getActiveSheet();
+  var originalName = activeSheet.getName(); // Store the original name
+  
+  // Only rename to "Input" if the sheet is not already named "Input"
+  if (originalName !== "Input") {
+    activeSheet.setName("Input");
+  }
+  
+  try {
+    // Original save function logic
+    const inputSheet = ss.getSheetByName("Input");
+    const dataSheet = ss.getSheetByName("Data");
+    const viewPrintSheet = ss.getSheetByName("View_Print");
+    const updateSheet = ss.getSheetByName("Update");
+    const logSheet = ss.getSheetByName("Log");
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const inputSheet = ss.getSheetByName("Input");
-  const dataSheet = ss.getSheetByName("Data");
-  const viewPrintSheet = ss.getSheetByName("View_Print");
-  const updateSheet = ss.getSheetByName("Update");
-  const logSheet = ss.getSheetByName("Log");
+    // Check if all required sheets exist
+    if (!inputSheet || !dataSheet || !viewPrintSheet || !updateSheet || !logSheet) {
+      SpreadsheetApp.getUi().alert('One or more required sheets (Input, Data, View_Print, Update, Log) not found!');
+      return;
+    }
 
-  dataSheet.insertRowAfter(1);
+    dataSheet.insertRowAfter(1);
 
-  inputSheet
-    .getRange("A1:Q1")
-    .copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A2:Q2")
-    .copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A3:Q3")
-    .copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A4:Q4")
-    .copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A5:Q5")
-    .copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A6:Q6")
-    .copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A7:Q7")
-    .copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A8:Q8")
-    .copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A9:Q9")
-    .copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A10:Q10")
-    .copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A11:Q11")
-    .copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A12:Q12")
-    .copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A13:Q13")
-    .copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A14:Q14")
-    .copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A15:Q15")
-    .copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A16:Q16")
-    .copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A17:Q17")
-    .copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A18:Q18")
-    .copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A19:Q19")
-    .copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A20:Q20")
-    .copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A21:Q21")
-    .copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A22:Q22")
-    .copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A23:Q23")
-    .copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A24:Q24")
-    .copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A25:Q25")
-    .copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A26:Q26")
-    .copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A27:Q27")
-    .copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A28:Q28")
-    .copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A29:Q29")
-    .copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A30:Q30")
-    .copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A31:Q31")
-    .copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A32:Q32")
-    .copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A33:Q33")
-    .copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A34:Q34")
-    .copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A35:Q35")
-    .copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A36:Q36")
-    .copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A37:Q37")
-    .copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A38:Q38")
-    .copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A39:Q39")
-    .copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A40:Q40")
-    .copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A41:Q41")
-    .copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A42:Q42")
-    .copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A43:Q43")
-    .copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A44:Q44")
-    .copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A45:Q45")
-    .copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A46:Q46")
-    .copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A47:Q47")
-    .copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
-  inputSheet
-    .getRange("A48:Q48")
-    .copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
+    // Copy data from Input to Data sheet
+    inputSheet.getRange("A1:Q1").copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
+    inputSheet.getRange("A2:Q2").copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
+    inputSheet.getRange("A3:Q3").copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
+    inputSheet.getRange("A4:Q4").copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
+    inputSheet.getRange("A5:Q5").copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
+    inputSheet.getRange("A6:Q6").copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
+    inputSheet.getRange("A7:Q7").copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
+    inputSheet.getRange("A8:Q8").copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
+    inputSheet.getRange("A9:Q9").copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
+    inputSheet.getRange("A10:Q10").copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
+    inputSheet.getRange("A11:Q11").copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
+    inputSheet.getRange("A12:Q12").copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
+    inputSheet.getRange("A13:Q13").copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
+    inputSheet.getRange("A14:Q14").copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
+    inputSheet.getRange("A15:Q15").copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
+    inputSheet.getRange("A16:Q16").copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
+    inputSheet.getRange("A17:Q17").copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
+    inputSheet.getRange("A18:Q18").copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
+    inputSheet.getRange("A19:Q19").copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
+    inputSheet.getRange("A20:Q20").copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
+    inputSheet.getRange("A21:Q21").copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
+    inputSheet.getRange("A22:Q22").copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
+    inputSheet.getRange("A23:Q23").copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
+    inputSheet.getRange("A24:Q24").copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
+    inputSheet.getRange("A25:Q25").copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
+    inputSheet.getRange("A26:Q26").copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
+    inputSheet.getRange("A27:Q27").copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
+    inputSheet.getRange("A28:Q28").copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
+    inputSheet.getRange("A29:Q29").copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
+    inputSheet.getRange("A30:Q30").copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
+    inputSheet.getRange("A31:Q31").copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
+    inputSheet.getRange("A32:Q32").copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
+    inputSheet.getRange("A33:Q33").copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
+    inputSheet.getRange("A34:Q34").copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
+    inputSheet.getRange("A35:Q35").copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
+    inputSheet.getRange("A36:Q36").copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
+    inputSheet.getRange("A37:Q37").copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
+    inputSheet.getRange("A38:Q38").copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
+    inputSheet.getRange("A39:Q39").copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
+    inputSheet.getRange("A40:Q40").copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
+    inputSheet.getRange("A41:Q41").copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
+    inputSheet.getRange("A42:Q42").copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
+    inputSheet.getRange("A43:Q43").copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
+    inputSheet.getRange("A44:Q44").copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
+    inputSheet.getRange("A45:Q45").copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
+    inputSheet.getRange("A46:Q46").copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
+    inputSheet.getRange("A47:Q47").copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
+    inputSheet.getRange("A48:Q48").copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
 
-  dataSheet
-    .getRange("A2")
-    .setFormula(
+    dataSheet.getRange("A2").setFormula(
       '=Data!S2&"- "&T2&"- "&U2&"- "&V2&"- "&W2&"- "&X2&"- "&Y2&"- "&Z2&"- "&AA2&"- "&AB2&"- "&AC2&"- "&AD2'
     );
-  dataSheet
-    .getRange("A1")
-    .setFormula(
+    dataSheet.getRange("A1").setFormula(
       '=Data!S1&"- "&T1&"- "&U1&"- "&V1&"- "&W1&"- "&X1&"- "&Y1&"- "&Z1&"- "&AA1&"- "&AB1&"- "&AC1&"- "&AD1'
     );
 
-  dataSheet
-    .getRange("AE2")
-    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
-  dataSheet
-    .getRange("AF2")
-    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
-  dataSheet
-    .getRange("AG2")
-    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
+    dataSheet.getRange("AE2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
+    dataSheet.getRange("AF2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
+    dataSheet.getRange("AG2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
 
-      const images = inputSheet.getImages();
-  images.forEach(image => {
-    const sourceRange = image.getAnchorCell();
-    // Check if the image's anchor cell is within A3:Q48
-    if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
-      const blob = image.getBlob();
-      const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
-      const targetColumn = sourceRange.getColumn();
-      
-      // Insert image into Data sheet at the corresponding position
-      dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
-    }
-  });
+    const images = inputSheet.getImages();
+    images.forEach(image => {
+      const sourceRange = image.getAnchorCell();
+      // Check if the image's anchor cell is within A3:Q48
+      if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
+        const blob = image.getBlob();
+        const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
+        const targetColumn = sourceRange.getColumn();
+        dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
+      }
+    });
 
-  updateSheet.insertRowAfter(1);
-  updateSheet.getRange("A2").setFormula("=Data!A2");
-  updateSheet.getRange("E2").setFormula("=Data!S2");
-  updateSheet.getRange("F2").setFormula("=Data!T2");
-  updateSheet.getRange("G2").setFormula("=Data!U2");
-  updateSheet.getRange("H2").setFormula("=Data!V2");
-  updateSheet.getRange("I2").setFormula("=Data!W2");
-  updateSheet.getRange("J2").setFormula("=Data!X2");
-  updateSheet.getRange("K2").setFormula("=Data!Y2");
-  updateSheet.getRange("L2").setFormula("=Data!Z2");
-  updateSheet.getRange("M2").setFormula("=Data!AA2");
-  updateSheet.getRange("N2").setFormula("=Data!AB2");
-  updateSheet.getRange("O2").setFormula("=Data!AC2");
-  updateSheet.getRange("P2").setFormula("=Data!AD2");
+    updateSheet.insertRowAfter(1);
+    updateSheet.getRange("A2").setFormula("=Data!A2");
+    updateSheet.getRange("E2").setFormula("=Data!S2");
+    updateSheet.getRange("F2").setFormula("=Data!T2");
+    updateSheet.getRange("G2").setFormula("=Data!U2");
+    updateSheet.getRange("H2").setFormula("=Data!V2");
+    updateSheet.getRange("I2").setFormula("=Data!W2");
+    updateSheet.getRange("J2").setFormula("=Data!X2");
+    updateSheet.getRange("K2").setFormula("=Data!Y2");
+    updateSheet.getRange("L2").setFormula("=Data!Z2");
+    updateSheet.getRange("M2").setFormula("=Data!AA2");
+    updateSheet.getRange("N2").setFormula("=Data!AB2");
+    updateSheet.getRange("O2").setFormula("=Data!AC2");
+    updateSheet.getRange("P2").setFormula("=Data!AD2");
 
-  var rangeWithFilter = logSheet.getRange("A10:O10");
+      var rangeWithFilter = logSheet.getRange("A10:O10");
   var filterCriteria = rangeWithFilter.getFilter().getRange().getA1Notation();
 
   logSheet.insertRowBefore(10);
@@ -4093,40 +4113,35 @@ function save() {
   logSheet.getRange("M9").setFormula("=Input!M1");
   logSheet.getRange("N9").setFormula("=Input!N1");
   logSheet.getRange("O9").setFormula("=Input!O1");
+  
+    viewPrintSheet.getRange("B2").activate();
+    viewPrintSheet.getRange("B1:L1").clearContent();
+    viewPrintSheet.getRange("B1:L1").merge();
+    viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://datamateapp.github.io/Donate%205%20per%20mo.html", "Support DataMateApps")');
 
-  viewPrintSheet.getRange("B2").activate();
-      // Clear any existing content or hyperlink in cells B1:L1
-  viewPrintSheet.getRange("B1:L1").clearContent();
+    const cell = viewPrintSheet.getRange("B1");
+    cell.setFontWeight("bold");
+    cell.setFontSize(12);
+    cell.setFontColor("#0066CC");
+    cell.setBackground(null);
+    cell.setHorizontalAlignment("center");
+    cell.setVerticalAlignment("middle");
 
-  // Merge cells B1:L1
-  viewPrintSheet.getRange("B1:L1").merge();
 
-  // Add the hyperlink with the display text
-  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://datamateapp.github.io/Donate%205%20per%20mo.html", "Support DataMateApps")');
-
-  // Set the font style and color for the hyperlink
-  const cell = viewPrintSheet.getRange("B1");
-  cell.setFontWeight("bold");
-  cell.setFontSize(12);
-  cell.setFontColor("#0066CC"); // Set font color to a noticeable blue
-
-  // Set fill to No Fill for merged cells B1:L1
-  cell.setBackground(null); // Removes any background color
-
-  // Center-align the text in the merged cells
-  cell.setHorizontalAlignment("center");
-  cell.setVerticalAlignment("middle");
-
-  sendDataMateEmail1();
-
+  } catch (e) {
+    Logger.log("Error occurred: " + e);
+    SpreadsheetApp.getUi().alert("Error occurred: " + e);
+  } finally {
+    // Restore the original sheet name only if it was changed
+    if (originalName !== "Input") {
+      activeSheet.setName(originalName);
+    }
+  }
 }
-function sendDataMateEmail1() {
-  MailApp.sendEmail({
-    to: "projectprodigyapp@gmail.com",
-    subject: "DataMate Record",
-    body: "Another record saved."
-  });
-}
+
+
+
+
 function newcontact() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const newContact = ss.getSheetByName("NewContact");
