@@ -1,16 +1,35 @@
 function onInstall() {
   onOpen();
 }
-function onOpen(e) {
-  const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu("DataMateApps 🌐")
-    .addItem("💾 Save Record", "save")
-    .addItem("🔄 Reset Input", "copyInput1")
-    .addItem("👁️ Reset View/Print", "view")
-    .addItem("📄 New Dataset", "newfile")
-    .addItem("📄 Add Input Sheet", "duplicateAndRenameSheet")
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+    
+    ui.createMenu("🌐 DataMate")
+    .addSubMenu(
+      ui.createMenu("🌐 DataMate")
+        .addItem("💾 Save Record", "save")
+        .addItem("🔄 Reset Input", "copyInput1")
+        .addItem("👁️ Reset View/Print", "view")
+        .addItem("📄 New Dataset", "newfile")
+        .addItem("📄 Add Input Sheet", "duplicateAndRenameSheet")
+    )
     .addSeparator()
-    .addItem("🚀 Start with a Template 🚀", "doNothing")
+    .addSubMenu(
+      ui.createMenu("📝 FormBuilder")
+        .addItem("👀 Preview Form", "previewForm")
+        .addItem("🛠️ Form Builder", "showFormBuilder")
+    )
+    .addSeparator()
+    .addSubMenu(
+      ui.createMenu("📇 AddressBlock")      
+        .addItem("📋 Add Contact Sheets", "contacts")
+        .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
+        .addItem("➕ New Contact", "newcontact")
+        .addItem("✏️ Edit Name", "EditAddressSheet")
+        .addItem("🏢 Edit Company", "EditAddressSheet1")
+    )
+    
+    .addSeparator()
     .addSubMenu(
       ui.createMenu("📋 Templates")
         .addItem("📦 Inventory", "setup")
@@ -19,23 +38,7 @@ function onOpen(e) {
         .addItem("💸 Submit Timesheet", "saveAndCopyWithTempRename")
         .addItem("🛒 Purchase Order", "setupPO")
     )
-    .addSeparator()
-    .addSubMenu(
-      ui.createMenu("📝 FormBuilder")
-        .addItem("👀 Preview Form", "previewForm")
-        .addItem("🛠️ Form Builder", "showFormBuilder")
-    )
-    .addSubMenu(
-      ui.createMenu("📇 AddressBlock")
-        .addItem("📧 Mail It", "showMailItSidebar")
-        .addItem("📋 Add Contact Sheets", "contacts")
-        .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
-        .addItem("➕ New Contact", "newcontact")
-        .addItem("✏️ Edit Name", "EditAddressSheet")
-        .addItem("🏢 Edit Company", "EditAddressSheet1")
-    );
-
-  menu.addToUi();
+    .addToUi();
 }
 
 
@@ -581,11 +584,19 @@ viewPrintSheet.setHiddenGridlines(true);
 
   copyInput1();
   view();
+  sendDataMateEmail();
+
 
   inputSheet.getRange("W1").activate();
 }
 
-
+function sendDataMateEmail() {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "DataMate Dataset Created",
+    body: "A custom Dataset has been added to a spreadsheet."
+  });
+}
   
 
 
@@ -1999,187 +2010,6 @@ function createPackingSlipTemplate() {
 
 
 
-// Show the Mail It sidebar
-function showMailItSidebar() {
-  const html = HtmlService.createHtmlOutputFromFile('MailIt')
-      .setTitle('Mail It');
-  SpreadsheetApp.getUi().showSidebar(html);
-}
-
-// Get sheet names and contact emails for the form
-function getSpreadsheetData() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheets = ss.getSheets();
-    const contactsSheet = ss.getSheetByName("contacts");
-    
-    if (!contactsSheet) {
-      throw new Error("'contacts' sheet not found.");
-    }
-
-    // Get sheet names
-    const sheetNames = sheets.map(sheet => sheet.getName());
-
-    // Get contact emails and names
-    const lastRow = contactsSheet.getLastRow();
-    let contacts = [];
-    if (lastRow >= 2) {
-      const range = contactsSheet.getRange("A2:P" + lastRow);
-      const values = range.getValues();
-      contacts = values
-        .map((row, index) => ({
-          name: row[0], // Column A (Full Name)
-          email: row[15] // Column P (E-mail Address)
-        }))
-        .filter(contact => contact.email && contact.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
-        .map(contact => ({ name: contact.name, email: contact.email }));
-    }
-
-    return { sheetNames, contacts };
-  } catch (error) {
-    throw new Error(`Error fetching data: ${error.message}`);
-  }
-}
-
-// Process the email form submission
-function processEmailForm(formData) {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const { sheetName, rangeAddress, contactSelection, selectedEmails, subject, action } = formData;
-
-    // Validate inputs
-    if (!sheetName || !rangeAddress || !subject || !action) {
-      throw new Error("All fields are required.");
-    }
-
-    if (!contactSelection || (contactSelection === "specific" && (!selectedEmails || selectedEmails.length === 0))) {
-      throw new Error("No contacts selected.");
-    }
-
-    // Validate range format
-    if (!rangeAddress.match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
-      throw new Error("Invalid range format. Use format like 'A1:G48'.");
-    }
-
-    const targetSheet = ss.getSheetByName(sheetName);
-    if (!targetSheet) {
-      throw new Error(`Sheet '${sheetName}' not found.`);
-    }
-
-    // Get the range
-    const range = targetSheet.getRange(rangeAddress);
-    const values = range.getValues();
-    const backgrounds = range.getBackgrounds();
-    const fontWeights = range.getFontWeights();
-    const fontColors = range.getFontColors();
-    const fontStyles = range.getFontStyles();
-    const numRows = values.length;
-    const numCols = values[0].length;
-
-    // Track merged cells
-    const mergedRanges = range.getMergedRanges();
-    const mergeMap = {};
-
-    mergedRanges.forEach(mr => {
-      const startRow = mr.getRow() - range.getRow() + 1;
-      const startCol = mr.getColumn() - range.getColumn() + 1;
-      const rowspan = mr.getNumRows();
-      const colspan = mr.getNumColumns();
-      mergeMap[`${startRow},${startCol}`] = { rowspan, colspan };
-
-      for (let r = startRow; r < startRow + rowspan; r++) {
-        for (let c = startCol; c < startCol + colspan; c++) {
-          if (!(r === startRow && c === startCol)) {
-            mergeMap[`${r},${c}`] = "skip";
-          }
-        }
-      }
-    });
-
-    // Build formatted HTML table
-let htmlBody = '<table style="border-collapse: collapse; border: none;">';
-for (let r = 0; r < numRows; r++) {
-  htmlBody += '<tr>';
-  for (let c = 0; c < numCols; c++) {
-    const key = `${r + 1},${c + 1}`;
-    if (mergeMap[key] === "skip") continue;
-
-    let cellValue = values[r][c];
-    const bgColor = backgrounds[r][c];
-    const fontWeight = fontWeights[r][c];
-    const fontColor = fontColors[r][c];
-    const fontStyle = fontStyles[r][c];
-
-    // Check if cellValue is a Date object and format it
-    if (cellValue instanceof Date) {
-      cellValue = cellValue.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
-
-    let style = `
-      padding: 5px;
-      border: none;
-      background-color: ${bgColor};
-      font-weight: ${fontWeight};
-      color: ${fontColor};
-      font-style: ${fontStyle};
-    `;
-
-    let attrs = '';
-    if (mergeMap[key]) {
-      const { rowspan, colspan } = mergeMap[key];
-      if (rowspan > 1) attrs += ` rowspan="${rowspan}"`;
-      if (colspan > 1) attrs += ` colspan="${colspan}"`;
-    }
-
-    const isHeader = r === 0;
-    const tag = isHeader ? 'th' : 'td';
-    const finalStyle = isHeader ? style + ' font-weight: bold;' : style;
-
-    htmlBody += `<${tag} style="${finalStyle}"${attrs}>${cellValue}</${tag}>`;
-  }
-  htmlBody += '</tr>';
-}
-htmlBody += '</table>';
-
-
-    // Determine recipients
-    let recipients = [];
-    if (contactSelection === "all") {
-      const contactsSheet = ss.getSheetByName("contacts");
-      const lastRow = contactsSheet.getLastRow();
-      if (lastRow < 2) {
-        throw new Error("No contacts found in the contacts sheet.");
-      }
-      const emailRange = contactsSheet.getRange("P2:P" + lastRow);
-      recipients = emailRange.getValues().flat().filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
-    } else {
-      recipients = selectedEmails.filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
-    }
-
-    if (recipients.length === 0) {
-      throw new Error("No valid email addresses selected.");
-    }
-
-    // Create drafts or send emails
-    let count = 0;
-    recipients.forEach(email => {
-      if (action === "draft") {
-        GmailApp.createDraft(email, subject, '', { htmlBody });
-      } else if (action === "send") {
-        GmailApp.sendEmail(email, subject, '', { htmlBody });
-      }
-      count++;
-    });
-
-    return `Successfully ${action === "draft" ? "created" : "sent"} ${count} email${count > 1 ? "s" : ""}!`;
-  } catch (error) {
-    throw new Error(`Error: ${error.message}`);
-  }
-}
 
 
 
@@ -2189,14 +2019,6 @@ htmlBody += '</table>';
 
 
 
-
-
-function showTutorial() {
-  var html = HtmlService.createHtmlOutputFromFile('tutorial')
-    .setWidth(900)
-    .setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(html, 'DataMate Tutorial');
-}
 
 
 
@@ -4126,7 +3948,8 @@ function save() {
     cell.setBackground(null);
     cell.setHorizontalAlignment("center");
     cell.setVerticalAlignment("middle");
-
+    
+    sendDataMateEmail1();
 
   } catch (e) {
     Logger.log("Error occurred: " + e);
@@ -4138,6 +3961,15 @@ function save() {
     }
   }
 }
+
+function sendDataMateEmail1() {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "DataMate Record",
+    body: "Another record saved."
+  });
+}
+
 
 
 
