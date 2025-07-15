@@ -12,16 +12,19 @@ function onOpen() {
         .addItem("👁️ Reset View/Print", "view")
         .addItem("📄 New Dataset", "newfile")
         .addItem("📄 Add Input Sheet", "duplicateAndRenameSheet")
+        .addItem('📷 SnapSync', 'showCameraSidebar')
     )
     .addSeparator()
     .addSubMenu(
       ui.createMenu("📝 FormBuilder")
         .addItem("👀 Preview Form", "previewForm")
         .addItem("🛠️ Form Builder", "showFormBuilder")
+        .addItem('📋 Dynamic Entry Form', 'showDynamicForm')
     )
     .addSeparator()
     .addSubMenu(
-      ui.createMenu("📇 AddressBlock")      
+      ui.createMenu("📇 AddressBlock")
+        .addItem("📧 Mail It", "showMailItSidebar")       
         .addItem("📋 Add Contact Sheets", "contacts")
         .addItem("📥 Import Gmail™ Contacts", "showUploadDialog")
         .addItem("➕ New Contact", "newcontact")
@@ -44,6 +47,351 @@ function onOpen() {
 
 function doNothing() {
   SpreadsheetApp.getUi().alert("Please select a template option below.");
+}
+
+function showDynamicForm() {
+  const html = HtmlService.createHtmlOutputFromFile('DynamicForm')
+    .setTitle('Dynamic Data Entry Form');
+  SpreadsheetApp.getUi().showSidebar(html);
+  createDropdownSheet()
+}
+
+function createDropdownSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Dropdowns");
+
+  // If the sheet already exists, do nothing
+  if (sheet) return;
+
+  // Otherwise, create it and set headers
+  const newSheet = ss.insertSheet("Dropdowns");
+  newSheet.getRange("A1").setValue("Dropdown");
+  newSheet.getRange("B1").setValue("Options");
+}
+
+
+
+function getSheetInfo() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const validations = sheet.getRange(2, 1, 1, sheet.getLastColumn()).getDataValidations()[0];
+  const dropdownsSheet = ss.getSheetByName('Dropdowns');
+  const dropdownOptions = dropdownsSheet ? getDropdownOptions(dropdownsSheet) : {};
+
+  return headers.map((header, index) => {
+    const validation = validations[index];
+    let type = 'text';
+    let options = [];
+
+    // Check data validation rules
+    if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+      type = 'select';
+      options = validation.getCriteriaValues();
+    }
+    // Override with Dropdowns sheet if available
+    if (dropdownOptions[header]) {
+      type = 'select';
+      options = dropdownOptions[header];
+    }
+    // Set ID as read-only number
+    if (header === 'ID') {
+      type = 'number';
+    }
+    return {
+      name: header,
+      type: type,
+      options: options,
+      required: header !== 'ID', // ID is auto-generated, others required
+      columnIndex: index + 1
+    };
+  });
+}
+
+function getDropdownOptions(dropdownsSheet) {
+  const data = dropdownsSheet.getDataRange().getValues();
+  const options = {};
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  for (let i = 1; i < data.length; i++) {
+    const key = data[i][0];
+    const value = data[i][1];
+
+    if (key && value) {
+      if (value.includes('!')) {
+        // If the value is a range reference like "contacts!A:A"
+        const [sheetName, colRange] = value.split('!');
+        const sourceSheet = ss.getSheetByName(sheetName);
+        if (sourceSheet) {
+          const range = sourceSheet.getRange(colRange);
+          const values = range.getValues().flat().filter(v => v !== '');
+          options[key] = [...new Set(values)]; // remove duplicates
+        } else {
+          Logger.log(`Sheet ${sheetName} not found.`);
+        }
+      } else {
+        // Comma-separated inline options
+        options[key] = value.split(',').map(opt => opt.trim());
+      }
+    }
+  }
+  return options;
+}
+
+
+function getVisibleRecords() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const filter = sheet.getFilter();
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const records = [];
+
+  if (filter) {
+    for (let i = 1; i < data.length; i++) {
+      if (!sheet.isRowHiddenByFilter(i + 1)) {
+        records.push(data[i]);
+      }
+    }
+  } else {
+    records.push(...data.slice(1));
+  }
+  return records.map(row => headers.reduce((obj, header, i) => {
+    obj[header] = row[i];
+    return obj;
+  }, {}));
+}
+
+function addRecord(formData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const lastId = sheet.getLastRow() > 1 ? Number(sheet.getRange(sheet.getLastRow(), 1).getValue()) || 0 : 0;
+  const newId = lastId + 1;
+  const row = headers.map(header => header === 'ID' ? newId : formData[header] || '');
+  sheet.appendRow(row);
+  return { status: 'success', id: newId };
+}
+
+function updateRecord(formData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == formData.ID) {
+      const row = headers.map(header => formData[header] || '');
+      sheet.getRange(i + 1, 1, 1, headers.length).setValues([row]);
+      return { status: 'success' };
+    }
+  }
+  return { status: 'error', message: 'Record not found' };
+}
+
+function deleteRecord(id) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == id) {
+      sheet.deleteRow(i + 1);
+      return { status: 'success' };
+    }
+  }
+  return { status: 'error', message: 'Record not found' };
+}
+
+function searchRecord(id) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == id && !sheet.isRowHiddenByFilter(i + 1)) {
+      return headers.reduce((obj, header, index) => {
+        obj[header] = data[i][index];
+        return obj;
+      }, {});
+    }
+  }
+  return null;
+}
+
+// Show the Mail It sidebar
+function showMailItSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('MailIt')
+    .setTitle('Mail It');
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+// Get sheet names and contact emails for the form
+function getSpreadsheetData() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    const contactsSheet = ss.getSheetByName("contacts");
+    
+    if (!contactsSheet) {
+      throw new Error("Sheet 'contacts' not found.");
+    }
+
+    // Get sheet names
+    const sheetNames = sheets.map(sheet => sheet.getName());
+
+    // Get contact emails and names
+    const lastRow = contactsSheet.getLastRow();
+    let contacts = [];
+    if (lastRow >= 2) {
+      const range = contactsSheet.getRange("A2:P" + lastRow);
+      const values = range.getValues();
+      contacts = values
+        .map(row => ({
+          name: row[0], // Column A (Full Name)
+          email: row[15] // Column P (E-mail Address)
+        }))
+        .filter(contact => contact.email && contact.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+        .map(contact => ({ name: contact.name, email: contact.email }));
+    }
+
+    return { sheetNames, contacts };
+  } catch (error) {
+    throw new Error(`Error fetching data: ${error.message}`);
+  }
+}
+
+// Process the email form submission
+function processEmailForm(formData) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const { sheetName, rangeAddress, contactSelection, selectedEmails, subject } = formData;
+
+    // Validate inputs
+    if (!sheetName || !rangeAddress || !subject) {
+      throw new Error("All fields are required.");
+    }
+
+    if (!contactSelection || (contactSelection === "specific" && (!selectedEmails || selectedEmails.length === 0))) {
+      throw new Error("No contacts selected.");
+    }
+
+    // Validate range format
+    if (!rangeAddress.match(/^[A-Z]+[0-9]+:[A-Z]+[0-9]+$/)) {
+      throw new Error("Invalid range format. Use format like 'A1:G48'.");
+    }
+
+    const targetSheet = ss.getSheetByName(sheetName);
+    if (!targetSheet) {
+      throw new Error(`Sheet '${sheetName}' not found.`);
+    }
+
+    // Get the range
+    const range = targetSheet.getRange(rangeAddress);
+    const values = range.getValues();
+    const backgrounds = range.getBackgrounds();
+    const fontWeights = range.getFontWeights();
+    const fontColors = range.getFontColors();
+    const fontStyles = range.getFontStyles();
+    const numRows = values.length;
+    const numCols = values[0].length;
+
+    // Track merged cells
+    const mergedRanges = range.getMergedRanges();
+    const mergeMap = {};
+
+    mergedRanges.forEach(mr => {
+      const startRow = mr.getRow() - range.getRow() + 1;
+      const startCol = mr.getColumn() - range.getColumn() + 1;
+      const rowspan = mr.getNumRows();
+      const colspan = mr.getNumColumns();
+      mergeMap[`${startRow},${startCol}`] = { rowspan, colspan };
+
+      for (let r = startRow; r < startRow + rowspan; r++) {
+        for (let c = startCol; c < startCol + colspan; c++) {
+          if (!(r === startRow && c === startCol)) {
+            mergeMap[`${r},${c}`] = "skip";
+          }
+        }
+      }
+    });
+
+    // Build formatted HTML table
+    let htmlBody = '<table style="border-collapse: collapse; border: none;">';
+    for (let r = 0; r < numRows; r++) {
+      htmlBody += '<tr>';
+      for (let c = 0; c < numCols; c++) {
+        const key = `${r + 1},${c + 1}`;
+        if (mergeMap[key] === "skip") continue;
+
+        let cellValue = values[r][c];
+        const bgColor = backgrounds[r][c];
+        const fontWeight = fontWeights[r][c];
+        const fontColor = fontColors[r][c];
+        const fontStyle = fontStyles[r][c];
+
+        // Check if cellValue is a Date object and format it
+        if (cellValue instanceof Date) {
+          cellValue = cellValue.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+        }
+
+        let style = `
+          padding: 5px;
+          border: none;
+          background-color: ${bgColor};
+          font-weight: ${fontWeight};
+          color: ${fontColor};
+          font-style: ${fontStyle};
+        `;
+
+        let attrs = '';
+        if (mergeMap[key]) {
+          const { rowspan, colspan } = mergeMap[key];
+          if (rowspan > 1) attrs += ` rowspan="${rowspan}"`;
+          if (colspan > 1) attrs += ` colspan="${colspan}"`;
+        }
+
+        const isHeader = r === 0;
+        const tag = isHeader ? 'th' : 'td';
+        const finalStyle = isHeader ? style + ' font-weight: bold;' : style;
+
+        htmlBody += `<${tag} style="${finalStyle}"${attrs}>${cellValue}</${tag}>`;
+      }
+      htmlBody += '</tr>';
+    }
+    htmlBody += '</table>';
+
+    // Determine recipients
+    let recipients = [];
+    if (contactSelection === "all") {
+      const contactsSheet = ss.getSheetByName("contacts");
+      const lastRow = contactsSheet.getLastRow();
+      if (lastRow < 2) {
+        throw new Error("No contacts found in the contacts sheet.");
+      }
+      const emailRange = contactsSheet.getRange("P2:P" + lastRow);
+      recipients = emailRange.getValues().flat().filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
+    } else {
+      recipients = selectedEmails.filter(email => email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
+    }
+
+    if (recipients.length === 0) {
+      throw new Error("No valid email addresses selected.");
+    }
+
+    // Send emails
+    let count = 0;
+    recipients.forEach(email => {
+      GmailApp.sendEmail(email, subject, '', { htmlBody });
+      count++;
+    });
+
+    return `Successfully sent ${count} email${count > 1 ? "s" : ""}!`;
+  } catch (error) {
+    throw new Error(`Error: ${error.message}`);
+  }
 }
 
 function saveWithTempRename() {
@@ -1473,6 +1821,7 @@ function setup() {
   createInvoiceTemplate();
   createReceiptTemplate();
   createPackingSlipTemplate();
+  createAdSheet();
   createFormSetupSheet();
   cleanupIT();
   
@@ -1649,17 +1998,184 @@ function cleanupIT() {
   }
 }
 
+
+
+
+
+
+function createAdSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const adSheet = ss.getSheetByName("Advertisement") || ss.insertSheet("Advertisement");
+  const inventory = ss.getSheetByName("Inventory");
+
+  if (!inventory) {
+    SpreadsheetApp.getUi().alert("Inventory sheet not found.");
+    return;
+  }
+
+  adSheet.clear();
+  adSheet.setHiddenGridlines(true);
+
+  // Set column widths (A:H)
+  const colWidths = [30, 150, 150, 80, 150, 150, 100, 100]; // A-H
+  colWidths.forEach((w, i) => adSheet.setColumnWidth(i + 1, w));
+  adSheet.setRowHeights(1, 48, 22);
+
+  adSheet.getRange("A1:H1").merge().setValue(`<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Custom Form</title>
+    <style>
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding: 10px 0;
+            border-bottom: #e8491d 3px solid;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 14px;
+            padding: 5px;
+            display: inline-block;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            text-align: center;
+        }
+        header nav {
+            display: none;
+        }
+        .highlight, .current a {
+            color: #e8491d;
+            font-weight: bold;
+        }
+        header a:hover {
+            color: #cccccc;
+            font-weight: bold;
+        }
+        @media (min-width: 768px) {
+            .container {
+                width: 80%;
+            }
+            header h1 {
+                font-size: 36px;
+                text-align: left;
+            }
+            header nav {
+                display: block;
+                text-align: right;
+            }
+            header a {
+                font-size: 16px;
+                padding: 10px;
+            }
+            .feature-box {
+                float: left;
+                width: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>DataMateApps</h1>
+        <nav class="desktop-nav">
+            <a href="https://datamateapp.github.io/">Home</a>
+            <a href="https://datamateapp.github.io/features.html">Features</a>
+            <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
+            <a href="https://script.google.com/macros/s/AKfycbx_WcbEWrHHVBd3Bg_7s7aipXoy7LeZwUxS-tyFJHo-h_uozwg4PRZBR3gnhxaFXJvLVg/exec">DataMate Counter</a>
+            <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
+            <a href="https://script.google.com/macros/s/AKfycbSRF3xIBTC-76ECjCrpb6GFcbqczOZHIZ8ZrGDBd88fDCyVtAEqH2sOiWS3ui1_ordQg/exec">Add-ins and Templates</a>
+            <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
+            <a href="https://billing.stripe.com/p/login/bIY01q6q33nl1Ww4gg">Donor Portal</a>
+            <a href="https://script.google.com/macros/s/AKfycbzWZM7qyNnKKw9T3LMODI5MQXMvzTUO9YvP-QvP49KipDphi48pR5iLhad1ZN-3FFqa/exec">Reviews</a>
+            <a href="https://www.reddit.com/r/DataMateApps/">Community</a>
+            <a href="https://drive.google.com/file/d/1yBphbReTNS95pbjNodU-USWuq-L48Jes/view?usp=drive_link">Open Source</a>
+        </nav>
+    </header>
+</body>
+</html>`);
+
+
+
+
+
+  // Subtitle
+  adSheet.getRange("A2:H2").merge().setValue("Limited-time deals pulled directly from our live inventory!")
+    .setFontSize(12)
+    .setFontStyle("italic")
+    .setFontColor("#555555")
+    .setHorizontalAlignment("center");
+
+  // Headers (A-H)
+  const headers = ["", "Description", "Price", "Qty", "Category", "Supplier", "Picture", "Video"];
+  adSheet.getRange("A4:H4").setValues([headers])
+    .setFontWeight("bold")
+    .setBackground("#f4cccc")
+    .setFontSize(11)
+    .setHorizontalAlignment("center");
+
+  // Pull top 12 products
+  for (let i = 0; i < 12; i++) {
+    const row = 5 + i;
+    adSheet.getRange(row, 1).setValue("").setFontSize(16).setHorizontalAlignment("center");  // emoji
+    adSheet.getRange(row, 2).setFormula(`=Inventory!A${2 + i}`);  // Description
+    adSheet.getRange(row, 3).setFormula(`=Inventory!B${2 + i}`);  // Price
+    adSheet.getRange(row, 4).setFormula(`=Inventory!C${2 + i}`);  // Qty
+    adSheet.getRange(row, 5).setFormula(`=Inventory!D${2 + i}`);  // Category
+    adSheet.getRange(row, 6).setFormula(`=Inventory!E${2 + i}`);  // Supplier
+    adSheet.getRange(row, 7).setFormula(`=Inventory!F${2 + i}`);  // Picture
+    adSheet.getRange(row, 8).setFormula(`=Inventory!G${2 + i}`);  // Video
+  }
+
+  // Borders and formatting
+  adSheet.getRange("A4:H16").setBorder(true, true, true, true, true, true)
+    .setFontSize(10)
+    .setWrap(true)
+    .setFontFamily("Arial");
+
+  // Call to action
+  adSheet.getRange("A18:H18").merge().setValue("Ready to order or learn more?")
+    .setFontSize(12)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center");
+
+  adSheet.getRange("A19:H19").merge().setValue("Watch our 2-minute demo →")
+    .setFontSize(11)
+    .setFontColor("#1155cc")
+    .setHorizontalAlignment("center");
+
+  adSheet.getRange("A20:H20").merge().setFormula('=HYPERLINK("https://youtu.be/_cduOVxVafc", "▶️ Watch the Video: How DataMate Works")')
+    .setFontSize(12)
+    .setFontColor("#0000FF")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center");
+
+  SpreadsheetApp.getUi().alert("Advertisement sheet created and synced to Inventory.");
+}
+
+
+
+
+
+
+
 function createInvoiceTemplate() {
   var ss = SpreadsheetApp.getActiveSpreadsheet(); // Define ss
   var sheet = ss.getSheetByName('Sheet1') || ss.insertSheet('Sheet1');
   sheet.clear();
 
   // Header Section
-  sheet.getRange('A1:E1').merge().setValue('Your Company Name').setFontSize(16).setFontWeight('bold');
-  sheet.getRange('A3:E3').merge().setValue('Business Street').setFontSize(10);
-  sheet.getRange('A4:E4').merge().setValue('Business City, Business State Business Postal Code').setFontSize(10);
-  sheet.getRange('A5:E5').merge().setValue('E-mail Address').setFontSize(10);
-  sheet.getRange('A6:E6').merge().setValue('Business Phone').setFontSize(10);
+  sheet.getRange('A1').setValue('Your Company Name').setFontSize(16).setFontWeight('bold');
+  sheet.getRange('A3').setValue('Business Street').setFontSize(10);
+  sheet.getRange('A4').setValue('Business City, Business State Business Postal Code').setFontSize(10);
+  sheet.getRange('A5').setValue('E-mail Address').setFontSize(10);
+  sheet.getRange('A6').setValue('Business Phone').setFontSize(10);
   sheet.getRange('A8:E8').merge().setValue('INVOICE').setFontSize(14).setFontWeight('bold');
   sheet.getRange('A9').setValue('Number').setFontSize(10).setFontWeight('bold');
   sheet.getRange('A10').setValue('Bill to:').setFontSize(10).setFontWeight('bold');
@@ -1764,11 +2280,11 @@ function createReceiptTemplate() {
   sheet.clear();
 
     // Header Section
-  sheet.getRange('A1:E1').merge().setFormula("=View_Print!A3").setFontSize(16).setFontWeight('bold');
-  sheet.getRange('A3:E3').merge().setFormula("=View_Print!A4").setFontSize(10);
-  sheet.getRange('A4:E4').merge().setFormula("=View_Print!A5").setFontSize(10);
-  sheet.getRange('A5:E5').merge().setFormula("=View_Print!A6").setFontSize(10);
-  sheet.getRange('A6:E6').merge().setFormula("=View_Print!A7").setFontSize(10);
+  sheet.getRange('A1').setFormula("=View_Print!A3").setFontSize(16).setFontWeight('bold');
+  sheet.getRange('A3').setFormula("=View_Print!A4").setFontSize(10);
+  sheet.getRange('A4').setFormula("=View_Print!A5").setFontSize(10);
+  sheet.getRange('A5').setFormula("=View_Print!A6").setFontSize(10);
+  sheet.getRange('A6').setFormula("=View_Print!A7").setFontSize(10);
   sheet.getRange('A8:E8').merge().setValue('RECEIPT').setFontSize(14).setFontWeight('bold');
 
   
@@ -1916,11 +2432,11 @@ function createPackingSlipTemplate() {
     sheet.clear();
 
     // Header Section
-    sheet.getRange('A1:E1').merge().setFormula("=View_Print!A3").setFontSize(16).setFontWeight('bold');
-    sheet.getRange('A3:E3').merge().setFormula("=View_Print!A4").setFontSize(10);
-    sheet.getRange('A4:E4').merge().setFormula("=View_Print!A5").setFontSize(10);
-    sheet.getRange('A5:E5').merge().setFormula("=View_Print!A6").setFontSize(10);
-    sheet.getRange('A6:E6').merge().setFormula("=View_Print!A7").setFontSize(10);
+    sheet.getRange('A1').setFormula("=View_Print!A3").setFontSize(16).setFontWeight('bold');
+    sheet.getRange('A3').setFormula("=View_Print!A4").setFontSize(10);
+    sheet.getRange('A4').setFormula("=View_Print!A5").setFontSize(10);
+    sheet.getRange('A5').setFormula("=View_Print!A6").setFontSize(10);
+    sheet.getRange('A6').setFormula("=View_Print!A7").setFontSize(10);
 
     sheet.getRange('A8:E8').merge().setValue('PACKING SLIP').setFontSize(14).setFontWeight('bold');
 
@@ -2283,6 +2799,215 @@ function showFormBuilder() {
     .setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(html, 'Form Builder');
 }
+
+
+
+function showCameraSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('CameraSidebar')
+    .setTitle('SnapSync');
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function getSheetNames() {
+  return SpreadsheetApp.getActiveSpreadsheet()
+    .getSheets()
+    .map(sheet => sheet.getName());
+}
+
+function saveCameraPreset(preset) {
+  const userProps = PropertiesService.getUserProperties();
+  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
+  presets[preset.name] = preset;
+  userProps.setProperty('cameraPresets', JSON.stringify(presets));
+  return Object.keys(presets);
+}
+
+function getCameraPresets(name) {
+  const userProps = PropertiesService.getUserProperties();
+  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
+  if (name) {
+    return presets[name] || null;
+  }
+  return presets;
+}
+
+function deleteCameraPreset(name) {
+  const userProps = PropertiesService.getUserProperties();
+  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
+  delete presets[name];
+  userProps.setProperty('cameraPresets', JSON.stringify(presets));
+  return Object.keys(presets);
+}
+
+function copyCameraSnapshot(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sourceSheet = ss.getSheetByName(data.sourceSheet);
+  const targetSheet = ss.getSheetByName(data.targetSheet);
+  if (!sourceSheet || !targetSheet) throw new Error("Sheet not found.");
+
+  const sourceRange = sourceSheet.getRange(data.sourceRange);
+  const values = sourceRange.getValues();
+  const bgs = sourceRange.getBackgrounds();
+  const fontColors = sourceRange.getFontColors();
+  const fontWeights = sourceRange.getFontWeights();
+  const fontStyles = sourceRange.getFontStyles();
+  const hAligns = sourceRange.getHorizontalAlignments();
+  const vAligns = sourceRange.getVerticalAlignments();
+
+  const numRows = values.length;
+  const numCols = values[0].length;
+
+  const targetStart = targetSheet.getRange(data.targetCell);
+  const targetRange = targetSheet.getRange(
+    targetStart.getRow(),
+    targetStart.getColumn(),
+    numRows,
+    numCols
+  );
+
+  targetRange.clearContent().clearFormat();
+  targetRange.setValues(values);
+  targetRange.setBackgrounds(bgs);
+  targetRange.setFontColors(fontColors);
+  targetRange.setFontWeights(fontWeights);
+  targetRange.setFontStyles(fontStyles);
+  targetRange.setHorizontalAlignments(hAligns);
+  targetRange.setVerticalAlignments(vAligns);
+}
+
+function installLiveSync() {
+  const triggers = ScriptApp.getProjectTriggers();
+  const alreadyInstalled = triggers.some(t => t.getHandlerFunction() === 'runLiveSnapshots');
+  if (!alreadyInstalled) {
+    ScriptApp.newTrigger('runLiveSnapshots')
+      .forSpreadsheet(SpreadsheetApp.getActive())
+      .onEdit()
+      .create();
+  }
+}
+
+function uninstallLiveSync() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers
+    .filter(t => t.getHandlerFunction() === 'runLiveSnapshots')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+}
+
+function runLiveSnapshots() {
+  const presets = getCameraPresets();
+  for (const name in presets) {
+    copyCameraSnapshot(presets[name]);
+  }
+}
+
+function getRangePreview(sheetName, rangeA1) {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+  if (!sheet) return [['Invalid Sheet']];
+  try {
+    const range = sheet.getRange(rangeA1);
+    return range.getDisplayValues();
+  } catch (e) {
+    return [['Invalid Range']];
+  }
+}
+
+function emailSnapshot(data) {
+  try {
+    if (!data.recipient.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      throw new Error("Invalid email address.");
+    }
+    const html = getStyledSnapshotHTML(data);
+    MailApp.sendEmail({
+      to: data.recipient,
+      subject: `Snapshot: ${data.name || "Unnamed"}`,
+      htmlBody: `<p>Here is your styled snapshot:</p>${html}`
+    });
+    logExportAction(data.recipient, data.name || "Unnamed", "HTML");
+  } catch (e) {
+    throw new Error(`Failed to send email: ${e.message}`);
+  }
+}
+
+function emailSnapshotAsFiles(data) {
+  try {
+    // Validate input data
+    if (!data.sourceSheet || !data.sourceRange) {
+      throw new Error("Source sheet or range is missing.");
+    }
+    if (!data.recipient.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      throw new Error("Invalid email address.");
+    }
+
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName(data.sourceSheet);
+    if (!sheet) throw new Error("Source sheet not found.");
+    const range = sheet.getRange(data.sourceRange);
+    const values = range.getDisplayValues();
+    if (!values || values.length === 0) throw new Error("Source range is empty.");
+    const snapshotName = data.name || 'Snapshot';
+    const attachments = [];
+
+    // Generate CSV attachment
+    const csvContent = values.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\r\n');
+    attachments.push(Utilities.newBlob(csvContent, 'text/csv', `${snapshotName}.csv`));
+
+    // Send Email
+    MailApp.sendEmail({
+      to: data.recipient,
+      subject: `Snapshot: ${snapshotName}`,
+      htmlBody: `<p>Attached: CSV file</p>`,
+      attachments
+    });
+
+    logExportAction(data.recipient, snapshotName, 'CSV');
+    Logger.log(`Email sent successfully to ${data.recipient} with CSV attachment`);
+    return { status: 'success', message: 'Email sent with CSV attachment.' };
+  } catch (e) {
+    Logger.log(`Error in emailSnapshotAsFiles: ${e.message}`);
+    throw new Error(`Failed to send email with CSV attachment: ${e.message}`);
+  }
+}
+
+function logExportAction(recipient, snapshotName, format) {
+  const ss = SpreadsheetApp.getActive();
+  const logSheet = ss.getSheetByName("ExportLog") || ss.insertSheet("ExportLog");
+  if (logSheet.getLastRow() === 0) {
+    logSheet.appendRow(["Timestamp", "User", "Snapshot", "Format"]);
+  }
+  logSheet.appendRow([
+    new Date(),
+    Session.getActiveUser().getEmail(),
+    snapshotName,
+    format
+  ]);
+}
+
+function getStyledSnapshotHTML(preset) {
+  const range = SpreadsheetApp.getActive().getSheetByName(preset.sourceSheet).getRange(preset.sourceRange);
+  const values = range.getDisplayValues();
+  const bgs = range.getBackgrounds();
+  const weights = range.getFontWeights();
+
+  let html = '<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;">';
+  for (let r = 0; r < values.length; r++) {
+    html += '<tr>';
+    for (let c = 0; c < values[0].length; c++) {
+      const style = `background-color:${bgs[r][c]}; font-weight:${weights[r][c]};`;
+      html += `<td style="${style}">${values[r][c]}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  return html;
+}
+
+
+
+
+
+
 
 
 
@@ -3293,7 +4018,8 @@ function generateFormHTML() {
                 } else if (input.type === 'number' && value && isNaN(value)) {
                   errorSpan.textContent = 'Please enter a valid number';
                   isValid = false;
-                } else if (input.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                } else if (input.type === 'email' && value && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+
                   errorSpan.textContent = 'Please enter a valid email';
                   isValid = false;
                 } else if (input.id.startsWith('CAPTCHA') && value !== '8') {
@@ -3781,120 +4507,234 @@ function getOrCreateSheet(ss, name) {
 
 
 function save() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var activeSheet = ss.getActiveSheet();
-  var originalName = activeSheet.getName(); // Store the original name
-  
-  // Only rename to "Input" if the sheet is not already named "Input"
-  if (originalName !== "Input") {
-    activeSheet.setName("Input");
+  Logger.log("save() function triggered.");
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dataSheet = ss.getSheetByName("Data");
+  const viewPrintSheet = ss.getSheetByName("View_Print");
+  const updateSheet = ss.getSheetByName("Update");
+  const logSheet = ss.getSheetByName("Log");
+
+  if (!dataSheet || !viewPrintSheet || !updateSheet || !logSheet) {
+    Logger.log('Missing one or more required sheets.');
+    return;
   }
-  
+
+  let inputSheet = ss.getSheetByName("Input");
+  let originalName = "";
+  let renamed = false;
+
   try {
-    // Original save function logic
-    const inputSheet = ss.getSheetByName("Input");
-    const dataSheet = ss.getSheetByName("Data");
-    const viewPrintSheet = ss.getSheetByName("View_Print");
-    const updateSheet = ss.getSheetByName("Update");
-    const logSheet = ss.getSheetByName("Log");
+    if (!inputSheet) {
+      const activeSheet = ss.getActiveSheet();
+      originalName = activeSheet.getName();
 
-    // Check if all required sheets exist
-    if (!inputSheet || !dataSheet || !viewPrintSheet || !updateSheet || !logSheet) {
-      SpreadsheetApp.getUi().alert('One or more required sheets (Input, Data, View_Print, Update, Log) not found!');
-      return;
+      if (!["Data", "Log", "View_Print", "Update"].includes(originalName)) {
+        activeSheet.setName("Input");
+        renamed = true;
+        inputSheet = activeSheet;
+      } else {
+        Logger.log('No sheet named "Input", and active sheet is not suitable for renaming.');
+        return;
+      }
     }
+ dataSheet.insertRowAfter(1);
 
-    dataSheet.insertRowAfter(1);
+  inputSheet
+    .getRange("A1:Q1")
+    .copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A2:Q2")
+    .copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A3:Q3")
+    .copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A4:Q4")
+    .copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A5:Q5")
+    .copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A6:Q6")
+    .copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A7:Q7")
+    .copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A8:Q8")
+    .copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A9:Q9")
+    .copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A10:Q10")
+    .copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A11:Q11")
+    .copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A12:Q12")
+    .copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A13:Q13")
+    .copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A14:Q14")
+    .copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A15:Q15")
+    .copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A16:Q16")
+    .copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A17:Q17")
+    .copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A18:Q18")
+    .copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A19:Q19")
+    .copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A20:Q20")
+    .copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A21:Q21")
+    .copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A22:Q22")
+    .copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A23:Q23")
+    .copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A24:Q24")
+    .copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A25:Q25")
+    .copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A26:Q26")
+    .copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A27:Q27")
+    .copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A28:Q28")
+    .copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A29:Q29")
+    .copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A30:Q30")
+    .copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A31:Q31")
+    .copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A32:Q32")
+    .copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A33:Q33")
+    .copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A34:Q34")
+    .copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A35:Q35")
+    .copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A36:Q36")
+    .copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A37:Q37")
+    .copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A38:Q38")
+    .copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A39:Q39")
+    .copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A40:Q40")
+    .copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A41:Q41")
+    .copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A42:Q42")
+    .copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A43:Q43")
+    .copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A44:Q44")
+    .copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A45:Q45")
+    .copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A46:Q46")
+    .copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A47:Q47")
+    .copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
+  inputSheet
+    .getRange("A48:Q48")
+    .copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
 
-    // Copy data from Input to Data sheet
-    inputSheet.getRange("A1:Q1").copyTo(dataSheet.getRange("B2"), { contentsOnly: true });
-    inputSheet.getRange("A2:Q2").copyTo(dataSheet.getRange("S2"), { contentsOnly: true });
-    inputSheet.getRange("A3:Q3").copyTo(dataSheet.getRange("AJ2"), { contentsOnly: true });
-    inputSheet.getRange("A4:Q4").copyTo(dataSheet.getRange("BA2"), { contentsOnly: true });
-    inputSheet.getRange("A5:Q5").copyTo(dataSheet.getRange("BR2"), { contentsOnly: true });
-    inputSheet.getRange("A6:Q6").copyTo(dataSheet.getRange("CI2"), { contentsOnly: true });
-    inputSheet.getRange("A7:Q7").copyTo(dataSheet.getRange("CZ2"), { contentsOnly: true });
-    inputSheet.getRange("A8:Q8").copyTo(dataSheet.getRange("DQ2"), { contentsOnly: true });
-    inputSheet.getRange("A9:Q9").copyTo(dataSheet.getRange("EH2"), { contentsOnly: true });
-    inputSheet.getRange("A10:Q10").copyTo(dataSheet.getRange("EY2"), { contentsOnly: true });
-    inputSheet.getRange("A11:Q11").copyTo(dataSheet.getRange("FP2"), { contentsOnly: true });
-    inputSheet.getRange("A12:Q12").copyTo(dataSheet.getRange("GG2"), { contentsOnly: true });
-    inputSheet.getRange("A13:Q13").copyTo(dataSheet.getRange("GX2"), { contentsOnly: true });
-    inputSheet.getRange("A14:Q14").copyTo(dataSheet.getRange("HO2"), { contentsOnly: true });
-    inputSheet.getRange("A15:Q15").copyTo(dataSheet.getRange("IF2"), { contentsOnly: true });
-    inputSheet.getRange("A16:Q16").copyTo(dataSheet.getRange("IW2"), { contentsOnly: true });
-    inputSheet.getRange("A17:Q17").copyTo(dataSheet.getRange("JN2"), { contentsOnly: true });
-    inputSheet.getRange("A18:Q18").copyTo(dataSheet.getRange("KE2"), { contentsOnly: true });
-    inputSheet.getRange("A19:Q19").copyTo(dataSheet.getRange("KV2"), { contentsOnly: true });
-    inputSheet.getRange("A20:Q20").copyTo(dataSheet.getRange("LM2"), { contentsOnly: true });
-    inputSheet.getRange("A21:Q21").copyTo(dataSheet.getRange("MD2"), { contentsOnly: true });
-    inputSheet.getRange("A22:Q22").copyTo(dataSheet.getRange("MU2"), { contentsOnly: true });
-    inputSheet.getRange("A23:Q23").copyTo(dataSheet.getRange("NL2"), { contentsOnly: true });
-    inputSheet.getRange("A24:Q24").copyTo(dataSheet.getRange("OC2"), { contentsOnly: true });
-    inputSheet.getRange("A25:Q25").copyTo(dataSheet.getRange("OT2"), { contentsOnly: true });
-    inputSheet.getRange("A26:Q26").copyTo(dataSheet.getRange("PK2"), { contentsOnly: true });
-    inputSheet.getRange("A27:Q27").copyTo(dataSheet.getRange("QB2"), { contentsOnly: true });
-    inputSheet.getRange("A28:Q28").copyTo(dataSheet.getRange("QS2"), { contentsOnly: true });
-    inputSheet.getRange("A29:Q29").copyTo(dataSheet.getRange("RJ2"), { contentsOnly: true });
-    inputSheet.getRange("A30:Q30").copyTo(dataSheet.getRange("SA2"), { contentsOnly: true });
-    inputSheet.getRange("A31:Q31").copyTo(dataSheet.getRange("SR2"), { contentsOnly: true });
-    inputSheet.getRange("A32:Q32").copyTo(dataSheet.getRange("TI2"), { contentsOnly: true });
-    inputSheet.getRange("A33:Q33").copyTo(dataSheet.getRange("TZ2"), { contentsOnly: true });
-    inputSheet.getRange("A34:Q34").copyTo(dataSheet.getRange("UQ2"), { contentsOnly: true });
-    inputSheet.getRange("A35:Q35").copyTo(dataSheet.getRange("VH2"), { contentsOnly: true });
-    inputSheet.getRange("A36:Q36").copyTo(dataSheet.getRange("VY2"), { contentsOnly: true });
-    inputSheet.getRange("A37:Q37").copyTo(dataSheet.getRange("WP2"), { contentsOnly: true });
-    inputSheet.getRange("A38:Q38").copyTo(dataSheet.getRange("XG2"), { contentsOnly: true });
-    inputSheet.getRange("A39:Q39").copyTo(dataSheet.getRange("XX2"), { contentsOnly: true });
-    inputSheet.getRange("A40:Q40").copyTo(dataSheet.getRange("YO2"), { contentsOnly: true });
-    inputSheet.getRange("A41:Q41").copyTo(dataSheet.getRange("ZF2"), { contentsOnly: true });
-    inputSheet.getRange("A42:Q42").copyTo(dataSheet.getRange("ZW2"), { contentsOnly: true });
-    inputSheet.getRange("A43:Q43").copyTo(dataSheet.getRange("AAN2"), { contentsOnly: true });
-    inputSheet.getRange("A44:Q44").copyTo(dataSheet.getRange("ABE2"), { contentsOnly: true });
-    inputSheet.getRange("A45:Q45").copyTo(dataSheet.getRange("ABV2"), { contentsOnly: true });
-    inputSheet.getRange("A46:Q46").copyTo(dataSheet.getRange("ACM2"), { contentsOnly: true });
-    inputSheet.getRange("A47:Q47").copyTo(dataSheet.getRange("ADD2"), { contentsOnly: true });
-    inputSheet.getRange("A48:Q48").copyTo(dataSheet.getRange("ADU2"), { contentsOnly: true });
-
-    dataSheet.getRange("A2").setFormula(
+  dataSheet
+    .getRange("A2")
+    .setFormula(
       '=Data!S2&"- "&T2&"- "&U2&"- "&V2&"- "&W2&"- "&X2&"- "&Y2&"- "&Z2&"- "&AA2&"- "&AB2&"- "&AC2&"- "&AD2'
     );
-    dataSheet.getRange("A1").setFormula(
+  dataSheet
+    .getRange("A1")
+    .setFormula(
       '=Data!S1&"- "&T1&"- "&U1&"- "&V1&"- "&W1&"- "&X1&"- "&Y1&"- "&Z1&"- "&AA1&"- "&AB1&"- "&AC1&"- "&AD1'
     );
 
-    dataSheet.getRange("AE2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
-    dataSheet.getRange("AF2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
-    dataSheet.getRange("AG2").setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
+  dataSheet
+    .getRange("AE2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,2,FALSE)");
+  dataSheet
+    .getRange("AF2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,3,FALSE)");
+  dataSheet
+    .getRange("AG2")
+    .setFormula("=VLOOKUP(A2,Update!$A$1:$CF$1000000,4,FALSE)");
 
-    const images = inputSheet.getImages();
-    images.forEach(image => {
-      const sourceRange = image.getAnchorCell();
-      // Check if the image's anchor cell is within A3:Q48
-      if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
-        const blob = image.getBlob();
-        const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
-        const targetColumn = sourceRange.getColumn();
-        dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
-      }
-    });
+      const images = inputSheet.getImages();
+  images.forEach(image => {
+    const sourceRange = image.getAnchorCell();
+    // Check if the image's anchor cell is within A3:Q48
+    if (sourceRange.getRow() >= 3 && sourceRange.getRow() <= 48 && sourceRange.getColumn() >= 1 && sourceRange.getColumn() <= 17) {
+      const blob = image.getBlob();
+      const targetRow = sourceRange.getRow() - 2; // Adjust row to fit new data structure
+      const targetColumn = sourceRange.getColumn();
+      
+      // Insert image into Data sheet at the corresponding position
+      dataSheet.insertImage(blob, targetColumn, targetRow + 1); // +1 for row offset due to inserted row
+    }
+  });
 
-    updateSheet.insertRowAfter(1);
-    updateSheet.getRange("A2").setFormula("=Data!A2");
-    updateSheet.getRange("E2").setFormula("=Data!S2");
-    updateSheet.getRange("F2").setFormula("=Data!T2");
-    updateSheet.getRange("G2").setFormula("=Data!U2");
-    updateSheet.getRange("H2").setFormula("=Data!V2");
-    updateSheet.getRange("I2").setFormula("=Data!W2");
-    updateSheet.getRange("J2").setFormula("=Data!X2");
-    updateSheet.getRange("K2").setFormula("=Data!Y2");
-    updateSheet.getRange("L2").setFormula("=Data!Z2");
-    updateSheet.getRange("M2").setFormula("=Data!AA2");
-    updateSheet.getRange("N2").setFormula("=Data!AB2");
-    updateSheet.getRange("O2").setFormula("=Data!AC2");
-    updateSheet.getRange("P2").setFormula("=Data!AD2");
+  updateSheet.insertRowAfter(1);
+  updateSheet.getRange("A2").setFormula("=Data!A2");
+  updateSheet.getRange("E2").setFormula("=Data!S2");
+  updateSheet.getRange("F2").setFormula("=Data!T2");
+  updateSheet.getRange("G2").setFormula("=Data!U2");
+  updateSheet.getRange("H2").setFormula("=Data!V2");
+  updateSheet.getRange("I2").setFormula("=Data!W2");
+  updateSheet.getRange("J2").setFormula("=Data!X2");
+  updateSheet.getRange("K2").setFormula("=Data!Y2");
+  updateSheet.getRange("L2").setFormula("=Data!Z2");
+  updateSheet.getRange("M2").setFormula("=Data!AA2");
+  updateSheet.getRange("N2").setFormula("=Data!AB2");
+  updateSheet.getRange("O2").setFormula("=Data!AC2");
+  updateSheet.getRange("P2").setFormula("=Data!AD2");
 
-      var rangeWithFilter = logSheet.getRange("A10:O10");
+  var rangeWithFilter = logSheet.getRange("A10:O10");
   var filterCriteria = rangeWithFilter.getFilter().getRange().getA1Notation();
 
   logSheet.insertRowBefore(10);
@@ -3935,29 +4775,39 @@ function save() {
   logSheet.getRange("M9").setFormula("=Input!M1");
   logSheet.getRange("N9").setFormula("=Input!N1");
   logSheet.getRange("O9").setFormula("=Input!O1");
-  
-    viewPrintSheet.getRange("B2").activate();
-    viewPrintSheet.getRange("B1:L1").clearContent();
-    viewPrintSheet.getRange("B1:L1").merge();
-    viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://datamateapp.github.io/Donate%205%20per%20mo.html", "Support DataMateApps")');
 
-    const cell = viewPrintSheet.getRange("B1");
-    cell.setFontWeight("bold");
-    cell.setFontSize(12);
-    cell.setFontColor("#0066CC");
-    cell.setBackground(null);
-    cell.setHorizontalAlignment("center");
-    cell.setVerticalAlignment("middle");
+  viewPrintSheet.getRange("B2").activate();
+      // Clear any existing content or hyperlink in cells B1:L1
+  viewPrintSheet.getRange("B1:L1").clearContent();
+
+  // Merge cells B1:L1
+  viewPrintSheet.getRange("B1:L1").merge();
+
+  // Add the hyperlink with the display text
+  viewPrintSheet.getRange("B1").setFormula('=HYPERLINK("https://datamateapp.github.io/Donate%205%20per%20mo.html", "Support DataMate")');
+
+  // Set the font style and color for the hyperlink
+  const cell = viewPrintSheet.getRange("B1");
+  cell.setFontWeight("bold");
+  cell.setFontSize(12);
+  cell.setFontColor("#0066CC"); // Set font color to a noticeable blue
+
+  // Set fill to No Fill for merged cells B1:L1
+  cell.setBackground(null); // Removes any background color
+
+  // Center-align the text in the merged cells
+  cell.setHorizontalAlignment("center");
+  cell.setVerticalAlignment("middle");
+
+
     
     sendDataMateEmail1();
 
-  } catch (e) {
-    Logger.log("Error occurred: " + e);
-    SpreadsheetApp.getUi().alert("Error occurred: " + e);
+   } catch (e) {
+    Logger.log("Error in save(): " + e.message);
   } finally {
-    // Restore the original sheet name only if it was changed
-    if (originalName !== "Input") {
-      activeSheet.setName(originalName);
+    if (renamed && originalName) {
+      ss.getSheetByName("Input").setName(originalName);
     }
   }
 }
@@ -4051,3 +4901,4 @@ function copyInput1() {
   targetSheet.getRange("C4").activate();
 
 }
+
