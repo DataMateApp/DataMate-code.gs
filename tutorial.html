@@ -213,7 +213,7 @@
                 <a href="https://datamateapp.github.io/">Home</a>
                 <a href="https://datamateapp.github.io/features.html">Features</a>
                 <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
-                <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
+                <a href="https://script.google.com/macros/s/AKfycbx_WcbEWrHHVBd3Bg_7s7aipXoy7LeZwUxS-tyFJHo-h_uozwg4PRZBR3gnhxaFXJvLVg/exec">DataMate Counter</a>
                 <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
                 <a href="https://script.google.com/macros/s/AKfycbxSRF3xIBTC-76ECjCrpb6GFcbqczOZHIZ8ZrGDBd88fDCyVtAEqH2sOiWS3ui1_ordQg/exec">Add-ins and Templates</a>
                 <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
@@ -226,7 +226,7 @@
                 <a href="https://datamateapp.github.io/">Home</a>
                 <a href="https://datamateapp.github.io/features.html">Features</a>
                 <a href="https://datamateapp.github.io/help.html" class="highlight">Help</a>
-                <a href="https://datamateapp.github.io/addressblock.html">AddressBlock</a>
+                <a href="https://script.google.com/macros/s/AKfycbx_WcbEWrHHVBd3Bg_7s7aipXoy7LeZwUxS-tyFJHo-h_uozwg4PRZBR3gnhxaFXJvLVg/exec">DataMate Counter</a>
                 <a href="https://datamateapp.github.io/DownloadConstruction.html">Excel™ Versions</a>
                 <a href="https://script.google.com/macros/s/AKfycbxSRF3xIBTC-76ECjCrpb6GFcbqczOZHIZ8ZrGDBd88fDCyVtAEqH2sOiWS3ui1_ordQg/exec">Add-ins and Templates</a>
                 <a href="https://datamateapp.github.io/Donate 5 per mo.html">Support DataMate</a>
@@ -335,6 +335,11 @@
                 border: 1px solid #ddd;
                 border-radius: 4px;
             }
+            header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+  }
         </style>
         </head>
         <body>
@@ -442,16 +447,30 @@
                 <body>
                     <div class="container">
                         <h1>DataMate Tutorial</h1>
-                        <p>Welcome to DataMate! This comprehensive guide covers how to use DataMate for data management, form building, and contact management within Google Sheets. Current date: June 3, 2025.</p>
+                        <p>Welcome to DataMate! This comprehensive guide covers how to use DataMate for data management, form building, and contact management within Google Sheets. Current date: July 8, 2025.</p>
 
+                        <div id="toc" class="step">
+  <h3>📚 Quick Navigation</h3>
+  <ul>
+    <li><a href="#overview">1. Overview</a></li>
+    <li><a href="#gettingStarted">2. Getting Started</a></li>
+    <li><a href="#dataManagement">3. Data Management</a></li>
+    <li><a href="#snapSync">4. SnapSync</a></li>
+    <li><a href="#formBuilding">5. Form Builder</a></li>
+    <li><a href="#contactManagement">6. Contact Management</a></li>
+    <li><a href="#templates">7. Templates</a></li>
+    <li><a href="#troubleshooting">8. Troubleshooting</a></li>
+    <li><a href="#whatsNew">9. What's New</a></li>
+  </ul>
+</div>
                         <div class="accordion" id="tutorialAccordion">
-                            <!-- Section 1: Overview -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#overview">
-                                        1. Overview
-                                    </button>
-                                </h2>
+  <!-- Section 1: Overview -->
+  <div class="accordion-item" id="overview">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#overviewCollapse">
+        1. Overview
+      </button>
+    </h2>
                                 <div id="overview" class="accordion-collapse collapse show" data-bs-parent="#tutorialAccordion">
                                     <div class="accordion-body">
                                         <p><strong>DataMate</strong> is a Google Sheets add-on designed to simplify data management, form creation, and contact organization. Key capabilities include:</p>
@@ -469,13 +488,13 @@
                                 </div>
                             </div>
 
-                            <!-- Section 2: Getting Started -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gettingStarted">
-                                        2. Getting Started
-                                    </button>
-                                </h2>
+                             <!-- Section 2: Getting Started -->
+  <div class="accordion-item" id="gettingStarted">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#gettingStartedCollapse">
+        2. Getting Started
+      </button>
+    </h2>
                                 <div id="gettingStarted" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                                     <div class="accordion-body">
                                         <div class="step">
@@ -493,52 +512,100 @@
                                 </div>
                             </div>
 
-                            <!-- Section 3: Data Management -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataManagement">
-                                        3. Data Management
-                                    </button>
-                                </h2>
-                                <div id="dataManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
-                                    <div class="accordion-body">
-                                        <div class="step">
-                                            <h3>Adding Data</h3>
-                                            <p>Enter data in <code>Input</code> sheet cells <code>A3:Q48</code>. Merge cells containing text for proper formatting.</p>
-                                        </div>
-                                        <div class="step">
-                                            <h3>Setting Up Logs</h3>
-                                            <p>In the <code>Input</code> sheet:</p>
-                                            <ul>
-                                                <li>For each log (e.g., <code>Log 1</code>): Type <code>=</code>, select the label cell (e.g., "Invoice Number"), and press Enter.</li>
-                                                <li>Below each log label, type <code>=</code>, select the data cell, and press Enter. Up to 12 logs are supported.</li>
-                                            </ul>
-                                        </div>
-                                        <div class="step">
-                                            <h3>Managing Records</h3>
-                                            <ul>
-                                                <li><strong>Save</strong>: Click "DataMate > Save Record" to store data in the <code>Data</code> sheet and view it in <code>View_Print</code>.</li>
-                                                <li><strong>View</strong>: Use the dropdown in <code>View_Print!B2</code> to select records.</li>
-                                                <li><strong>Update</strong>: Edit records in the <code>Update</code> sheet; changes sync to <code>Data</code>.</li>
-                                                <li><strong>Print</strong>: In <code>View_Print</code>, go to "File > Print > Current Selection."</li>
-                                                <li><strong>Reset</strong>: Use "Reset Input" or "Reset View/Print" to refresh sheets from <code>Sheet1</code>.</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+  <!-- Section 3: Data Management -->
+  <div class="accordion-item" id="dataManagement">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataManagementCollapse">
+        3. Data Management
+      </button>
+    </h2>
+    <div id="dataManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+        <div class="accordion-body">
+            <div class="step">
+                <h3>Adding Data</h3>
+                <p>Enter data in <code>Input</code> sheet cells <code>A3:Q48</code>. Merge cells containing text for proper formatting.</p>
+            </div>
+            <div class="step">
+                <h3>Setting Up Logs</h3>
+                <p>In the <code>Input</code> sheet:</p>
+                <ul>
+                    <li>For each log (e.g., <code>Log 1</code>): Type <code>=</code>, select the label cell (e.g., "Invoice Number"), and press Enter.</li>
+                    <li>Below each log label, type <code>=</code>, select the data cell, and press Enter. Up to 12 logs are supported.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h3>Managing Records</h3>
+                <ul>
+                    <li><strong>Save</strong>: Click "DataMate > Save Record" to store data in the <code>Data</code> sheet and view it in <code>View_Print</code>.</li>
+                    <li><strong>View</strong>: Use the dropdown in <code>View_Print!B2</code> to select records.</li>
+                    <li><strong>Update</strong>: Edit records in the <code>Update</code> sheet; changes sync to <code>Data</code>.</li>
+                    <li><strong>Print</strong>: In <code>View_Print</code>, go to "File > Print > Current Selection."</li>
+                    <li><strong>Reset</strong>: Use "Reset Input" or "Reset View/Print" to refresh sheets from <code>Sheet1</code>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
-                            <!-- Section 4: Form Building -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formBuilding">
-                                        4. Form Building
-                                    </button>
-                                </h2>
+  <!-- Section 4: SnapSync Data Snapshots -->
+  <div class="accordion-item" id="snapSync">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#snapSyncCollapse">
+        4. SnapSync
+      </button>
+    </h2>
+    <div id="snapSync" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+        <div class="accordion-body">
+            <div class="step">
+                <h3>Creating a Snapshot</h3>
+                <p>Open the SnapSync sidebar via <code>SnapSync > Open SnapSync</code>. In the <code>Snapshot</code> tab:</p>
+                <ul>
+                    <li>Select a <code>Source Sheet</code> (e.g., <code>Input</code>) and enter a <code>Source Range</code> (e.g., <code>A3:Q48</code>).</li>
+                    <li>Choose a <code>Target Sheet</code> (e.g., <code>Data</code>) and specify a <code>Target Start Cell</code> (e.g., <code>A1</code>).</li>
+                    <li>Click <code>Create Snapshot</code> to copy the range with formatting.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h3>Saving and Loading Presets</h3>
+                <p>In the <code>Presets</code> tab:</p>
+                <ul>
+                    <li>Enter a <code>Preset Name</code> (e.g., "Invoice Snapshot") and click <code>Save</code> to store the snapshot settings.</li>
+                    <li>Select a preset from <code>Saved Snapshots</code> to load settings into the <code>Snapshot</code> tab.</li>
+                    <li>Click <code>Delete</code> to remove a preset.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h3>Enabling Live Sync</h3>
+                <p>In the <code>Live Sync</code> tab:</p>
+                <ul>
+                    <li>Check <code>Enable auto-update on edits</code> to automatically update all saved snapshots when source sheets are edited.</li>
+                </ul>
+            </div>
+            <div class="step">
+                <h3>Exporting Snapshots</h3>
+                <p>In the <code>Export</code> tab:</p>
+                <ul>
+                    <li>Enter a <code>Recipient Email</code> (e.g., "user@example.com").</li>
+                    <li>Click <code>Send Email</code> to send the snapshot as an HTML table.</li>
+                    <li>Click <code>Email CSV</code> to send the snapshot as a CSV attachment.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- Section 5: Form Building -->
+  <div class="accordion-item" id="formBuilding">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formBuildingCollapse">
+        5. Form Builder
+      </button>
+    </h2>
                                 <div id="formBuilding" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                                     <div class="accordion-body">
                                         <div class="step">
                                             <h3>Using the FormBuilder Interface</h3>
+                                             <p><a href="https://www.youtube.com/embed/hvRnrA01d_Q" target="_blank">Watch the Form Builder Video</a></p>
                                             <p>The HTML FormBuilder provides a visual editor for designing forms:</p>
                                             <ol>
                                                 <li><strong>Launch</strong>: Go to "DataMate > FormBuilder > Form Builder" to open a 1200x600px modal.</li>
@@ -818,13 +885,13 @@
                                 </div>
                             </div>
 
-                            <!-- Section 5: Contact Management -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactManagement">
-                                        5. Contact Management
-                                    </button>
-                                </h2>
+                              <!-- Section 6: Contact Management -->
+  <div class="accordion-item" id="contactManagement">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contactManagementCollapse">
+        6. Contact Management
+      </button>
+    </h2>
                                 <div id="contactManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                                     <div class="accordion-body">
                                         <div class="step">
@@ -865,13 +932,13 @@
                                 </div>
                             </div>
 
-                            <!-- Section 6: Templates -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#templates">
-                                        6. FormSetup Templates
-                                    </button>
-                                </h2>
+  <!-- Section 7: Templates -->
+  <div class="accordion-item" id="templates">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#templatesCollapse">
+        7. Templates
+      </button>
+    </h2>
                                 <div id="templates" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
                                     <div class="accordion-body">
                                         
@@ -882,6 +949,11 @@
                                             <a href="https://drive.google.com/file/d/1HnF6Vyv6SuNB1O9791ibSbs0H7OP7C6Z/view?usp=drive_link">Showcase</a>
                                             <a href="https://drive.google.com/file/d/1BbZcXVvW4cj9pP2ZdvZIXd3rfSC3eD1P/view?usp=sharing">Features</a>
                                             <a href="https://drive.google.com/file/d/16bAryDBUVa8u9Uxm-WTLdAn73R0H_VwB/view?usp=sharing">Footer</a>
+                                            <a href="https://drive.google.com/file/d/1B8_ukvaV-OGPFFH3-WU-aPPusDAsnL-i/view?usp=sharing">Contact or Sign-Up Forms</a>
+                                            <a href="https://drive.google.com/file/d/1ox7qMuHrqgln-9Hk2SMFAaRZTvqVNuBO/view?usp=sharing">Event Registrations</a>
+                                            <a href="https://drive.google.com/file/d/1VcKDC8r64QjDqIIVwYsuI209bHxbnKO6/view?usp=sharing">Order or Booking Forms</a>
+                                            <a href="https://drive.google.com/file/d/1pNi7OCNxT4en4RzoGJya5FyMumeKLATH/view?usp=sharing">Quizzes and Assessments</a>
+                                            <a href="https://drive.google.com/file/d/169l4iXoYuQt6Ro8LeVFmPGLaY0vrpITR/view?usp=sharing">Surveys and Questionnaires</a>
                                             
                                             <h3>Job Application Form Template</h3>
                                             <p>Paste this into <code>FormSetup!A10:J</code>:</p>
@@ -942,9 +1014,155 @@
                                                 <tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td><div class="template-footer"><p>Thank you for applying!</p></div></td><td>No</td></tr>
                                             </table>
                                             <p class="note">Note: Adjust column I as needed (e.g., customize dropdowns, add more history/reference sections).</p>
-                                        </div>
-
                                         
+                                  <h3>Contact / Sign-Up Form</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+                                        
+                                              <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>Contact / Sign-Up Form</td><td>No</td></tr>
+<tr><td>Section 1: Personal Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Email Address</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+<tr><td>Phone Number</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+<tr><td>Section 2: Contact Preferences</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Preferred Contact Method</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Email,Phone,SMS</td><td>Yes</td></tr>
+<tr><td>Best Time to Contact</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Morning,Afternoon,Evening</td><td>No</td></tr>
+<tr><td>Subscribe to Newsletter</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>No</td></tr>
+<tr><td>Section 3: Message</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Your Message</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>Yes</td></tr>
+<tr><td>How Did You Hear About Us?</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Social Media,Other</td><td>Yes</td></tr>
+<tr><td>Section 4: Consent</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>I consent to the collection and use of my information</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for reaching out! We'll get back to you soon.</td><td>No</td></tr>
+</table>  
+
+<h3>Event Registration Form</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+
+                                            <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>Event Registration Form</td><td>No</td></tr>
+<tr><td>Section 1: Personal Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Email Address</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+<tr><td>Phone Number</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+<tr><td>Section 2: Event Details</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Event Selection</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Workshop,Conference,Gala</td><td>Yes</td></tr>
+<tr><td>Number of Attendees</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+<tr><td>Preferred Session Time</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Morning,Afternoon,Evening</td><td>No</td></tr>
+<tr><td>Section 3: Additional Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Dietary Restrictions</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>Special Accommodations</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>How Did You Hear About This Event?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Social Media,Other</td><td>Yes</td></tr>
+<tr><td>Section 4: Payment and Consent</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Registration Fee</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Events!A2:B10</td><td>Yes</td></tr>
+<tr><td>I agree to the event terms and conditions</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for registering! You will receive a confirmation soon.</td><td>No</td></tr>
+</table>
+
+                                            <h3>Order / Booking Form</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+
+                                            <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>Order / Booking Form</td><td>No</td></tr>
+<tr><td>Section 1: Customer Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Email Address</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+<tr><td>Phone Number</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Section 2: Booking Details</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Service/Product</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Consultation,Repair,Subscription</td><td>Yes</td></tr>
+<tr><td>Booking Date</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Date</td><td></td><td>Yes</td></tr>
+<tr><td>Preferred Time</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Time</td><td></td><td>Yes</td></tr>
+<tr><td>Quantity</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+<tr><td>Section 3: Additional Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Special Requests</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>How Did You Hear About Us?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Website,Referral,Social Media,Other</td><td>Yes</td></tr>
+<tr><td>Section 4: Payment and Confirmation</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Order Total</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Checkout</td><td>Products!A2:B10</td><td>Yes</td></tr>
+<tr><td>I agree to the terms of service</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for your order! We will confirm your booking soon.</td><td>No</td></tr>
+</table>
+
+
+                                            <h3>Quiz / Assessment Form</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+                                            <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>Quiz / Assessment Form</td><td>No</td></tr>
+<tr><td>Section 1: Participant Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Email Address</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>Yes</td></tr>
+<tr><td>Participant ID</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+<tr><td>Section 2: Quiz Questions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Question 1: What is the capital of France?</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Paris,London,Berlin</td><td>Yes</td></tr>
+<tr><td>Question 2: Rate your confidence in this topic</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+<tr><td>Question 3: Describe a key concept</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>Yes</td></tr>
+<tr><td>Question 4: Select all applicable skills</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Problem Solving,Communication,Teamwork</td><td>Yes</td></tr>
+<tr><td>Section 3: Feedback</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>How challenging was this quiz?</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>1,10,1</td><td>Yes</td></tr>
+<tr><td>Additional Comments</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>Section 4: Consent</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>I certify that my responses are my own</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for completing the quiz! Results will be shared soon.</td><td>No</td></tr>
+</table>
+
+
+                                            <h3>Survey / Questionnaire Form</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+                                            
+                                            <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>Survey / Questionnaire Form</td><td>No</td></tr>
+<tr><td>Section 1: Respondent Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>No</td></tr>
+<tr><td>Email Address</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Email</td><td></td><td>No</td></tr>
+<tr><td>Age Group</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>18-24,25-34,35-44,45-54,55+</td><td>Yes</td></tr>
+<tr><td>Section 2: Survey Questions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>How satisfied are you with our service?</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>StarRating</td><td></td><td>Yes</td></tr>
+<tr><td>How likely are you to recommend us?</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>0,10,1</td><td>Yes</td></tr>
+<tr><td>Which features do you use most?</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>Mobile App,Website,Support,Other</td><td>Yes</td></tr>
+<tr><td>What can we improve?</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>Section 3: Additional Feedback</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Would you participate in future surveys?</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>Radio</td><td>Yes,No,Maybe</td><td>Yes</td></tr>
+<tr><td>How did you hear about this survey?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>Email,Website,Social Media,Other</td><td>Yes</td></tr>
+<tr><td>Section 4: Consent</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>I consent to my responses being used for analysis</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for your feedback! Your responses help us improve.</td><td>No</td></tr>
+</table>
+
+                                            <h3>12th Grade Math Final Exam</h3>
+                                            <p>Paste this into <code>FormSetup!A10:J</code>:</p>
+                                            <table>
+<tr><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td><td>J</td></tr>
+<tr><td>Form Header</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Header</td><td>12th Grade Math Final Exam</td><td>No</td></tr>
+<tr><td>Section 1: Student Information</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Full Name</td><td>Responses</td><td>A</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Student ID</td><td>Responses</td><td>B</td><td></td><td></td><td></td><td></td><td>Text</td><td></td><td>Yes</td></tr>
+<tr><td>Class Period</td><td>Responses</td><td>C</td><td></td><td></td><td></td><td></td><td>Dropdown</td><td>1st,2nd,3rd,4th,5th</td><td>Yes</td></tr>
+<tr><td>Section 2: Algebra and Functions</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Question 1: Solve for x: 2x^2 - 8x + 6 = 0</td><td>Responses</td><td>D</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>x=1,x=3,x=-1,x=-3</td><td>Yes</td></tr>
+<tr><td>Question 2: Find the inverse of f(x) = 2x + 3</td><td>Responses</td><td>E</td><td></td><td></td><td></td><td></td><td>Radio</td><td>f^-1(x)=(x-3)/2,f^-1(x)=2x-3,f^-1(x)=(x+3)/2</td><td>Yes</td></tr>
+<tr><td>Section 3: Calculus</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Question 3: What is the derivative of f(x) = e^(2x)?</td><td>Responses</td><td>F</td><td></td><td></td><td></td><td></td><td>Radio</td><td>2e^(2x),e^(2x),2e^x</td><td>Yes</td></tr>
+<tr><td>Question 4: Evaluate the integral: ∫(0 to 1) 3x^2 dx</td><td>Responses</td><td>G</td><td></td><td></td><td></td><td></td><td>Number</td><td></td><td>Yes</td></tr>
+<tr><td>Section 4: Trigonometry and Probability</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Question 5: Solve: cos(x) = -0.5 for 0 ≤ x ≤ 2π</td><td>Responses</td><td>H</td><td></td><td></td><td></td><td></td><td>MultiSelect</td><td>2π/3,4π/3,π/3</td><td>Yes</td></tr>
+<tr><td>Question 6: What is the probability of rolling a 4 on a fair six-sided die?</td><td>Responses</td><td>I</td><td></td><td></td><td></td><td></td><td>Radio</td><td>1/6,1/4,1/2</td><td>Yes</td></tr>
+<tr><td>Section 5: Open-Ended</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>Question 7: Explain the process to find the derivative of a composite function</td><td>Responses</td><td>J</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>Yes</td></tr>
+<tr><td>Section 6: Feedback</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>How challenging was this exam?</td><td>Responses</td><td>K</td><td></td><td></td><td></td><td></td><td>RangeSlider</td><td>1,5,1</td><td>Yes</td></tr>
+<tr><td>Additional Comments</td><td>Responses</td><td>L</td><td></td><td></td><td></td><td></td><td>Textarea</td><td></td><td>No</td></tr>
+<tr><td>Section 7: Certification</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Container</td><td>background: #f0f0f0; padding: 10px;</td><td>No</td></tr>
+<tr><td>I certify that I completed this exam independently</td><td>Responses</td><td>M</td><td></td><td></td><td></td><td></td><td>Checkbox</td><td></td><td>Yes</td></tr>
+<tr><td>Form Footer</td><td></td><td></td><td></td><td></td><td></td><td></td><td>Footer</td><td>Thank you for completing the final exam! Your teacher will review your responses.</td><td>No</td></tr>
+</table>
+
+
+
+                              </div>          
                                         </div> <!-- END of final template section -->
                                     </div>
                                 </div>
@@ -953,7 +1171,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#support">
-                                        7. Support
+                                        8. Support
                                     </button>
                                 </h2>
                                 <div id="support" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
@@ -967,6 +1185,79 @@
                                 </div>
                             </div>
                         </div>
+                    <!-- ✅ WHATS NEW SECTION -->
+<div id="whatsNew" class="step">
+  <h3>🆕 What's New (July 2025)</h3>
+  <ul>
+
+    <li>📧 Mail It Sidebar with emoji support</li>
+    <li>📆 SnapSync now supports Presets and Live Sync</li>
+    <li>📄 New field types: Signature, Captcha, ProgressBar</li>
+  </ul>
+</div>
+                    <!-- ✅ EXPAND/COLLAPSE BUTTONS -->
+<div style="text-align:center; margin: 15px;">
+  <button class="feature-btn" onclick="expandAll()">Expand All</button>
+  <button class="feature-btn" onclick="collapseAll()">Collapse All</button>
+</div>
+
+<script>
+function expandAll() {
+  document.querySelectorAll('.accordion-collapse').forEach(el => el.classList.add('show'));
+}
+function collapseAll() {
+  document.querySelectorAll('.accordion-collapse').forEach(el => el.classList.remove('show'));
+}
+</script>
+
+<script>
+function toggleMenu() {
+  var nav = document.querySelector('.mobile-nav');
+  if (nav.style.display === "block") {
+    nav.style.display = "none";
+  } else {
+    nav.style.display = "none";
+  } else {
+    nav.style.display = "block";
+  }
+}
+
+function expandAll() {
+  document.querySelectorAll('.accordion-collapse').forEach(el => el.classList.add('show'));
+}
+
+function collapseAll() {
+  document.querySelectorAll('.accordion-collapse').forEach(el => el.classList.remove('show'));
+}
+
+// Smooth scrolling and accordion expansion for quick links
+document.querySelectorAll('#toc a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('href').substring(1);
+    const targetElement = document.getElementById(targetId);
+    const collapseId = targetId + 'Collapse';
+    const collapseElement = document.getElementById(collapseId);
+
+    // Expand the accordion section if collapsed
+    if (collapseElement && !collapseElement.classList.contains('show')) {
+      const button = targetElement.querySelector('.accordion-button');
+      if (button) {
+        button.click(); // Trigger the accordion toggle
+      }
+    }
+
+    // Scroll to the target section
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>                    
+
+
+
+<!-- ✅ REMOVE DUPLICATE <title> and <meta charset> tags from body -->
+<!-- These should remain only in <head>, not within .container -->
+
 
                         <footer>
                             <p>© 2025 DataMateApps | <a href="https://datamateapp.github.io/privacypolicy.html">Privacy Policy</a> | <a href="https://datamateapp.github.io/termsconditions.html">Terms & Conditions</a></p>
