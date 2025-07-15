@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+      .tab { display: none; padding: 10px; }
+      .tab-header { display: flex; background: #eee; border-bottom: 1px solid #ccc; }
+      .tab-header button {
+        flex: 1;
+        border: none;
+        background: #eee;
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .tab-header button.active { background: #fff; border-bottom: 2px solid #4285f4; }
+      label, select, input, button { width: 100%; margin-top: 10px; }
+      #status { margin-top: 10px; color: green; }
+      table.preview { margin-top: 10px; border-collapse: collapse; font-size: small; }
+      table.preview td { border: 1px solid #ccc; padding: 3px 6px; max-width: 100px; overflow: hidden; }
+      .instructions { font-size: 0.9em; color: #555; margin-top: 5px; }
+    </style>
+  </head>
+  <body>
+    <div class="tab-header">
+      <button class="active" onclick="showTab('snapshot')">📷 Snapshot</button>
+      <button onclick="showTab('presets')">💾 Presets</button>
+      <button onclick="showTab('sync')">🔄 Live Sync</button>
+      <button onclick="showTab('export')">📤 Export</button>
+     </div>
+
+    <!-- SNAPSHOT TAB -->
+    <div id="snapshot" class="tab" style="display: block;">
+      <h3>📷 Create Snapshot</h3>
+      <label>Source Sheet:</label>
+      <select id="sourceSheet" onchange="previewSource()"></select>
+      <div class="instructions">Select the sheet containing the data to capture.</div>
+
+      <label>Source Range (e.g. A1:D5):</label>
+      <input id="sourceRange" oninput="previewSource()" />
+      <div class="instructions">Enter the range of cells to capture (e.g., A1:D5).</div>
+
+      <label>Target Sheet:</label>
+      <select id="targetSheet"></select>
+      <div class="instructions">Select the sheet where the snapshot will be copied.</div>
+
+      <label>Target Start Cell (e.g. H1):</label>
+      <input id="targetCell" />
+      <div class="instructions">Enter the starting cell where the snapshot will be pasted (e.g., H1).</div>
+
+      <button onclick="submitSnapshot()">Create Snapshot</button>
+      <div class="instructions">Click to copy the source range to the target sheet and cell.</div>
+      <div id="status"></div>
+
+      <div id="previewContainer"></div>
+    </div>
+
+    <!-- PRESETS TAB -->
+    <div id="presets" class="tab">
+      <h3>💾 Manage Presets</h3>
+      <label>Preset Name:</label>
+      <input id="presetName" />
+      <div class="instructions">Enter a name for your snapshot configuration.</div>
+
+      <button onclick="savePreset()">Save</button>
+      <div class="instructions">Save the current snapshot settings as a preset for reuse.</div>
+
+      <label>Saved Snapshots:</label>
+      <select id="presetList" onchange="loadPreset()">
+        <option value="">Select a preset</option>
+      </select>
+      <div class="instructions">Select a saved preset to load its settings into the Snapshot tab.</div>
+
+      <button onclick="deletePreset()">Delete</button>
+      <div class="instructions">Delete the selected preset from the list.</div>
+    </div>
+
+    <!-- SYNC TAB -->
+    <div id="sync" class="tab">
+      <h3>🔄 Live Sync</h3>
+      <label><input type="checkbox" id="liveSync" onchange="toggleLiveSync()"> Enable auto-update on edits</label>
+      <div class="instructions">Check to automatically update all saved presets when the source sheet is edited.</div>
+    </div>
+
+    <!-- EXPORT TAB -->
+    <div id="export" class="tab">
+      <h3>📤 Export Snapshot</h3>
+      <label>Recipient Email:</label>
+      <input id="emailRecipient" placeholder="someone@example.com" />
+      <div class="instructions">Enter the email address to send the snapshot to.</div>
+
+      <button onclick="emailSnapshot()">Send Email</button>
+      <div class="instructions">Send the current snapshot as an HTML table in an email.</div>
+
+      <button onclick="emailSnapshotAsFiles()">📎 Email CSV</button>
+      <div class="instructions">Send the current snapshot as a CSV attachment.</div>
+    </div>
+
+    
+
+    <script>
+      function showTab(id) {
+        document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+        document.querySelectorAll('.tab-header button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(id).style.display = 'block';
+        event.target.classList.add('active');
+      }
+
+      function loadSheetNames() {
+        google.script.run.withSuccessHandler(names => {
+          const sourceSel = document.getElementById('sourceSheet');
+          const targetSel = document.getElementById('targetSheet');
+          [sourceSel, targetSel].forEach(sel => { sel.innerHTML = ''; });
+          names.forEach(name => {
+            sourceSel.add(new Option(name, name));
+            targetSel.add(new Option(name, name));
+          });
+        }).getSheetNames();
+      }
+
+      function loadPresets() {
+        google.script.run.withSuccessHandler(presets => {
+          updatePresetList(Object.keys(presets));
+        }).getCameraPresets();
+      }
+
+      function updatePresetList(names) {
+        const list = document.getElementById('presetList');
+        list.innerHTML = '<option value="">Select a preset</option>';
+        names.forEach(name => list.add(new Option(name, name)));
+      }
+
+      function submitSnapshot() {
+        const data = getFormData();
+        if (!data.sourceSheet || !data.sourceRange || !data.targetSheet || !data.targetCell) {
+          document.getElementById('status').textContent = '❌ Please fill in all fields in the Snapshot tab.';
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById('status').textContent = '✅ Snapshot created.';
+          })
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .copyCameraSnapshot(data);
+      }
+
+      function getFormData() {
+        return {
+          sourceSheet: document.getElementById('sourceSheet').value,
+          sourceRange: document.getElementById('sourceRange').value,
+          targetSheet: document.getElementById('targetSheet').value,
+          targetCell: document.getElementById('targetCell').value,
+          name: document.getElementById('presetName').value
+        };
+      }
+
+      function savePreset() {
+        const data = getFormData();
+        if (!data.name) {
+          document.getElementById('status').textContent = '❌ Enter a name for the preset.';
+          return;
+        }
+        if (!data.sourceSheet || !data.sourceRange || !data.targetSheet || !data.targetCell) {
+          document.getElementById('status').textContent = '❌ Please fill in all fields in the Snapshot tab.';
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(updatePresetList)
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .saveCameraPreset(data);
+      }
+
+      function loadPreset() {
+        const name = document.getElementById('presetList').value;
+        if (!name) {
+          document.getElementById('status').textContent = '❌ Please select a preset.';
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(preset => {
+            if (!preset) {
+              document.getElementById('status').textContent = '❌ Preset not found.';
+              return;
+            }
+            document.getElementById('sourceSheet').value = preset.sourceSheet || '';
+            document.getElementById('sourceRange').value = preset.sourceRange || '';
+            document.getElementById('targetSheet').value = preset.targetSheet || '';
+            document.getElementById('targetCell').value = preset.targetCell || '';
+            document.getElementById('presetName').value = preset.name || '';
+            previewSource();
+            document.getElementById('status').textContent = `✅ Loaded preset: ${name}`;
+          })
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .getCameraPresets(name);
+      }
+
+      function deletePreset() {
+        const name = document.getElementById('presetList').value;
+        if (!name || !confirm(`Delete preset "${name}"?`)) return;
+        google.script.run
+          .withSuccessHandler(updatePresetList)
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .deleteCameraPreset(name);
+      }
+
+      function toggleLiveSync() {
+        const checked = document.getElementById('liveSync').checked;
+        google.script.run[checked ? 'installLiveSync' : 'uninstallLiveSync']();
+      }
+
+      function previewSource() {
+        const sheet = document.getElementById('sourceSheet').value;
+        const range = document.getElementById('sourceRange').value;
+        if (!sheet || !range) return;
+        google.script.run
+          .withSuccessHandler(data => {
+            let html = '<table class="preview">';
+            data.forEach(row => {
+              html += '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>';
+            });
+            html += '</table>';
+            document.getElementById('previewContainer').innerHTML = html;
+          })
+          .withFailureHandler(err => {
+            document.getElementById('previewContainer').innerHTML = '❌ Error: ' + err.message;
+          })
+          .getRangePreview(sheet, range);
+      }
+
+      function emailSnapshot() {
+        const data = getFormData();
+        data.recipient = document.getElementById('emailRecipient').value;
+        if (!data.recipient) {
+          document.getElementById('status').textContent = '❌ Please enter a valid email address.';
+          return;
+        }
+        if (!data.sourceSheet || !data.sourceRange) {
+          document.getElementById('status').textContent = '❌ Please fill in Source Sheet and Source Range in the Snapshot tab.';
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(result => {
+            document.getElementById('status').textContent = result.message || '✅ Email sent with snapshot.';
+          })
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .emailSnapshot(data);
+      }
+
+      function emailSnapshotAsFiles() {
+        const data = getFormData();
+        data.recipient = document.getElementById('emailRecipient').value;
+        if (!data.recipient) {
+          document.getElementById('status').textContent = '❌ Please enter a valid email address.';
+          return;
+        }
+        if (!data.sourceSheet || !data.sourceRange) {
+          document.getElementById('status').textContent = '❌ Please fill in Source Sheet and Source Range in the Snapshot tab.';
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(result => {
+            document.getElementById('status').textContent = result.message || '✅ Email sent with CSV attachment.';
+          })
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = '❌ Error: ' + err.message;
+          })
+          .emailSnapshotAsFiles(data);
+      }
+
+      loadSheetNames();
+      loadPresets();
+    </script>
+  </body>
+</html>
