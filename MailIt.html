@@ -69,8 +69,7 @@
       3. Choose "All Contacts" or "Specific Contacts" to select recipients.<br>
       4. If selecting specific contacts, hold Ctrl (or Cmd) to select multiple emails.<br>
       5. Enter the email subject.<br>
-      6. Choose to create drafts or send emails immediately.<br>
-      7. Click "Submit" to process your request.
+      6. Click "Submit" to send emails.
     </div>
 
     <label for="sheetSelect">Select Sheet:</label>
@@ -90,12 +89,6 @@
 
     <label for="subjectInput">Subject:</label>
     <input type="text" id="subjectInput" placeholder="Enter email subject">
-
-    <label for="actionSelect">Action:</label>
-    <select id="actionSelect">
-      <option value="draft">Create Drafts</option>
-      <option value="send">Send Immediately</option>
-    </select>
 
     <button onclick="submitForm()">Submit</button>
     <div id="error" class="error"></div>
@@ -142,8 +135,7 @@
           rangeAddress: document.getElementById('rangeInput').value,
           contactSelection: document.getElementById('contactSelection').value,
           selectedEmails: Array.from(document.getElementById('contactSelect').selectedOptions).map(option => option.value),
-          subject: document.getElementById('subjectInput').value,
-          action: document.getElementById('actionSelect').value
+          subject: document.getElementById('subjectInput').value
         };
 
         google.script.run
