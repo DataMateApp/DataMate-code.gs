@@ -1027,7 +1027,7 @@ function contacts() {
     contactsSheet.getRange("BO1").setValue("Other City");
     contactsSheet.getRange("BP1").setValue("Other State");
     contactsSheet.getRange("BQ1").setValue("Other Postal Code");
-    contactsSheet.getRange("A1:CL2000").createFilter();
+
 
     // Setup Address sheet
     addressSheet.activate();
@@ -3025,7 +3025,7 @@ function getStyledSnapshotHTML(preset) {
 //The Apps Script below is open-source and editable. It is required for Web App Deployment. Custom functions can be added and called on the DataMate FormBuilder Form Setup Dashboard.//
 
 
-//This checkout function is a custom function made for the Invoice Template. It is a good example of how custom functions can automate the form to spreadsheet processes upon form submission.//
+//This checkout function is a custom function made for the Inventory Template. It is a good example of how custom functions can automate the form to spreadsheet processes upon form submission.//
 
 function checkout() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -3063,7 +3063,7 @@ function checkout() {
 
   // Call other functions
   newcontact();
-  inputSheet.getRange("A13").setFormula("=contacts!A2");
+  inputSheet.getRange("A13").clearDataValidations().setFormula("=contacts!A2");
   save();
   updateInventory();
   copyInput1();
@@ -4859,8 +4859,6 @@ contactsSheet.getCurrentCell().setFormula('=CONCATENATE(B2," ",C2," ",D2)');
 contactsSheet.getRange('A:A').activate();
 contactsSheet.getRange('A1').copyTo(contactsSheet.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
 
-contactsSheet.getRange('A1').activate();
-contactsSheet.getRange('A1').getFilter().sort(1, false);
 
 newContact.getRange('B1:B22').activate();
 newContact.getActiveRangeList().clear({contentsOnly: true, skipFilteredRows: true});
