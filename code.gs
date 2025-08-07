@@ -1027,6 +1027,7 @@ function contacts() {
     contactsSheet.getRange("BO1").setValue("Other City");
     contactsSheet.getRange("BP1").setValue("Other State");
     contactsSheet.getRange("BQ1").setValue("Other Postal Code");
+    contactsSheet.getRange("A1:CL2").createFilter();
 
 
     // Setup Address sheet
