@@ -20,6 +20,8 @@
     <button type="button" onclick="clearForm()">New Record</button>
     <button type="button" onclick="navigate('prev')">Previous</button>
     <button type="button" onclick="navigate('next')">Next</button>
+    <button type="button" onclick="deleteRecord()">Delete</button>
+    <button type="button" onclick="searchRecord()">Search</button>
   </form>
   <div id="message"></div>
   <div id="spinner"><div>Loading...</div></div>
@@ -28,6 +30,7 @@
     let headers = [];
     let records = [];
     let currentIndex = -1;
+    let isNewRecord = false; // Track add or edit mode
 
     google.script.run.withSuccessHandler(populateForm).getSheetInfo();
     google.script.run.withSuccessHandler(loadRecords).getVisibleRecords();
@@ -56,14 +59,31 @@
       records = data;
       if (records.length > 0) {
         currentIndex = 0;
+        isNewRecord = false; // Set to edit mode for existing records
         displayRecord();
       }
     }
 
     function displayRecord() {
+      isNewRecord = false; // Edit mode
       if (currentIndex >= 0 && currentIndex < records.length) {
         headers.forEach(header => {
-          document.getElementById(header.name).value = records[currentIndex][header.name] || '';
+          const field = document.getElementById(header.name);
+          const value = records[currentIndex][header.name] || '';
+          if (field.tagName === 'SELECT') {
+            // Check if value exists in dropdown
+            let exists = Array.from(field.options).some(opt => opt.value === value);
+            if (!exists && value) {
+              // Add it temporarily so it can be selected
+              const opt = document.createElement('option');
+              opt.value = value;
+              opt.textContent = value;
+              field.appendChild(opt);
+            }
+            field.value = value;
+          } else {
+            field.value = value;
+          }
         });
       }
     }
@@ -72,17 +92,20 @@
       document.getElementById('spinner').style.display = 'block';
       const formData = {};
       headers.forEach(header => {
-        formData[header.name] = document.getElementById(header.name).value;
+        formData[header.name] = document.getElementById(header.name).value.trim();
       });
       if (headers.some(header => header.required && !formData[header.name])) {
         showMessage('Please fill all required fields.', 'error');
         document.getElementById('spinner').style.display = 'none';
         return;
       }
-      if (formData.ID) {
-        google.script.run.withSuccessHandler(onSave).withFailureHandler(onError).updateRecord(formData);
+      if (isNewRecord) {
+        google.script.run.withSuccessHandler(result => onSave(result, null))
+          .withFailureHandler(onError).addRecord(formData);
       } else {
-        google.script.run.withSuccessHandler(onSave).withFailureHandler(onError).addRecord(formData);
+        formData._rowNumber = currentIndex + 2; // +2 because currentIndex is 0-based and row 1 is headers
+        google.script.run.withSuccessHandler(result => onSave(result, formData._rowNumber))
+          .withFailureHandler(onError).updateRecord(formData);
       }
     }
 
@@ -97,10 +120,14 @@
       }
     }
 
-    function clearForm() {
+    function clearForm(keepID = false) {
+      isNewRecord = true; // New mode
       document.getElementById('dynamicForm').reset();
-      headers.forEach(header => document.getElementById(header.name).value = '');
-      showMessage('Form cleared.', '');
+      headers.forEach(header => {
+        if (keepID && header.name === 'ID') return;
+        document.getElementById(header.name).value = '';
+      });
+      showMessage('Ready for new record.', '');
     }
 
     function navigate(direction) {
@@ -110,6 +137,7 @@
       } else if (direction === 'next' && currentIndex < records.length - 1) {
         currentIndex++;
       }
+      isNewRecord = false; // Set to edit mode when navigating
       displayRecord();
     }
 
@@ -123,6 +151,7 @@
             headers.forEach(header => {
               document.getElementById(header.name).value = record[header.name] || '';
             });
+            isNewRecord = false; // Set to edit mode for found record
             showMessage('Record found.', '');
           } else {
             showMessage('Record not found or filtered out.', 'error');
@@ -134,11 +163,28 @@
       }
     }
 
-    function onSave(result) {
+    function onSave(result, existingID) {
       document.getElementById('spinner').style.display = 'none';
-      showMessage('Record saved successfully.', '');
-      google.script.run.withSuccessHandler(loadRecords).getVisibleRecords();
-      clearForm();
+      if (result.status === 'success') {
+        showMessage('Record saved successfully.', '');
+        google.script.run.withSuccessHandler(data => {
+          records = data;
+          if (existingID) {
+            const idx = records.findIndex(r => String(r.ID) === String(existingID));
+            if (idx >= 0) {
+              currentIndex = idx;
+              isNewRecord = false;
+              displayRecord();
+            }
+          } else {
+            currentIndex = records.length - 1;
+            isNewRecord = false;
+            displayRecord();
+          }
+        }).getVisibleRecords();
+      } else {
+        showMessage(result.message || 'Error saving record.', 'error');
+      }
     }
 
     function onDelete(result) {
