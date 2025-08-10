@@ -60,16 +60,12 @@ function createDropdownSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Dropdowns");
 
-  // If the sheet already exists, do nothing
   if (sheet) return;
 
-  // Otherwise, create it and set headers
   const newSheet = ss.insertSheet("Dropdowns");
   newSheet.getRange("A1").setValue("Dropdown");
   newSheet.getRange("B1").setValue("Options");
 }
-
-
 
 function getSheetInfo() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -84,17 +80,14 @@ function getSheetInfo() {
     let type = 'text';
     let options = [];
 
-    // Check data validation rules
     if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
       type = 'select';
       options = validation.getCriteriaValues();
     }
-    // Override with Dropdowns sheet if available
     if (dropdownOptions[header]) {
       type = 'select';
       options = dropdownOptions[header];
     }
-    // Set ID as read-only number
     if (header === 'ID') {
       type = 'number';
     }
@@ -102,7 +95,7 @@ function getSheetInfo() {
       name: header,
       type: type,
       options: options,
-      required: header !== 'ID', // ID is auto-generated, others required
+      required: header !== 'ID',
       columnIndex: index + 1
     };
   });
@@ -119,25 +112,22 @@ function getDropdownOptions(dropdownsSheet) {
 
     if (key && value) {
       if (value.includes('!')) {
-        // If the value is a range reference like "contacts!A:A"
         const [sheetName, colRange] = value.split('!');
         const sourceSheet = ss.getSheetByName(sheetName);
         if (sourceSheet) {
           const range = sourceSheet.getRange(colRange);
           const values = range.getValues().flat().filter(v => v !== '');
-          options[key] = [...new Set(values)]; // remove duplicates
+          options[key] = [...new Set(values)];
         } else {
           Logger.log(`Sheet ${sheetName} not found.`);
         }
       } else {
-        // Comma-separated inline options
         options[key] = value.split(',').map(opt => opt.trim());
       }
     }
   }
   return options;
 }
-
 
 function getVisibleRecords() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -177,16 +167,27 @@ function updateRecord(formData) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getActiveSheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == formData.ID) {
-      const row = headers.map(header => formData[header] || '');
-      sheet.getRange(i + 1, 1, 1, headers.length).setValues([row]);
-      return { status: 'success' };
-    }
+
+  if (!formData._rowNumber || formData._rowNumber <= 1) {
+    return { status: 'error', message: 'Invalid row number' };
   }
-  return { status: 'error', message: 'Record not found' };
+
+  // Get the existing row
+  const existingRow = sheet.getRange(formData._rowNumber, 1, 1, headers.length).getValues()[0];
+
+  // Merge changes (keep original if form left it blank)
+  const updatedRow = headers.map((header, idx) => {
+    return formData[header] !== '' && formData[header] !== undefined
+      ? formData[header]
+      : existingRow[idx];
+  });
+
+  // Write updated values back
+  sheet.getRange(formData._rowNumber, 1, 1, headers.length).setValues([updatedRow]);
+
+  return { status: 'success', row: formData._rowNumber };
 }
+
 
 function deleteRecord(id) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
