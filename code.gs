@@ -45,60 +45,433 @@ function onOpen() {
 }
 
 
-function doNothing() {
-  SpreadsheetApp.getUi().alert("Please select a template option below.");
-}
+
 
 function showDynamicForm() {
   const html = HtmlService.createHtmlOutputFromFile('DynamicForm')
     .setTitle('Dynamic Data Entry Form');
   SpreadsheetApp.getUi().showSidebar(html);
-  createDropdownSheet()
+  createDropdownSheet();
+}
+
+function doGet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const user = Session.getActiveUser().getEmail();
+    const owner = ss.getOwner().getEmail();
+    const editors = ss.getEditors().map(e => e.getEmail());
+    if (user !== owner && !editors.includes(user)) {
+      Logger.log(`User ${user} lacks edit access to spreadsheet`);
+      return HtmlService.createHtmlOutput(`
+        <h3>Access Denied</h3>
+        <p>You do not have permission to edit this spreadsheet. Please contact the owner (${owner}) to request edit access.</p>
+      `).setTitle('Dynamic Data Entry Form');
+    }
+  } catch (e) {
+    Logger.log(`Error checking permissions: ${e.message}`);
+    return HtmlService.createHtmlOutput(`
+      <h3>Error</h3>
+      <p>Unable to verify permissions: ${e.message}. Please ensure you are logged in and have edit access to the spreadsheet.</p>
+    `).setTitle('Dynamic Data Entry Form');
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <base target="_top">
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        label { display: block; margin: 10px 0 5px; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { padding: 10px; margin: 5px; }
+        #message { color: green; margin-top: 10px; }
+        .error { color: red; }
+        #spinner { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        #spinner div { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: white; }
+        #searchContainer { margin-bottom: 20px; }
+      </style>
+    </head>
+    <body>
+      <div id="searchContainer">
+        <label for="searchId">Search by ID</label>
+        <select id="searchId">
+          <option value="">Select ID</option>
+        </select>
+        <button type="button" onclick="searchRecord()">Search</button>
+      </div>
+      <form id="dynamicForm">
+        <div id="formFields"></div>
+        <button type="button" onclick="saveRecord()">Save</button>
+        <button type="button" onclick="clearForm()">New</button>
+        <button type="button" onclick="navigate('prev')">Previous</button>
+        <button type="button" onclick="navigate('next')">Next</button>
+      </form>
+      <div id="message"></div>
+      <div id="spinner"><div>Loading...</div></div>
+      <script>
+        let headers = [];
+        let records = [];
+        let currentIndex = -1;
+        let isNewRecord = false;
+        let currentRowNumber = null;
+
+        google.script.run
+          .withSuccessHandler(populateForm)
+          .withFailureHandler(err => {
+            console.error('Error loading headers: ' + err.message);
+            showMessage('Error loading form fields: ' + err.message, 'error');
+          })
+          .getSheetInfo();
+        google.script.run
+          .withSuccessHandler(loadRecords)
+          .withFailureHandler(err => {
+            console.error('Error loading records: ' + err.message);
+            showMessage('Error loading records: ' + err.message, 'error');
+          })
+          .getVisibleRecords();
+        google.script.run
+          .withSuccessHandler(populateIdDropdown)
+          .withFailureHandler(err => {
+            console.error('Error loading ID dropdown: ' + err.message);
+            showMessage('Error loading ID dropdown: ' + err.message, 'error');
+          })
+          .getColumnAValues();
+
+        function populateForm(headerData) {
+          if (!headerData || headerData.length === 0) {
+            console.error('No headers received from getSheetInfo');
+            showMessage('No fields found in the target sheet. Please check the sheet headers.', 'error');
+            return;
+          }
+          headers = headerData;
+          const formFields = document.getElementById('formFields');
+          formFields.innerHTML = headers.map(header => {
+            if (header.name === 'ID') {
+              return '<label for="' + header.name + '">' + header.name + '</label>' +
+                     '<input type="number" id="' + header.name + '" readonly>';
+            } else if (header.type === 'select') {
+              if (!header.options || header.options.length === 0) {
+                console.warn(\`No options available for dropdown \${header.name}\`);
+                showMessage(\`Warning: No options for \${header.name} dropdown. Check sheet configuration.\`, 'error');
+                return '<label for="' + header.name + '">' + header.name + (header.required ? ' *' : '') + '</label>' +
+                       '<select id="' + header.name + '" ' + (header.required ? 'required' : '') + ' onchange="onDropdownChange()">' +
+                       '<option value="">Select ' + header.name + '</option>' +
+                       '</select>';
+              }
+              console.log(\`Populating dropdown \${header.name} with options: \${header.options.join(', ')}\`);
+              return '<label for="' + header.name + '">' + header.name + (header.required ? ' *' : '') + '</label>' +
+                     '<select id="' + header.name + '" ' + (header.required ? 'required' : '') + ' onchange="onDropdownChange()">' +
+                     '<option value="">Select ' + header.name + '</option>' +
+                     header.options.map(opt => '<option value="' + opt + '">' + opt + '</option>').join('') +
+                     '</select>';
+            } else {
+              return '<label for="' + header.name + '">' + header.name + (header.required ? ' *' : '') + '</label>' +
+                     '<input type="' + header.type + '" id="' + header.name + '" ' + (header.required ? 'required' : '') + '>';
+            }
+          }).join('');
+          console.log('Form fields populated with headers: ' + headers.map(h => h.name).join(', '));
+          showMessage('Form fields loaded successfully.', '');
+        }
+
+        function populateIdDropdown(idValues) {
+          const searchIdDropdown = document.getElementById('searchId');
+          searchIdDropdown.innerHTML = '<option value="">Select ID</option>';
+          if (idValues.length === 0) {
+            console.warn('No IDs found in column A');
+            showMessage('No IDs found in column A of the target sheet.', 'error');
+          } else {
+            idValues.forEach(id => {
+              if (id !== '') {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = id;
+                searchIdDropdown.appendChild(option);
+              }
+            });
+            console.log('ID dropdown populated with: ' + idValues.join(', '));
+          }
+        }
+
+        function loadRecords(data) {
+          records = data;
+          if (records.length > 0) {
+            currentIndex = 0;
+            currentRowNumber = currentIndex + 2;
+            isNewRecord = false;
+            displayRecord();
+          } else {
+            clearForm();
+            console.warn('No records loaded');
+            showMessage('No records found in the target sheet.', 'error');
+          }
+          google.script.run.withSuccessHandler(populateIdDropdown).getColumnAValues();
+        }
+
+        function displayRecord() {
+          isNewRecord = false;
+          if (currentIndex >= 0 && currentIndex < records.length) {
+            headers.forEach(header => {
+              const field = document.getElementById(header.name);
+              if (!field) {
+                console.error(\`Field \${header.name} not found in form\`);
+                showMessage(\`Error: Field \${header.name} not found in form.\`, 'error');
+                return;
+              }
+              const value = records[currentIndex][header.name] != null ? records[currentIndex][header.name] : '';
+              if (field.tagName === 'SELECT') {
+                let exists = Array.from(field.options).some(opt => opt.value === String(value));
+                if (!exists && value !== '') {
+                  const opt = document.createElement('option');
+                  opt.value = String(value);
+                  opt.textContent = String(value);
+                  field.appendChild(opt);
+                  console.log(\`Added option \${value} to dropdown \${header.name}\`);
+                }
+                field.value = String(value);
+              } else {
+                field.value = value;
+              }
+            });
+            const currentId = records[currentIndex]['ID'] != null ? String(records[currentIndex]['ID']) : '';
+            document.getElementById('searchId').value = currentId;
+            console.log(\`Displayed record at index \${currentIndex}: ID=\${currentId}, Row=\${currentRowNumber}, Data=\${JSON.stringify(records[currentIndex])}\`);
+          } else {
+            console.error(\`Invalid currentIndex: \${currentIndex}, records length: \${records.length}\`);
+            showMessage('Error: No record to display.', 'error');
+          }
+        }
+
+        function searchRecord() {
+          const searchId = document.getElementById('searchId').value;
+          if (!searchId) {
+            console.warn('No ID selected for search');
+            showMessage('Please select an ID to search.', 'error');
+            return;
+          }
+          console.log(\`Initiating search for ID: \${searchId}\`);
+          document.getElementById('spinner').style.display = 'block';
+          google.script.run
+            .withSuccessHandler(result => {
+              document.getElementById('spinner').style.display = 'none';
+              if (result && result.record && Object.keys(result.record).length > 0) {
+                console.log(\`Record found for ID \${searchId}: \${JSON.stringify(result.record)}, Row=\${result.rowNumber}\`);
+                records = records.filter(r => String(r.ID) !== String(searchId));
+                records.push(result.record);
+                currentIndex = records.length - 1;
+                currentRowNumber = result.rowNumber;
+                isNewRecord = false;
+                displayRecord();
+                showMessage('Record found and displayed.', '');
+              } else {
+                console.error(\`No record found for ID: \${searchId}\`);
+                showMessage(\`No record found with ID: \${searchId}\`, 'error');
+              }
+            })
+            .withFailureHandler(err => {
+              document.getElementById('spinner').style.display = 'none';
+              console.error(\`Search failed for ID \${searchId}: \${err.message}\`);
+              showMessage('Error searching record: ' + err.message, 'error');
+            })
+            .getRecordById(searchId);
+        }
+
+        function saveRecord() {
+          console.log(\`Saving record: isNewRecord=\${isNewRecord}, currentRowNumber=\${currentRowNumber}\`);
+          document.getElementById('spinner').style.display = 'block';
+          const formData = {};
+          headers.forEach(header => {
+            const field = document.getElementById(header.name);
+            if (!field) {
+              console.error(\`Field \${header.name} not found during save\`);
+              showMessage(\`Error: Field \${header.name} not found.\`, 'error');
+              document.getElementById('spinner').style.display = 'none';
+              return;
+            }
+            formData[header.name] = field.value.trim();
+          });
+
+          for (const header of headers) {
+            if (header.required && !formData[header.name]) {
+              console.warn(\`Required field \${header.name} is empty\`);
+              showMessage('Please fill all required fields.', 'error');
+              document.getElementById('spinner').style.display = 'none';
+              return;
+            }
+          }
+
+          if (isNewRecord) {
+            console.log('Calling addRecord for new record');
+            google.script.run
+              .withSuccessHandler(result => onSave(result, null))
+              .withFailureHandler(onError)
+              .addRecord(formData);
+          } else if (currentRowNumber && currentRowNumber > 1) {
+            console.log(\`Calling updateRecord for row \${currentRowNumber}\`);
+            formData._rowNumber = currentRowNumber;
+            google.script.run
+              .withSuccessHandler(result => onSave(result, currentRowNumber))
+              .withFailureHandler(onError)
+              .updateRecord(formData);
+          } else {
+            console.error('No valid row number for updating record');
+            showMessage('Error: Cannot update record, no valid row number available.', 'error');
+            document.getElementById('spinner').style.display = 'none';
+          }
+        }
+
+        function clearForm() {
+          isNewRecord = true;
+          currentRowNumber = null;
+          document.getElementById('dynamicForm').reset();
+          headers.forEach(header => {
+            if (header.name === 'ID') return;
+            const field = document.getElementById(header.name);
+            if (field) field.value = '';
+          });
+          document.getElementById('searchId').value = '';
+          console.log('Form cleared for new record');
+          showMessage('Ready for new record.', '');
+        }
+
+        function navigate(direction) {
+          if (records.length === 0) {
+            console.warn('No records to navigate');
+            return;
+          }
+          if (direction === 'prev' && currentIndex > 0) {
+            currentIndex--;
+            currentRowNumber = currentIndex + 2;
+          } else if (direction === 'next' && currentIndex < records.length - 1) {
+            currentIndex++;
+            currentRowNumber = currentIndex + 2;
+          }
+          console.log(\`Navigating to \${direction}, new index: \${currentIndex}, row: \${currentRowNumber}\`);
+          displayRecord();
+        }
+
+        function onDropdownChange() {
+          if (isNewRecord) return;
+          const currentID = document.getElementById('ID').value;
+          if (!currentID) {
+            console.warn('No ID for dropdown change refresh');
+            return;
+          }
+          console.log(\`Refreshing record for ID: \${currentID} due to dropdown change\`);
+          document.getElementById('spinner').style.display = 'block';
+          google.script.run
+            .withSuccessHandler(result => {
+              document.getElementById('spinner').style.display = 'none';
+              if (result && result.record) {
+                headers.forEach(header => {
+                  const field = document.getElementById(header.name);
+                  if (!field) {
+                    console.error(\`Field \${header.name} not found on dropdown change\`);
+                    return;
+                  }
+                  const val = result.record[header.name] != null ? result.record[header.name] : '';
+                  if (field.tagName === 'SELECT') {
+                    let exists = Array.from(field.options).some(opt => opt.value === String(val));
+                    if (!exists && val !== '') {
+                      const opt = document.createElement('option');
+                      opt.value = String(val);
+                      opt.textContent = String(val);
+                      field.appendChild(opt);
+                      console.log(\`Added option \${val} to dropdown \${header.name}\`);
+                    }
+                    field.value = String(val);
+                  } else {
+                    field.value = val;
+                  }
+                });
+                document.getElementById('searchId').value = result.record['ID'] != null ? String(result.record['ID']) : '';
+                currentRowNumber = result.rowNumber;
+                console.log(\`Refreshed record for ID \${currentID}: \${JSON.stringify(result.record)}, Row=\${result.rowNumber}\`);
+                showMessage('Record refreshed with formula updates.', '');
+              } else {
+                console.error(\`No record found for ID \${currentID} on refresh\`);
+                showMessage('Record not found on reload.', 'error');
+              }
+            })
+            .withFailureHandler(err => {
+              document.getElementById('spinner').style.display = 'none';
+              console.error(\`Error refreshing record for ID \${currentID}: \${err.message}\`);
+              showMessage('Error refreshing record: ' + err.message, 'error');
+            })
+            .getRecordById(currentID);
+        }
+
+        function onSave(result, existingRow) {
+          document.getElementById('spinner').style.display = 'none';
+          if (result.status === 'success') {
+            console.log(\`Record saved: \${JSON.stringify(result)}\`);
+            showMessage('Record saved successfully.', '');
+            google.script.run
+              .withSuccessHandler(data => {
+                records = data;
+                if (existingRow) {
+                  const updatedID = document.getElementById('ID').value;
+                  const idx = records.findIndex(r => String(r.ID) === String(updatedID));
+                  if (idx >= 0) {
+                    currentIndex = idx;
+                    currentRowNumber = idx + 2;
+                    displayRecord();
+                  } else {
+                    currentIndex = records.length - 1;
+                    currentRowNumber = currentIndex + 2;
+                    displayRecord();
+                  }
+                } else {
+                  currentIndex = records.length - 1;
+                  currentRowNumber = currentIndex + 2;
+                  displayRecord();
+                }
+                google.script.run.withSuccessHandler(populateIdDropdown).getColumnAValues();
+              })
+              .withFailureHandler(err => {
+                console.error('Error reloading records after save: ' + err.message);
+                showMessage('Error reloading records: ' + err.message, 'error');
+              })
+              .getVisibleRecords();
+            isNewRecord = false;
+            document.getElementById('searchId').value = '';
+          } else {
+            console.error(\`Save failed: \${result.message}\`);
+            showMessage(result.message || 'Error saving record.', 'error');
+          }
+        }
+
+        function onError(error) {
+          document.getElementById('spinner').style.display = 'none';
+          console.error('Operation error: ' + error.message);
+          showMessage('Error: ' + error.message, 'error');
+        }
+
+        function showMessage(message, className) {
+          const msgDiv = document.getElementById('message');
+          msgDiv.textContent = message;
+          msgDiv.className = className;
+          setTimeout(() => msgDiv.textContent = '', 3000);
+        }
+      </script>
+    </body>
+    </html>
+  `;
+  return HtmlService.createHtmlOutput(htmlContent)
+    .setTitle('Dynamic Data Entry Form')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function createDropdownSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("Dropdowns");
-
-  if (sheet) return;
-
-  const newSheet = ss.insertSheet("Dropdowns");
-  newSheet.getRange("A1").setValue("Dropdown");
-  newSheet.getRange("B1").setValue("Options");
-}
-
-function getSheetInfo() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const validations = sheet.getRange(2, 1, 1, sheet.getLastColumn()).getDataValidations()[0];
-  const dropdownsSheet = ss.getSheetByName('Dropdowns');
-  const dropdownOptions = dropdownsSheet ? getDropdownOptions(dropdownsSheet) : {};
-
-  return headers.map((header, index) => {
-    const validation = validations[index];
-    let type = 'text';
-    let options = [];
-
-    if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
-      type = 'select';
-      options = validation.getCriteriaValues();
-    }
-    if (dropdownOptions[header]) {
-      type = 'select';
-      options = dropdownOptions[header];
-    }
-    if (header === 'ID') {
-      type = 'number';
-    }
-    return {
-      name: header,
-      type: type,
-      options: options,
-      required: header !== 'ID',
-      columnIndex: index + 1
-    };
-  });
+  if (!ss.getSheetByName("Dropdowns")) {
+    const newSheet = ss.insertSheet("Dropdowns");
+    newSheet.getRange("A1").setValue("Dropdown");
+    newSheet.getRange("B1").setValue("Options");
+    newSheet.getRange("C1").setValue("Target Sheet");
+    newSheet.getRange("C2").setValue(ss.getActiveSheet().getName());
+    Logger.log("Created Dropdowns sheet with default target: " + ss.getActiveSheet().getName());
+  }
 }
 
 function getDropdownOptions(dropdownsSheet) {
@@ -106,36 +479,186 @@ function getDropdownOptions(dropdownsSheet) {
   const options = {};
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+  Logger.log(`Processing Dropdowns sheet with ${data.length - 1} entries`);
   for (let i = 1; i < data.length; i++) {
-    const key = data[i][0];
-    const value = data[i][1];
-
-    if (key && value) {
-      if (value.includes('!')) {
+    const key = data[i][0]?.toString().trim();
+    const value = data[i][1]?.toString().trim();
+    if (!key || !value) {
+      Logger.log(`Skipping invalid dropdown entry at row ${i + 1}: key=${key}, value=${value}`);
+      continue;
+    }
+    Logger.log(`Processing dropdown: ${key}, options: ${value}`);
+    if (value.includes('!')) {
+      try {
         const [sheetName, colRange] = value.split('!');
+        Logger.log(`Attempting to access sheet: ${sheetName}, range: ${colRange}`);
         const sourceSheet = ss.getSheetByName(sheetName);
-        if (sourceSheet) {
-          const range = sourceSheet.getRange(colRange);
-          const values = range.getValues().flat().filter(v => v !== '');
-          options[key] = [...new Set(values)];
-        } else {
-          Logger.log(`Sheet ${sheetName} not found.`);
+        if (!sourceSheet) {
+          Logger.log(`Error: Source sheet ${sheetName} for dropdown ${key} not found`);
+          continue;
         }
-      } else {
-        options[key] = value.split(',').map(opt => opt.trim());
+        const lastRow = sourceSheet.getLastRow();
+        if (lastRow < 1) {
+          Logger.log(`Error: No data in sheet ${sheetName} for dropdown ${key}`);
+          continue;
+        }
+        const range = sourceSheet.getRange(colRange);
+        if (!range || range.isBlank()) {
+          Logger.log(`Error: Range ${colRange} in sheet ${sheetName} is invalid or empty for dropdown ${key}`);
+          continue;
+        }
+        const values = sourceSheet.getRange(1, range.getColumn(), lastRow, 1).getValues().flat().filter(v => v != null && v.toString().trim() !== '');
+        if (values.length === 0) {
+          Logger.log(`Warning: No valid values in ${sheetName}!${colRange} for dropdown ${key}`);
+          continue;
+        }
+        options[key] = [...new Set(values.map(v => v.toString().trim()))];
+        Logger.log(`Dropdown options for ${key} from ${sheetName}!${colRange}: ${JSON.stringify(options[key])}`);
+      } catch (e) {
+        Logger.log(`Error parsing dropdown options for ${key} from ${value}: ${e.message}`);
+        continue;
       }
+    } else {
+      options[key] = value.split(',').map(opt => opt.trim()).filter(opt => opt !== '');
+      Logger.log(`Dropdown options for ${key}: ${JSON.stringify(options[key])}`);
     }
   }
+  Logger.log(`Final dropdown options: ${JSON.stringify(options)}`);
   return options;
 }
 
-function getVisibleRecords() {
+function protectAllFormulaCells() {
+  const sheet = getTargetSheet();
+  const range = sheet.getDataRange();
+  const formulas = range.getFormulas();
+
+  for (let r = 0; r < formulas.length; r++) {
+    for (let c = 0; c < formulas[r].length; c++) {
+      if (formulas[r][c]) {
+        const cell = sheet.getRange(r + 1, c + 1);
+        try {
+          const protection = cell.protect();
+          protection.setDescription('Formula cell - do not edit');
+          protection.removeEditors(protection.getEditors());
+          Logger.log(`Protected formula cell at ${sheet.getName()}!${cell.getA1Notation()}`);
+        } catch (e) {
+          Logger.log(`Error protecting cell ${sheet.getName()}!${cell.getA1Notation()}: ${e.message}`);
+        }
+      }
+    }
+  }
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'All formula cells have been protected.',
+    'Done',
+    3
+  );
+}
+
+function getTargetSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
+  const dropdownsSheet = ss.getSheetByName("Dropdowns");
+  let targetSheetName = ss.getActiveSheet().getName();
+  if (dropdownsSheet) {
+    const targetCell = dropdownsSheet.getRange("C2").getValue()?.toString().trim();
+    if (targetCell && ss.getSheetByName(targetCell)) {
+      targetSheetName = targetCell;
+      Logger.log(`Target sheet set to: ${targetSheetName}`);
+    } else {
+      Logger.log(`Invalid or missing sheet name in Dropdowns!C2: ${targetCell}. Falling back to active sheet: ${targetSheetName}`);
+    }
+  } else {
+    Logger.log("Dropdowns sheet not found. Falling back to active sheet: " + targetSheetName);
+  }
+  const targetSheet = ss.getSheetByName(targetSheetName);
+  if (!targetSheet) {
+    Logger.log(`Error: Target sheet ${targetSheetName} does not exist`);
+    throw new Error(`Target sheet ${targetSheetName} does not exist`);
+  }
+  return targetSheet;
+}
+
+function getSheetInfo() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getTargetSheet();
+  const lastColumn = sheet.getLastColumn();
+  if (lastColumn === 0) {
+    Logger.log(`Error: No headers found in target sheet ${sheet.getName()}`);
+    throw new Error(`No headers found in target sheet ${sheet.getName()}`);
+  }
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].filter(h => h != null && h.toString().trim() !== '');
+  const validations = lastColumn > 0 ? sheet.getRange(2, 1, 1, lastColumn).getDataValidations()[0] : [];
+  const dropdownsSheet = ss.getSheetByName('Dropdowns');
+  const dropdownOptions = dropdownsSheet ? getDropdownOptions(dropdownsSheet) : {};
+
+  Logger.log(`Headers found in ${sheet.getName()}: ${JSON.stringify(headers)}`);
+  Logger.log(`Dropdown options from Dropdowns sheet: ${JSON.stringify(dropdownOptions)}`);
+
+  if (headers.length === 0) {
+    Logger.log(`Error: No valid headers found in target sheet ${sheet.getName()}`);
+    throw new Error(`No valid headers found in target sheet ${sheet.getName()}`);
+  }
+
+  return headers.map((header, index) => {
+    const headerStr = header.toString().trim();
+    const validation = validations[index] || null;
+    let type = 'text';
+    let options = [];
+
+    if (validation && validation.getCriteriaType() === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) {
+      type = 'select';
+      options = validation.getCriteriaValues().filter(v => v != null && v.toString().trim() !== '');
+      Logger.log(`Data validation for ${headerStr}: ${JSON.stringify(options)}`);
+    }
+    const dropdownKey = Object.keys(dropdownOptions).find(key => key.toLowerCase() === headerStr.toLowerCase());
+    if (dropdownKey && dropdownOptions[dropdownKey]) {
+      type = 'select';
+      options = dropdownOptions[dropdownKey];
+      Logger.log(`Dropdown options for ${headerStr} from Dropdowns sheet: ${JSON.stringify(options)}`);
+    }
+    if (headerStr === 'ID') {
+      type = 'number';
+      options = [];
+    }
+    Logger.log(`Header ${headerStr}: type=${type}, options=${JSON.stringify(options)}`);
+    return {
+      name: headerStr,
+      type: type,
+      options: options,
+      required: headerStr !== 'ID',
+      columnIndex: index + 1
+    };
+  });
+}
+
+function getColumnAValues() {
+  const sheet = getTargetSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    Logger.log(`No data rows in ${sheet.getName()}, returning empty array for column A`);
+    return [];
+  }
+  try {
+    const values = sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
+    const uniqueValues = [...new Set(values.filter(v => v != null && v.toString().trim() !== '').map(v => v.toString().trim()))];
+    Logger.log(`Column A values in ${sheet.getName()}: ${JSON.stringify(uniqueValues)}`);
+    return uniqueValues;
+  } catch (e) {
+    Logger.log(`Error getting column A values: ${e.message}`);
+    return [];
+  }
+}
+
+function getVisibleRecords() {
+  const sheet = getTargetSheet();
   const filter = sheet.getFilter();
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const records = [];
+
+  if (headers.length === 0) {
+    Logger.log(`No headers in ${sheet.getName()}, returning empty records`);
+    return records;
+  }
 
   if (filter) {
     for (let i = 1; i < data.length; i++) {
@@ -146,77 +669,121 @@ function getVisibleRecords() {
   } else {
     records.push(...data.slice(1));
   }
-  return records.map(row => headers.reduce((obj, header, i) => {
-    obj[header] = row[i];
-    return obj;
-  }, {}));
+  Logger.log(`Visible records in ${sheet.getName()}: ${records.length}`);
+  return records.map((row, index) => {
+    return headers.reduce((obj, header, i) => {
+      obj[header] = row[i];
+      return obj;
+    }, {});
+  });
 }
 
 function addRecord(formData) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
+  const sheet = getTargetSheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const lastId = sheet.getLastRow() > 1 ? Number(sheet.getRange(sheet.getLastRow(), 1).getValue()) || 0 : 0;
-  const newId = lastId + 1;
-  const row = headers.map(header => header === 'ID' ? newId : formData[header] || '');
-  sheet.appendRow(row);
-  return { status: 'success', id: newId };
+
+  try {
+    const lastId = sheet.getLastRow() > 1 ? Number(sheet.getRange(sheet.getLastRow(), 1).getValue()) || 0 : 0;
+    const newId = lastId + 1;
+
+    const row = headers.map(header => header === 'ID' ? newId : formData[header] || '');
+    sheet.appendRow(row);
+    Logger.log(`Added record with ID ${newId} to ${sheet.getName()}`);
+    return { status: 'success', id: newId };
+  } catch (e) {
+    Logger.log(`Error adding record: ${e.message}`);
+    return { status: 'error', message: `Failed to add record: ${e.message}` };
+  }
 }
 
 function updateRecord(formData) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
+  const sheet = getTargetSheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
 
   if (!formData._rowNumber || formData._rowNumber <= 1) {
+    Logger.log(`Error: Invalid row number ${formData._rowNumber} for update in ${sheet.getName()}`);
     return { status: 'error', message: 'Invalid row number' };
   }
 
-  // Get the existing row
-  const existingRow = sheet.getRange(formData._rowNumber, 1, 1, headers.length).getValues()[0];
+  try {
+    const existingRowValues = sheet.getRange(formData._rowNumber, 1, 1, headers.length).getValues()[0];
+    const existingRowFormulas = sheet.getRange(formData._rowNumber, 1, 1, headers.length).getFormulas()[0];
 
-  // Merge changes (keep original if form left it blank)
-  const updatedRow = headers.map((header, idx) => {
-    return formData[header] !== '' && formData[header] !== undefined
-      ? formData[header]
-      : existingRow[idx];
-  });
+    const updatedRow = headers.map((header, idx) => {
+      if (existingRowFormulas[idx]) {
+        return existingRowFormulas[idx];
+      } else {
+        return (formData[header] !== '' && formData[header] !== undefined)
+          ? formData[header]
+          : existingRowValues[idx];
+      }
+    });
 
-  // Write updated values back
-  sheet.getRange(formData._rowNumber, 1, 1, headers.length).setValues([updatedRow]);
-
-  return { status: 'success', row: formData._rowNumber };
+    sheet.getRange(formData._rowNumber, 1, 1, headers.length).setValues([updatedRow]);
+    Logger.log(`Updated record at row ${formData._rowNumber} in ${sheet.getName()}`);
+    return { status: 'success', row: formData._rowNumber };
+  } catch (e) {
+    Logger.log(`Error updating record at row ${formData._rowNumber}: ${e.message}`);
+    return { status: 'error', message: `Failed to update record: ${e.message}` };
+  }
 }
-
 
 function deleteRecord(id) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
+  const sheet = getTargetSheet();
   const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == id) {
-      sheet.deleteRow(i + 1);
-      return { status: 'success' };
+
+  try {
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(id)) {
+        sheet.deleteRow(i + 1);
+        Logger.log(`Deleted record with ID ${id} from ${sheet.getName()}`);
+        return { status: 'success' };
+      }
     }
+    Logger.log(`No record found to delete with ID ${id} in ${sheet.getName()}`);
+    return { status: 'error', message: 'Record not found' };
+  } catch (e) {
+    Logger.log(`Error deleting record with ID ${id}: ${e.message}`);
+    return { status: 'error', message: `Failed to delete record: ${e.message}` };
   }
-  return { status: 'error', message: 'Record not found' };
 }
 
-function searchRecord(id) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getActiveSheet();
+function getRecordById(id) {
+  const sheet = getTargetSheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const data = sheet.getDataRange().getValues();
+
+  Logger.log(`Searching for ID ${id} in ${sheet.getName()}`);
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == id && !sheet.isRowHiddenByFilter(i + 1)) {
-      return headers.reduce((obj, header, index) => {
-        obj[header] = data[i][index];
-        return obj;
-      }, {});
+    const sheetId = String(data[i][0]).trim();
+    const searchId = String(id).trim();
+    if (sheetId === searchId) {
+      const record = {};
+      headers.forEach((header, idx) => {
+        record[header] = data[i][idx];
+      });
+      Logger.log(`Record found for ID ${id}: ${JSON.stringify(record)}, Row=${i + 1}`);
+      return { record: record, rowNumber: i + 1 };
     }
   }
-  return null;
+  Logger.log(`No record found for ID ${id} in ${sheet.getName()}`);
+  return { record: null, rowNumber: null };
 }
+
+function createDropdownSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss.getSheetByName("Dropdowns")) {
+    const newSheet = ss.insertSheet("Dropdowns");
+    newSheet.getRange("A1").setValue("Dropdown");
+    newSheet.getRange("B1").setValue("Options");
+    newSheet.getRange("C1").setValue("Target Sheet");
+    newSheet.getRange("C2").setValue(ss.getActiveSheet().getName());
+  }
+}
+
+
+
+
 
 // Show the Mail It sidebar
 function showMailItSidebar() {
@@ -2804,48 +3371,33 @@ function showFormBuilder() {
 
 
 
-function showCameraSidebar() {
-  const html = HtmlService.createHtmlOutputFromFile('CameraSidebar')
-    .setTitle('SnapSync');
-  SpreadsheetApp.getUi().showSidebar(html);
+
+
+
+
+
+// Store configuration in ScriptProperties
+function saveSnapshotConfig(data) {
+  const properties = PropertiesService.getScriptProperties();
+  properties.setProperty('snapshotConfig', JSON.stringify(data));
 }
 
-function getSheetNames() {
-  return SpreadsheetApp.getActiveSpreadsheet()
-    .getSheets()
-    .map(sheet => sheet.getName());
+// Retrieve configuration
+function getSnapshotConfig() {
+  const properties = PropertiesService.getScriptProperties();
+  const config = properties.getProperty('snapshotConfig');
+  return config ? JSON.parse(config) : null;
 }
 
-function saveCameraPreset(preset) {
-  const userProps = PropertiesService.getUserProperties();
-  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
-  presets[preset.name] = preset;
-  userProps.setProperty('cameraPresets', JSON.stringify(presets));
-  return Object.keys(presets);
-}
-
-function getCameraPresets(name) {
-  const userProps = PropertiesService.getUserProperties();
-  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
-  if (name) {
-    return presets[name] || null;
-  }
-  return presets;
-}
-
-function deleteCameraPreset(name) {
-  const userProps = PropertiesService.getUserProperties();
-  const presets = JSON.parse(userProps.getProperty('cameraPresets') || '{}');
-  delete presets[name];
-  userProps.setProperty('cameraPresets', JSON.stringify(presets));
-  return Object.keys(presets);
-}
-
+// Modified copyCameraSnapshot to save config
 function copyCameraSnapshot(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sourceSheet = ss.getSheetByName(data.sourceSheet);
   const targetSheet = ss.getSheetByName(data.targetSheet);
-  if (!sourceSheet || !targetSheet) throw new Error("Sheet not found.");
+
+  if (!sourceSheet || !targetSheet) {
+    throw new Error("Sheet not found.");
+  }
 
   const sourceRange = sourceSheet.getRange(data.sourceRange);
   const values = sourceRange.getValues();
@@ -2868,6 +3420,7 @@ function copyCameraSnapshot(data) {
   );
 
   targetRange.clearContent().clearFormat();
+
   targetRange.setValues(values);
   targetRange.setBackgrounds(bgs);
   targetRange.setFontColors(fontColors);
@@ -2875,134 +3428,62 @@ function copyCameraSnapshot(data) {
   targetRange.setFontStyles(fontStyles);
   targetRange.setHorizontalAlignments(hAligns);
   targetRange.setVerticalAlignments(vAligns);
+
+  // Save the configuration for real-time syncing
+  saveSnapshotConfig(data);
 }
 
-function installLiveSync() {
-  const triggers = ScriptApp.getProjectTriggers();
-  const alreadyInstalled = triggers.some(t => t.getHandlerFunction() === 'runLiveSnapshots');
-  if (!alreadyInstalled) {
-    ScriptApp.newTrigger('runLiveSnapshots')
-      .forSpreadsheet(SpreadsheetApp.getActive())
-      .onEdit()
-      .create();
+// onEdit trigger to sync changes
+function onEdit(e) {
+  const config = getSnapshotConfig();
+  if (!config) return; // No snapshot configured
+
+  const range = e.range;
+  const sheet = range.getSheet();
+  const sourceSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(config.sourceSheet);
+
+  if (sheet.getName() !== config.sourceSheet) return; // Edit is not in source sheet
+
+  // Check if the edited range overlaps with the source range
+  const sourceRange = sourceSheet.getRange(config.sourceRange);
+  const editedRowStart = range.getRow();
+  const editedRowEnd = range.getLastRow();
+  const editedColStart = range.getColumn();
+  const editedColEnd = range.getLastColumn();
+  const sourceRowStart = sourceRange.getRow();
+  const sourceRowEnd = sourceRange.getLastRow();
+  const sourceColStart = sourceRange.getColumn();
+  const sourceColEnd = sourceRange.getLastColumn();
+
+  if (
+    editedRowStart <= sourceRowEnd &&
+    editedRowEnd >= sourceRowStart &&
+    editedColStart <= sourceColEnd &&
+    editedColEnd >= sourceColStart
+  ) {
+    // Edited range overlaps with source range, so update the target
+    copyCameraSnapshot(config);
   }
 }
 
-function uninstallLiveSync() {
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers
-    .filter(t => t.getHandlerFunction() === 'runLiveSnapshots')
-    .forEach(t => ScriptApp.deleteTrigger(t));
+// Existing functions
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Camera Tool')
+    .addItem('Open Sidebar', 'showCameraSidebar')
+    .addToUi();
 }
 
-function runLiveSnapshots() {
-  const presets = getCameraPresets();
-  for (const name in presets) {
-    copyCameraSnapshot(presets[name]);
-  }
+function showCameraSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('CameraSidebar')
+    .setTitle('Camera Tool');
+  SpreadsheetApp.getUi().showSidebar(html);
 }
 
-function getRangePreview(sheetName, rangeA1) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
-  if (!sheet) return [['Invalid Sheet']];
-  try {
-    const range = sheet.getRange(rangeA1);
-    return range.getDisplayValues();
-  } catch (e) {
-    return [['Invalid Range']];
-  }
-}
-
-function emailSnapshot(data) {
-  try {
-    if (!data.recipient.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      throw new Error("Invalid email address.");
-    }
-    const html = getStyledSnapshotHTML(data);
-    MailApp.sendEmail({
-      to: data.recipient,
-      subject: `Snapshot: ${data.name || "Unnamed"}`,
-      htmlBody: `<p>Here is your styled snapshot:</p>${html}`
-    });
-    logExportAction(data.recipient, data.name || "Unnamed", "HTML");
-  } catch (e) {
-    throw new Error(`Failed to send email: ${e.message}`);
-  }
-}
-
-function emailSnapshotAsFiles(data) {
-  try {
-    // Validate input data
-    if (!data.sourceSheet || !data.sourceRange) {
-      throw new Error("Source sheet or range is missing.");
-    }
-    if (!data.recipient.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      throw new Error("Invalid email address.");
-    }
-
-    const ss = SpreadsheetApp.getActive();
-    const sheet = ss.getSheetByName(data.sourceSheet);
-    if (!sheet) throw new Error("Source sheet not found.");
-    const range = sheet.getRange(data.sourceRange);
-    const values = range.getDisplayValues();
-    if (!values || values.length === 0) throw new Error("Source range is empty.");
-    const snapshotName = data.name || 'Snapshot';
-    const attachments = [];
-
-    // Generate CSV attachment
-    const csvContent = values.map(row =>
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\r\n');
-    attachments.push(Utilities.newBlob(csvContent, 'text/csv', `${snapshotName}.csv`));
-
-    // Send Email
-    MailApp.sendEmail({
-      to: data.recipient,
-      subject: `Snapshot: ${snapshotName}`,
-      htmlBody: `<p>Attached: CSV file</p>`,
-      attachments
-    });
-
-    logExportAction(data.recipient, snapshotName, 'CSV');
-    Logger.log(`Email sent successfully to ${data.recipient} with CSV attachment`);
-    return { status: 'success', message: 'Email sent with CSV attachment.' };
-  } catch (e) {
-    Logger.log(`Error in emailSnapshotAsFiles: ${e.message}`);
-    throw new Error(`Failed to send email with CSV attachment: ${e.message}`);
-  }
-}
-
-function logExportAction(recipient, snapshotName, format) {
-  const ss = SpreadsheetApp.getActive();
-  const logSheet = ss.getSheetByName("ExportLog") || ss.insertSheet("ExportLog");
-  if (logSheet.getLastRow() === 0) {
-    logSheet.appendRow(["Timestamp", "User", "Snapshot", "Format"]);
-  }
-  logSheet.appendRow([
-    new Date(),
-    Session.getActiveUser().getEmail(),
-    snapshotName,
-    format
-  ]);
-}
-
-function getStyledSnapshotHTML(preset) {
-  const range = SpreadsheetApp.getActive().getSheetByName(preset.sourceSheet).getRange(preset.sourceRange);
-  const values = range.getDisplayValues();
-  const bgs = range.getBackgrounds();
-  const weights = range.getFontWeights();
-
-  let html = '<table border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse;">';
-  for (let r = 0; r < values.length; r++) {
-    html += '<tr>';
-    for (let c = 0; c < values[0].length; c++) {
-      const style = `background-color:${bgs[r][c]}; font-weight:${weights[r][c]};`;
-      html += `<td style="${style}">${values[r][c]}</td>`;
-    }
-    html += '</tr>';
-  }
-  html += '</table>';
-  return html;
+function getSheetNames() {
+  return SpreadsheetApp.getActiveSpreadsheet()
+    .getSheets()
+    .map(sheet => sheet.getName());
 }
 
 
