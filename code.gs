@@ -3466,13 +3466,7 @@ function onEdit(e) {
   }
 }
 
-// Existing functions
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('Camera Tool')
-    .addItem('Open Sidebar', 'showCameraSidebar')
-    .addToUi();
-}
+
 
 function showCameraSidebar() {
   const html = HtmlService.createHtmlOutputFromFile('CameraSidebar')
