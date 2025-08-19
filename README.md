@@ -27,45 +27,9 @@ Technology has democratized development, and for me, this is a **passion project
 
 Open-source code to deploy as web app.
 
-Or:
-#### Step 1: Install the Core Script  
-1. Open **Google Drive** and create a **new Google Sheet**.  
-2. Click **Extensions > Apps Script**.  
-3. Delete any default code in `Code.gs`.  
-4. Copy & paste the [`Code.gs`](https://github.com/DataMateApp/DataMate-code.gs) from this repository.  
-5. Click **Save** (Ctrl+S or the disk icon).  
 
-#### Step 2: Add Supporting HTML Files  
-DataMate uses HTML files to enhance functionality: `tutorial.html`, `FormBuilder.html`, and (optionally) `UploadCSV.html`.  
-1. In the Apps Script editor, click the **+** button next to "Files" and select **HTML**.  
-2. Create `tutorial.html`:  
-   - Name it `tutorial.html`.  
-   - Copy the contents from [this repository’s `help.html`](https://datamateapp.github.io/help.html) or the updated version in the DataMate documentation.  
-   - This displays a modal tutorial (via `showTutorial()`).  
-3. Create `FormBuilder.html`:  
-   - Name it `FormBuilder.html`.  
-   - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
-   - This powers the visual form editor (via `showFormBuilder()`).
-4. Create `MailIt.html`:  
-   - Name it `MailIt.html`.  
-   - Copy its contents from the repository (or implement a drag-and-drop UI if available).  
-   - This powers the visual form editor (via `showMailItSidebar()`).   
-5. (Optional) Create `UploadCSV.html`:  
-   - Name it `UploadCSV.html`.  
-   - Copy its contents from the repository.  
-   - This enables batch CSV uploads for data entry.  
-6. Click **Save** for each file.  
 
-> **Note**: If `FormBuilder.html` or `UploadCSV.html` aren’t in the repository, basic placeholders can be created (e.g., a form for CSV upload or a field editor). Contact [datamateapp@gmail.com](mailto:datamateapp@gmail.com) for assistance.
-
-#### Step 3: Initialize and Test  
-1. In the Apps Script editor, click **Run > showTutorial** to test permissions.  
-2. Authorize the script (grant access to Google Sheets and Drive when prompted).  
-3. Open your spreadsheet, refresh it (F5), and look for the **DataMate** menu.  
-4. Select **DataMate > FormBuilder > Preview Form** to initialize the `FormSetup` sheet with sample fields (e.g., Text, Checkout, Hyperlink).  
-   - This creates a pre-configured `FormSetup` sheet starting at `A9:J` with 29 field examples.  
-
-#### Step 4: Web Deployment (Optional)  
+#### Web Deployment (Optional)  
 Deploy DataMate as a web app to share forms with others:  
 1. In the Apps Script editor, click **Deploy > New Deployment**.  
 2. Select **Web App**.  
@@ -124,4 +88,4 @@ Every donation keeps this project thriving!
 Licensed under the **MIT License**. See [`LICENSE.txt`](https://github.com/DataMateApp/DataMate-code.gs/blob/main/LICENSE.txt) in the repository for details.  
 
 ## Credits  
-Developed by **Dan Northway** Founder and **Sara Bohannon** Co-Founder. Special thanks to the open-source community and AI tools like ChatGPT for accelerating development.
+Developed by **Dan Northway** Founder and **Sara Bohannon** Co-Founder.
