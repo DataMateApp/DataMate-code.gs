@@ -23,7 +23,7 @@ Technology has democratized development, and for me, this is a **passion project
 ---
 
 ### Installation and Deployment
-Copy [DataMate Open Source]([[(https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/template/preview)))
+[**DataMate Open Source Template**](https://docs.google.com/spreadsheets/d/1G-zoZx6OT4DhdA-yAPI--ZGLDPynkaFLdfRjU4RAX-Q/template/preview) 
 
 Open-source code to deploy as web app.
 
