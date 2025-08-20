@@ -3128,7 +3128,7 @@ function createFormSetupSheet() {
     const instructions = [
       {
         range: "A2:J2",
-        value: "Configure your form below. Delete sample rows and add fields and targets in A10:J directly or use Form Builer.",
+        value: "Configure your form below. Delete sample rows and add fields and targets in A10:J directly or use Form Buidler.",
         background: "#e0e0e0"
       },
       {
