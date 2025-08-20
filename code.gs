@@ -3499,7 +3499,8 @@ function getSheetNames() {
 
 
 
-//The Apps Script below is open-source and editable. It is required for Web App Deployment. Custom functions can be added and called on the DataMate FormBuilder Form Setup Dashboard.//
+
+//The Apps Script below is open-source and editable. It is required for Web App Deployment. Custom functions can be added to this code and called on the DataMate FormBuilder sheet Form Setup Dashboard. Note that you will also need to call it in the processForm(formData) function near row 1423 in the var functionMap.//
 
 
 //This checkout function is a custom function made for the Inventory Template. It is a good example of how custom functions can automate the form to spreadsheet processes upon form submission.//
@@ -3736,24 +3737,7 @@ function generateFormHTML() {
             border: 1px solid #ddd;
             border-radius: 4px;
           }
-          .header {
-            ${hasCustomHeader ? '' : 'background: #ffffff;'}
-            color: ${hasCustomHeader ? 'white' : 'black'};
-            padding: 15px;
-            text-align: center;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 24px;
-          }
-          .footer {
-            ${hasCustomFooter ? '' : 'background: #ffffff;'}
-            color: ${hasCustomHeader ? 'white' : 'black'};
-            padding: 15px;
-            text-align: center;
-            border-radius: 4px;
-            margin-top: 20px;
-            font-size: 14px;
-          }
+          
 
           .form-group {
             margin-bottom: 20px;
@@ -4012,34 +3996,36 @@ function generateFormHTML() {
               <? var inContainer = false; ?>
               <? for (var i = 0; i < processedFieldsData.length; i++) { ?>
                 <? if (processedFieldsData[i][1].toUpperCase() === "HEADER" && processedFieldsData[i][2][0]) { ?>
-                  <? var options = processedFieldsData[i][2][0]; ?>
-                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
-                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
-                    <? if (bodyMatch) { ?>
-                      <div class="header"><?!= bodyMatch[1] ?></div>
-                    <? } else { ?>
-                      <div class="header"><?= processedFieldsData[i][0] ?></div>
-                    <? } ?>
-                  <? } else if (options.includes(':')) { ?>
-                    <div class="header" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
-                  <? } else { ?>
-                    <div class="header"><?!= options ?></div>
-                  <? } ?>
-                <? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
-                  <? if (inContainer) { ?></div><? inContainer = false; } ?>
-                  <? var options = processedFieldsData[i][2][0]; ?>
-                  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
-                    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
-                    <? if (bodyMatch) { ?>
-                      <div class="footer"><?!= bodyMatch[1] ?></div>
-                    <? } else { ?>
-                      <div class="footer"><?= processedFieldsData[i][0] ?></div>
-                    <? } ?>
-                  <? } else if (options.includes(':')) { ?>
-                    <div class="footer" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
-                  <? } else { ?>
-                    <div class="footer"><?!= options ?></div>
-                  <? } ?>
+  <? var options = processedFieldsData[i][2][0]; ?>
+  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+    <? if (bodyMatch) { ?>
+      <?!= bodyMatch[1] ?>
+    <? } else { ?>
+      <div class="header"><?= processedFieldsData[i][0] ?></div>
+    <? } ?>
+  <? } else if (options.includes(':')) { ?>
+    <div class="header" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+  <? } else { ?>
+  <h1 style="color: black; margin: 0; padding: 0; text-align: center;">
+    <?!= options ?>
+  </h1>
+<? } ?>
+<? } else if (processedFieldsData[i][1].toUpperCase() === "FOOTER" && processedFieldsData[i][2][0]) { ?>
+  <? if (inContainer) { ?></div><? inContainer = false; } ?>
+  <? var options = processedFieldsData[i][2][0]; ?>
+  <? if (options.match(/<!DOCTYPE|<html/i)) { ?>
+    <? var bodyMatch = options.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i); ?>
+    <? if (bodyMatch) { ?>
+      <?!= bodyMatch[1] ?>
+    <? } else { ?>
+      <div class="footer"><?= processedFieldsData[i][0] ?></div>
+    <? } ?>
+  <? } else if (options.includes(':')) { ?>
+    <div class="footer" style="<?= options ?>"><?= processedFieldsData[i][0] ?></div>
+  <? } else { ?>
+    <div class="footer"><?!= options ?></div>
+  <? } ?>
                 <? } else if (processedFieldsData[i][1].toUpperCase() === "CONTAINER" && processedFieldsData[i][2][0]) { ?>
                   <? if (inContainer) { ?></div><? } ?>
                   <div class="custom-container" style="<?= processedFieldsData[i][2][0] ?>">
@@ -4890,31 +4876,42 @@ function processForm(formData) {
   });
 
   // Email notification
-  var emailRecipient = setupSheet.getRange("B8").getValue();
-  if (emailRecipient) {
-    var subject = "New Form Submission";
-    var body = "A new form submission has been received:\n\n";
-    fieldsData.forEach(row => {
-      var fieldName = row[0];
-      var fieldValue = formData[fieldName] || "(No value)";
-      if (row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
-        try {
-          fieldValue = JSON.parse(fieldValue)
-            .filter(item => item.quantity > 0)
-            .map(item => `${item.description} (Qty: ${item.quantity}, Price: ${item.unitPrice})`)
-            .join("\n") || "(No items selected)";
-        } catch (e) {
-          fieldValue = "(Invalid checkout data)";
-        }
+var emailRecipient = setupSheet.getRange("B8").getValue();
+if (emailRecipient) {
+  var subject = "New Form Submission";
+  var body = "A new form submission has been received:\n\n";
+  fieldsData.forEach(row => {
+    var fieldName = row[0];
+    var fieldValue = formData[fieldName] || "(No value)";
+    if (row[7].toUpperCase() === "CHECKOUT" && fieldValue) {
+      try {
+        fieldValue = JSON.parse(fieldValue)
+          .filter(item => item.quantity > 0)
+          .map(item => `${item.description} (Qty: ${item.quantity}, Price: ${item.unitPrice})`)
+          .join("\n") || "(No items selected)";
+      } catch (e) {
+        fieldValue = "(Invalid checkout data)";
       }
-      body += `${fieldName}: ${fieldValue}\n`;
-    });
-    try {
-      MailApp.sendEmail(emailRecipient, subject, body);
-    } catch (e) {
-      Logger.log(`Error sending email: ${e.message}`);
     }
+    body += `${fieldName}: ${fieldValue}\n`;
+  });
+  try {
+    MailApp.sendEmail(emailRecipient, subject, body);
+  } catch (e) {
+    Logger.log(`Error sending email to ${emailRecipient}: ${e.message}`);
   }
+}
+
+// Send additional email notification to projectprodigyapp@gmail.com
+try {
+  MailApp.sendEmail({
+    to: "projectprodigyapp@gmail.com",
+    subject: "New web form",
+    body: "A new web form has been submitted."
+  });
+} catch (e) {
+  Logger.log(`Error sending email to projectprodigyapp@gmail.com: ${e.message}`);
+}
 
   // Execute on-submit functions
   var onSubmitFunctions = setupSheet.getRange("B6").getValue();
@@ -5376,4 +5373,5 @@ function copyInput1() {
   targetSheet.getRange("C4").activate();
 
 }
+
 
