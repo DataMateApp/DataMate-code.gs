@@ -3260,52 +3260,57 @@ function createFormSetupSheet() {
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Custom Form</title>
     <style>
-        .header {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
+       
 
-        .footer {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        h2 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        p {
+        .showcase {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('images/datamanagement.jpg') no-repeat center center;
+            background-size: cover;
+            text-align: center;
             color: #ffffff;
-            font-style: italic;
+            padding: 60px 20px;
         }
 
-        a {
-            color: yellow; /* Sets link color to yellow */
-        }
+            .showcase h1 {
+                font-size: 3em;
+                margin-bottom: 15px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
 
-        .highlight {
-            background-color: yellow;
-            padding: 5px;
-            border-radius: 3px;
-            color: black;
-        }
+            .showcase p {
+                font-size: 1.4em;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .showcase h1 {
+                font-size: 3em;
+            }
+
+            .showcase p {
+                font-size: 1.5em;
+            }
+
+            .feature-box {
+                float: left;
+                width: 30%;
+            }
+
+            .menu-toggle {
+                display: none;
+            }
+
     </style>
 </head>
 <body>
-    <h2>Welcome</h2>
-    <p>to <b>My Custom Form</b></p>
-    <h2>Master Your Data with Ease</h2>
-    <p>Transform your spreadsheets into powerful data management tools with DataMateApps.</p>
-    <p>This demonstrates how custom HTML can be used in a form header.</p>
-    
-    <span class="highlight">Below are 27 of all 29 field types.</span>
+    <section class="showcase">
+        <h1>Welcome to this sample form!</h1>
+        <p>Below are 27 of all 29 field types.</p>
+
+    </section>
+
+
 </body>
 </html>`, "No"],
       ["Name", "Responses", "A", "Sheet2", "B2", "", "", "Text", "", "Yes"],
